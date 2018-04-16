@@ -25,13 +25,11 @@ public class CenteredIntervalTreeTest {
         CenteredIntervalTree<Integer> tree = new CenteredIntervalTree<>(list);
         assertEquals(0, tree.intersections(2).size());
         assertEquals(2, tree.intersections(0).size());
+        assertEquals(0, new CenteredIntervalTree<Integer>(new LinkedList<>()).intersections(0).size());
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         list = new LinkedList<>();
-        list.add(i00);
-        list.add(i01);
-        list.add(i56);
     }
 }

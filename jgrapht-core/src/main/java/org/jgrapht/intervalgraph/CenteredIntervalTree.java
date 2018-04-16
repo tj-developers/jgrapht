@@ -1,10 +1,10 @@
 package org.jgrapht.intervalgraph;
 
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.jgrapht.Graph;
 import org.jgrapht.intervalgraph.interval.Interval;
-import org.omg.SendingContext.RunTime;
-
-import java.util.*;
 
 public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGraph<T>{
     private T centerPoint;
@@ -12,18 +12,32 @@ public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGr
     private CenteredIntervalTree<T> rightTree; // contains all the intervals *completely* to the right of the center point
     private List<Interval<T>> intersectionsByStart = new LinkedList<>(); // intervals intersecting center point, sorted by start point
     private List<Interval<T>> intersectionsByEnd = new LinkedList<>(); // ..., sorted by end point
+    private boolean isEmpty = true;
 
-    public CenteredIntervalTree(T centerPoint, List<Interval<T>> intervals) {
-        this.centerPoint = centerPoint;
-        compute(intervals);
-    }
+    public CenteredIntervalTree(){}
+
 
     public CenteredIntervalTree(List<Interval<T>> intervals) {
-        this.centerPoint = intervals.get(0).getEnd(); // TODO replace this with something, its arbitrary
-        compute(intervals);
+        initialize(intervals);
     }
 
-    private void compute( List<Interval<T>> intervals) {
+    private void initialize(List<Interval<T>> intervals) {
+        if (intervals == null){
+            throw new IllegalArgumentException();
+        }
+
+        if (intervals.isEmpty()) {
+            return;
+        }
+        isEmpty = false;
+
+        Interval<T> randomInterval = intervals.get(ThreadLocalRandom.current().nextInt(intervals.size()));
+        if (ThreadLocalRandom.current().nextBoolean()) {
+            this.centerPoint = randomInterval.getStart();
+        } else {
+            this.centerPoint = randomInterval.getEnd();
+        }
+
         List<Interval<T>> leftIntervals = new LinkedList<>(); // containing the intervals completely to the left of the center point
         List<Interval<T>> rightIntervals = new LinkedList<>(); // ... to the right
         List<Interval<T>> intersectingIntervals = new LinkedList<>(); // intervals intersecting the center point
@@ -40,23 +54,19 @@ public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGr
             }
         }
 
-
         // sorting the intervals according to start/end point
         intersectionsByStart = new LinkedList<>(intersectingIntervals);
         intersectionsByStart.sort(Comparator.comparing(Interval::getStart));
 
         intersectionsByEnd = intersectingIntervals;
-        intersectionsByEnd.sort(Comparator.comparing(Interval::getStart));
-
+        intersectionsByEnd.sort(Collections.reverseOrder(Comparator.comparing(Interval::getStart)));
 
         // add children to the left and right
-        if (!leftIntervals.isEmpty()){
-            leftTree = new CenteredIntervalTree<>(leftIntervals);
-        }
+        leftTree = new CenteredIntervalTree<>();
+        leftTree.initialize(leftIntervals);
 
-        if (!rightIntervals.isEmpty()){
-            rightTree = new CenteredIntervalTree<>(rightIntervals);
-        }
+        rightTree = new CenteredIntervalTree<>();
+        leftTree.initialize(rightIntervals);
     }
 
     @Override
@@ -68,10 +78,14 @@ public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGr
 
     @Override
     public Collection<Interval<T>> intersections(Interval<T> queryInterval) {
-        throw new RuntimeException();
+        throw new RuntimeException("Method not implemented.");
     }
 
     private void intersections(T point, Set<Interval<T>> result) {
+        if (isEmpty) {
+            return;
+        }
+
         if (point.equals(centerPoint)){
             result.addAll(intersectionsByEnd); // or intersectionsByStart
         } else if (point.compareTo(centerPoint) < 0) {
@@ -84,27 +98,23 @@ public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGr
             }
 
             // recursion to child in tree
-            if (leftTree != null) {
-                leftTree.intersections(point, result);
-            }
+            leftTree.intersections(point, result);
         } else { // point > centerPoint
             // add all intervals with end point >= center point
             for (Interval<T> interval: intersectionsByEnd) {
                 if (interval.getEnd().compareTo(point) < 0) {
-                    continue;
+                    break;
                 }
                 result.add(interval);
             }
 
             // recursion to child in tree
-            if (rightTree != null) {
-                rightTree.intersections(point, result);
-            }
+            rightTree.intersections(point, result);
         }
     }
 
     @Override
     public Graph asGraph() {
-        throw new RuntimeException();
+        throw new RuntimeException("Method not implemented.");
     }
 }

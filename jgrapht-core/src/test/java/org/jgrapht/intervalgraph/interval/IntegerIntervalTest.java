@@ -12,13 +12,16 @@ public class IntegerIntervalTest {
 
     @Test
     public void isIntersecting() {
+        assertTrue(i00.isIntersecting(i01));
+        assertTrue(i01.isIntersecting(i01));
+        assertFalse(i56.isIntersecting(i01));
     }
 
     @Test
     public void contains() {
-        assertEquals(i00.contains(0), true);
-        assertEquals(i01.contains(0), true);
-        assertEquals(i00.contains(1), false);
+        assertTrue(i00.contains(0));
+        assertTrue(i01.contains(0));
+        assertFalse(i00.contains(1));
     }
 
     @Test
@@ -35,7 +38,7 @@ public class IntegerIntervalTest {
 
     @Test
     public void isValid() {
-        assertEquals(i00.isValid(), true);
-        assertEquals(i01.isValid(), true);
+        assertTrue(i00.isValid());
+        assertTrue(i01.isValid());
     }
 }

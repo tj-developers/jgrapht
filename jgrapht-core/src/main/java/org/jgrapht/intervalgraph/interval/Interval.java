@@ -7,8 +7,9 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     public Interval(T start, T end)  {
         this.start = start;
         this.end = end;
-        if (!isValid())
-            throw new RuntimeException();
+
+        if (start == null || end == null || !isValid())
+            throw new IllegalArgumentException();
     }
 
     public T getStart() {
@@ -19,10 +20,14 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     }
 
     public boolean isIntersecting(Interval<T> other) {
-        return other.getStart().compareTo(this.getEnd()) <= 0 || this.getStart().compareTo(other.getEnd()) <= 0;
+        return this.contains(other.getStart()) || this.contains(other.getEnd()) || other.contains(this.getStart());
     }
 
     public boolean contains(T point) {
+        if (point == null) {
+            throw new IllegalArgumentException();
+        }
+
         boolean result = point.compareTo(getStart()) >= 0 && point.compareTo(getEnd()) <= 0;
         assert result == (relativeDistance(point) == 0);
         return result;
@@ -30,6 +35,10 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
 
 
     public int relativeDistance(T o) {
+        if (o == null) {
+            throw new IllegalArgumentException();
+        }
+
         int relativeStart = getStart().compareTo(o);
         int relativeEnd = getEnd().compareTo(o);
 
@@ -60,6 +69,4 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     public boolean isValid() {
         return getStart().compareTo(getEnd()) <= 0;
     }
-
-
 }
