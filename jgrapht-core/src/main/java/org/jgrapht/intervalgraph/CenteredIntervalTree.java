@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.jgrapht.Graph;
 import org.jgrapht.intervalgraph.interval.Interval;
 
-public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGraph<T>{
+public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGraphInterface<T> {
     private T centerPoint;
     private CenteredIntervalTree<T> leftTree; // contains all the intervals *completely* to the left of the center point
     private CenteredIntervalTree<T> rightTree; // contains all the intervals *completely* to the right of the center point
