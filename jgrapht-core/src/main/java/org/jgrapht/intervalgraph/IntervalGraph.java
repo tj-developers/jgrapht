@@ -4,13 +4,13 @@ import org.jgrapht.EdgeFactory;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.graph.AbstractBaseGraph;
-import org.jgrapht.graph.AbstractGraph;
 import org.jgrapht.graph.IntrusiveEdgesSpecifics;
-import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.graph.specifics.IntervalSpecifics;
 import org.jgrapht.graph.specifics.Specifics;
+import org.jgrapht.intervalgraph.interval.Interval;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -22,26 +22,23 @@ import java.util.Set;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
+public class IntervalGraph<V, E> extends AbstractBaseGraph<V, E> {
+
+    private static final long serialVersionUID = 7835287075273098344L;
 
     private static final String INTERVAL_GRAPH_ADD_EDGE = "Intervals of nodes define edges in interval graphs and cannot be modified manually";
 
     /**
-     * Creates a new simple weighted graph with the specified edge factory.
+     * Construct a new graph. The graph can either be directed or undirected, depending on the
+     * specified edge factory.
      *
-     * @param ef the edge factory of the new graph.
+     * @param ef                 the edge factory of the new graph.
+     * @param weighted           whether the graph is weighted, i.e. the edges support a weight attribute
+     * @throws NullPointerException if the specified edge factory is <code>
+     *                              null</code>.
      */
-    public IntervalGraph(EdgeFactory<V, E> ef) {
-        super(ef);
-    }
-
-    /**
-     * Creates a new simple weighted graph.
-     *
-     * @param edgeClass class on which to base factory for edges
-     */
-    public IntervalGraph(Class<? extends E> edgeClass) {
-        super(edgeClass);
+    protected IntervalGraph(EdgeFactory<V, E> ef, boolean weighted) {
+        super(ef, false, false, false, weighted);
     }
 
     /**
@@ -65,17 +62,6 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
     @Override
     public boolean addEdge(V sourceVertex, V targetVertex, E e) {
         throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param v
-     */
-    @Override
-    public boolean addVertex(V v) {
-        //TODO implementation: Christoph
-        return super.addVertex(v);
     }
 
     /**
@@ -106,8 +92,12 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public boolean removeVertex(V v) {
-        //TODO implementation: Christoph
-        return super.removeVertex(v);
+        if (containsVertex(v)) {
+            super.removeVertex(v); // remove the vertex itself
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -115,8 +105,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public GraphType getType() {
-        //TODO implementation: Christoph
-        //TODO there ahs to be the property "interval graph"
+        //TODO is that correct? -> Probably, we have to add a new mwtho to the DefaultGraphType class.
         return super.getType();
     }
 
@@ -130,21 +119,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     protected Specifics<V, E> createSpecifics(boolean directed) {
-        //TODO implementation: Christoph
-        return super.createSpecifics(directed);
-    }
-
-    /**
-     * Create the specifics for the edges set of the graph.
-     *
-     * @param weighted if true the specifics should support weighted edges
-     * @return the specifics used for the edge set of this graph
-     */
-    @Override
-    protected IntrusiveEdgesSpecifics<V, E> createIntrusiveEdgesSpecifics(boolean weighted) {
-        //TODO implementation: Christoph
-        //TODO interval graphs have non-removable edges?!
-        return super.createIntrusiveEdgesSpecifics(weighted);
+        return new IntervalSpecifics<>(this);
     }
 
     /**
@@ -167,31 +142,6 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
     }
 
     /**
-     * @param vertices
-     * @see Graph#removeAllVertices(Collection)
-     */
-    @Override
-    public boolean removeAllVertices(Collection<? extends V> vertices) {
-        //TODO implementation Christoph
-        //TODO then the graph is empty...
-        return super.removeAllVertices(vertices);
-    }
-
-    /**
-     * Ensures that the specified vertex exists in this graph, or else throws exception.
-     *
-     * @param v vertex
-     * @return <code>true</code> if this assertion holds.
-     * @throws NullPointerException     if specified vertex is <code>null</code>.
-     * @throws IllegalArgumentException if specified vertex does not exist in this graph.
-     */
-    @Override
-    protected boolean assertVertexExist(V v) {
-        //TODO implementation Christoph
-        return super.assertVertexExist(v);
-    }
-
-    /**
      * Removes all the edges in this graph that are also contained in the specified edge array.
      * After this call returns, this graph will contain no edges in common with the specified edges.
      * This method will invoke the {@link Graph#removeEdge(Object)} method.
@@ -204,21 +154,5 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
     @Override
     protected boolean removeAllEdges(E[] edges) {
         throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
-    }
-
-    /**
-     * Helper for subclass implementations of toString( ).
-     *
-     * @param vertexSet the vertex set V to be printed
-     * @param edgeSet   the edge set E to be printed
-     * @param directed  true to use parens for each edge (representing directed); false to use curly
-     *                  braces (representing undirected)
-     * @return a string representation of (V,E)
-     */
-    @Override
-    protected String toStringFromSets(Collection<? extends V> vertexSet, Collection<? extends E> edgeSet, boolean directed) {
-        //TODO implementation: Christoph
-        //TODO I do not know waht we have to do here?!
-        return super.toStringFromSets(vertexSet, edgeSet, directed);
     }
 }
