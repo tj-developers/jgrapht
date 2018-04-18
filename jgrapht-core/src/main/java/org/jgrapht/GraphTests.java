@@ -499,7 +499,7 @@ public abstract class GraphTests
     /**
      * Tests whether a graph is an interval graph. <a href="https://en.wikipedia.org/wiki/Interval_graph">
      * Interval graphs</a> are a familiy of graphs, which can be represented as intersections of intervals.
-     * The vertex are intervals on the number line and two vertices are connected if and only if the intervals of
+     * The vertices are intervals on the number line and two vertices are connected if and only if the intervals of
      * these vertices intersect each other.
      * 
      * @param graph the input graph
