@@ -74,6 +74,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public boolean addVertex(V v) {
+        //TODO implementation: Christoph
         return super.addVertex(v);
     }
 
@@ -85,7 +86,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public E removeEdge(V sourceVertex, V targetVertex) {
-        return super.removeEdge(sourceVertex, targetVertex);
+        throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
     }
 
     /**
@@ -95,7 +96,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public boolean removeEdge(E e) {
-        return super.removeEdge(e);
+        throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
     }
 
     /**
@@ -105,6 +106,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public boolean removeVertex(V v) {
+        //TODO implementation: Christoph
         return super.removeVertex(v);
     }
 
@@ -113,6 +115,8 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public GraphType getType() {
+        //TODO implementation: Christoph
+        //TODO there ahs to be the property "interval graph"
         return super.getType();
     }
 
@@ -126,6 +130,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     protected Specifics<V, E> createSpecifics(boolean directed) {
+        //TODO implementation: Christoph
         return super.createSpecifics(directed);
     }
 
@@ -137,6 +142,8 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     protected IntrusiveEdgesSpecifics<V, E> createIntrusiveEdgesSpecifics(boolean weighted) {
+        //TODO implementation: Christoph
+        //TODO interval graphs have non-removable edges?!
         return super.createIntrusiveEdgesSpecifics(weighted);
     }
 
@@ -146,7 +153,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public boolean removeAllEdges(Collection<? extends E> edges) {
-        return super.removeAllEdges(edges);
+        throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
     }
 
     /**
@@ -156,7 +163,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public Set<E> removeAllEdges(V sourceVertex, V targetVertex) {
-        return super.removeAllEdges(sourceVertex, targetVertex);
+        throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
     }
 
     /**
@@ -165,6 +172,8 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     public boolean removeAllVertices(Collection<? extends V> vertices) {
+        //TODO implementation Christoph
+        //TODO then the graph is empty...
         return super.removeAllVertices(vertices);
     }
 
@@ -178,6 +187,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     protected boolean assertVertexExist(V v) {
+        //TODO implementation Christoph
         return super.assertVertexExist(v);
     }
 
@@ -193,7 +203,7 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     protected boolean removeAllEdges(E[] edges) {
-        return super.removeAllEdges(edges);
+        throw new IllegalArgumentException(INTERVAL_GRAPH_ADD_EDGE);
     }
 
     /**
@@ -207,6 +217,8 @@ public class IntervalGraph<V, E> extends SimpleWeightedGraph<V, E> {
      */
     @Override
     protected String toStringFromSets(Collection<? extends V> vertexSet, Collection<? extends E> edgeSet, boolean directed) {
+        //TODO implementation: Christoph
+        //TODO I do not know waht we have to do here?!
         return super.toStringFromSets(vertexSet, edgeSet, directed);
     }
 }
