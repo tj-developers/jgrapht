@@ -1,5 +1,14 @@
 package org.jgrapht.intervalgraph;
 
+/**
+ * Interface for Binary Search Trees
+ *
+ * @param <K> the key
+ * @param <V> the value
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 18, 2018
+ */
 public interface BinarySearchTree<K, V> {
 
     /*******************************************************************************************************************

@@ -1,17 +1,21 @@
 package org.jgrapht.intervalgraph;
 
 // BST helper node data type
-private class Node {
-    private Key key;           // key
-    private Value val;         // associated data
-    private Node left, right;  // links to left and right subtrees
-    private boolean color;     // color of parent link
-    private int size;          // subtree count
+public class Node<K, V> {
+    private K key;
+    private V val;
+    private Node leftChild, rightChild;
+    private boolean red;
+    private int size;
 
-    public Node(Key key, Value val, boolean color, int size) {
+    public Node(K key, V val, boolean red, int size) {
         this.key = key;
         this.val = val;
-        this.color = color;
+        this.red = red;
         this.size = size;
+    }
+
+    public boolean isRed() {
+        return red;
     }
 }

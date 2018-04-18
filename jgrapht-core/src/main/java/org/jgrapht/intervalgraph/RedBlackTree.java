@@ -1,5 +1,17 @@
 package org.jgrapht.intervalgraph;
 
+import java.util.NoSuchElementException;
+
+/**
+ * Implementation of a Red-Black-Tree
+ *
+ * @param <K> the key
+ * @param <V> the value
+ *
+ * @author Daniel Mock (danielmock)
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 18, 2018
+ */
 public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
 
     private Node root;
@@ -9,7 +21,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
      *
      * @param key the key
      * @return the value associated with the given key. If the key is not in the tree, null is returned.
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public V get(K key) {
@@ -21,7 +33,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
      *
      * @param key the key
      * @return true if tree contains key, false otherwise
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public boolean contains(K key) {
@@ -34,7 +46,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
      *
      * @param key the key
      * @param val the value
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public void insert(K key, V val) {
@@ -45,7 +57,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
      * Removes the specified key and its associated value from this tree
      *
      * @param key the key
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public void delete(K key) {
@@ -105,12 +117,12 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
     }
 
     /**
-     * Returns the largest key in the tree less than or equal to {@code key}.
+     * Returns the largest key in the tree less than or equal to <code>key</code>.
      *
      * @param key the key
-     * @return the largest key in the tree less than or equal to {@code key}
+     * @return the largest key in the tree less than or equal to <code>key</code>
      * @throws NoSuchElementException   if there is no such key
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public K floor(K key) {
@@ -118,12 +130,12 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
     }
 
     /**
-     * Returns the smallest key in the tree greater than or equal to {@code key}.
+     * Returns the smallest key in the tree greater than or equal to <code>key</code>.
      *
      * @param key the key
-     * @return the smallest key in the tree greater than or equal to {@code key}
+     * @return the smallest key in the tree greater than or equal to <code>key</code>
      * @throws NoSuchElementException   if there is no such key
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public K ceiling(K key) {
@@ -131,12 +143,12 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
     }
 
     /**
-     * Return the key in the tree whose rank is {@code k}.
+     * Return the key in the tree whose rank is <code>k</code>.
      * This is the (k+1)st smallest key in the tree.
      *
      * @param k the position
-     * @return the key in the tree of rank {@code k}
-     * @throws IllegalArgumentException if {@code k} not in {0, ..., n-1}
+     * @return the key in the tree of rank <code>k</code>
+     * @throws IllegalArgumentException if <code>k</code> not in {0, ..., n-1}
      */
     @Override
     public K select(int k) {
@@ -144,11 +156,11 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
     }
 
     /**
-     * Return the number of keys in the tree strictly less than {@code key}.
+     * Return the number of keys in the tree strictly less than <code>key</code>.
      *
      * @param key the key
-     * @return the number of keys in the tree strictly less than {@code key}
-     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @return the number of keys in the tree strictly less than <code>key</code>
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
     public int rank(K key) {
@@ -156,11 +168,11 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
     }
 
     /**
-     * Returns all keys in the symbol table as an {@code Iterable}.
-     * To iterate over all of the keys in the symbol table named {@code st},
-     * use the foreach notation: {@code for (Key key : st.keys())}.
+     * Returns all keys in the symbol table as an <code>Iterable</code>.
+     * To iterate over all of the keys in the symbol table named <code>st</code>,
+     * use the foreach notation: <code>for (Key key : st.keys())</code>.
      *
-     * @return all keys in the symbol table as an {@code Iterable}
+     * @return all keys in the symbol table as an <code>Iterable</code>
      */
     @Override
     public Iterable<K> keys() {
@@ -169,14 +181,14 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
 
     /**
      * Returns all keys in the symbol table in the given range,
-     * as an {@code Iterable}.
+     * as an <code>Iterable</code>.
      *
      * @param min minimum endpoint
      * @param max maximum endpoint
-     * @return all keys in the sybol table between {@code lo}
-     * (inclusive) and {@code hi} (inclusive) as an {@code Iterable}
-     * @throws IllegalArgumentException if either {@code lo} or {@code hi}
-     *                                  is {@code null}
+     * @return all keys in the sybol table between <code>min</code>
+     * (inclusive) and <code>max</code> (inclusive) as an <code>Iterable</code>
+     * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
+     *                                  is <code>null</code>
      */
     @Override
     public Iterable<K> keys(K min, K max) {
@@ -188,13 +200,31 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
      *
      * @param min minimum endpoint
      * @param max maximum endpoint
-     * @return the number of keys in the sybol table between {@code lo}
-     * (inclusive) and {@code hi} (inclusive)
-     * @throws IllegalArgumentException if either {@code lo} or {@code hi}
-     *                                  is {@code null}
+     * @return the number of keys in the sybol table between <code>min</code>
+     * (inclusive) and <code>max</code> (inclusive)
+     * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
+     *                                  is <code>null</code>
      */
     @Override
     public int size(K min, K max) {
         return 0;
+    }
+
+    /*******************************************************************************************************************
+     * HELPER METHODS                                                                                                  *
+     ******************************************************************************************************************/
+
+    private Node rotateLeft(Node node) {
+        //TODO implementation: Christoph
+        return null;
+    }
+
+    private Node rotateRight(Node node) {
+        //TODO implementation: Christoph
+        return null;
+    }
+
+    private void changeColor(Node node) {
+        //TODO implementation: Christoph
     }
 }
