@@ -1,5 +1,6 @@
 package org.jgrapht.intervalgraph;
 
+import java.io.Serializable;
 import java.util.NoSuchElementException;
 
 /**
@@ -12,7 +13,9 @@ import java.util.NoSuchElementException;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class RedBlackTree<K, V> implements BinarySearchTree<K, V> {
+public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable {
+
+    private static final long serialVersionUID = 1199228564356373435L;
 
     private Node root;
 

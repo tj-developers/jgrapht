@@ -1,7 +1,12 @@
 package org.jgrapht.intervalgraph;
 
+import java.io.Serializable;
+
 // BST helper node data type
-public class Node<K, V> {
+public class Node<K, V> implements Serializable {
+
+    private static final long serialVersionUID = 5674337686253743843L;
+
     private K key;
     private V val;
     private Node leftChild, rightChild;

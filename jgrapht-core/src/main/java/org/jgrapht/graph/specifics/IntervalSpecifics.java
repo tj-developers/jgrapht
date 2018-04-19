@@ -1,76 +1,233 @@
 package org.jgrapht.graph.specifics;
 
-import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.EdgeSetFactory;
-import org.jgrapht.graph.specifics.ArrayUnenforcedSetEdgeSetFactory;
-import org.jgrapht.graph.specifics.Specifics;
-import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
 import org.jgrapht.intervalgraph.IntervalGraph;
-import sun.jvm.hotspot.utilities.IntervalTree;
+import org.jgrapht.intervalgraph.IntervalGraphVertexContainer;
+import org.jgrapht.intervalgraph.IntervalVertexTree;
+import org.jgrapht.util.ArrayUnenforcedSet;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.Serializable;
 import java.util.Set;
 
-public class IntervalSpecifics<V, E> extends UndirectedSpecifics<V, E> implements Specifics<V, E> {
+public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
 
-    //TODO implement interval specifics with IntervalTree
+    private static final long serialVersionUID = 1112673663745687843L;
 
-    protected IntervalGraph<V, E> abstractBaseGraph;
-    protected IntervalTree<V, E> vertexIntervalTree; //TODO anpassen
-    protected Map<V, UndirectedEdgeContainer<V, E>> vertexMapUndirected;
+    protected IntervalGraph<V, E> intervalGraph;
+    protected IntervalGraphVertexContainer<V, E> intervalGraphVertexContainer; //TODO anpassen
     protected EdgeSetFactory<V, E> edgeSetFactory;
 
     /**
      * Construct a new interval specifics.
      *
-     * @param abstractBaseGraph the graph for which these specifics are for
+     * @param intervalGraph the graph for which these specifics are for
      */
-    public IntervalSpecifics(IntervalGraph<V, E> abstractBaseGraph) {
-        super(abstractBaseGraph, new LinkedHashMap<>(), new ArrayUnenforcedSetEdgeSetFactory<>());
-        this.vertexIntervalTree = new IntervalTree<>();
+    public IntervalSpecifics(IntervalGraph<V, E> intervalGraph) {
+        this.intervalGraph = intervalGraph;
+        this.intervalGraphVertexContainer = new IntervalVertexTree<>();
+        this.edgeSetFactory = new ArrayUnenforcedSetEdgeSetFactory<>();
     }
 
     /**
-     * Construct a new interval specifics.
-     *
-     * @param abstractBaseGraph the graph for which these specifics are for
-     * @param edgeSetFactory factory for the creation of vertex edge sets
-     */
-    public IntervalSpecifics(IntervalGraph<V, E> abstractBaseGraph, EdgeSetFactory<V, E> edgeSetFactory) {
-        super(abstractBaseGraph, new LinkedHashMap<>(), edgeSetFactory);
-        this.vertexIntervalTree = new IntervalTree<>();
-    }
-
-    /**
-     * Adds a vertex.
-     *
-     * @param vertex vertex to be added.
+     * {@inheritDoc}
      */
     @Override
-    public void addVertex(V vertex) {
-        getEdgeContainer(vertex);
-        vertexIntervalTree.add(vertex);
+    public void addVertex(V v)
+    {
+        getEdgeContainer(v);
     }
 
     /**
-     * Adds the specified edge to the edge containers of its source and target vertices.
      *
-     * @param e the edge
      */
-    @Override
-    public void addEdgeToTouchingVertices(E e) {
-        throw new IllegalArgumentException();
+    public void removeVertex(V v) {
+        //TODO
     }
 
     /**
-     * Removes the specified edge from the edge containers of its source and target vertices.
-     *
-     * @param e the edge
+     * {@inheritDoc}
      */
     @Override
-    public void removeEdgeFromTouchingVertices(E e) {
-        throw new IllegalArgumentException();
+    public Set<V> getVertexSet()
+    {
+        return intervalGraphVertexContainer.getVertexSet();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<E> getAllEdges(V sourceVertex, V targetVertex)
+    {
+        Set<E> edges = null;
+
+        if (intervalGraph.containsVertex(sourceVertex)
+                && intervalGraph.containsVertex(targetVertex))
+        {
+            edges = new ArrayUnenforcedSet<>();
+
+            for (E e : getEdgeContainer(sourceVertex).vertexEdges) {
+                boolean equal = isEqualsStraightOrInverted(sourceVertex, targetVertex, e);
+
+                if (equal) {
+                    edges.add(e);
+                }
+            }
+        }
+
+        return edges;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public E getEdge(V sourceVertex, V targetVertex)
+    {
+        if (intervalGraph.containsVertex(sourceVertex)
+                && intervalGraph.containsVertex(targetVertex))
+        {
+
+            for (E e : getEdgeContainer(sourceVertex).vertexEdges) {
+                boolean equal = isEqualsStraightOrInverted(sourceVertex, targetVertex, e);
+
+                if (equal) {
+                    return e;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isEqualsStraightOrInverted(Object sourceVertex, Object targetVertex, E e)
+    {
+        boolean equalStraight = sourceVertex.equals(intervalGraph.getEdgeSource(e))
+                && targetVertex.equals(intervalGraph.getEdgeTarget(e));
+
+        boolean equalInverted = sourceVertex.equals(intervalGraph.getEdgeTarget(e))
+                && targetVertex.equals(intervalGraph.getEdgeSource(e));
+        return equalStraight || equalInverted;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addEdgeToTouchingVertices(E e)
+    {
+        V source = intervalGraph.getEdgeSource(e);
+        V target = intervalGraph.getEdgeTarget(e);
+
+        getEdgeContainer(source).addEdge(e);
+
+        if (!source.equals(target)) {
+            getEdgeContainer(target).addEdge(e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int degreeOf(V vertex)
+    {
+        if (intervalGraph.isAllowingLoops()) { // then we must count, and add loops twice
+            int degree = 0;
+            Set<E> edges = getEdgeContainer(vertex).vertexEdges;
+
+            for (E e : edges) {
+                if (intervalGraph.getEdgeSource(e).equals(intervalGraph.getEdgeTarget(e))) {
+                    degree += 2;
+                } else {
+                    degree += 1;
+                }
+            }
+
+            return degree;
+        } else {
+            return getEdgeContainer(vertex).edgeCount();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<E> edgesOf(V vertex)
+    {
+        return getEdgeContainer(vertex).getUnmodifiableVertexEdges();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int inDegreeOf(V vertex)
+    {
+        return degreeOf(vertex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<E> incomingEdgesOf(V vertex)
+    {
+        return getEdgeContainer(vertex).getUnmodifiableVertexEdges();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int outDegreeOf(V vertex)
+    {
+        return degreeOf(vertex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<E> outgoingEdgesOf(V vertex)
+    {
+        return getEdgeContainer(vertex).getUnmodifiableVertexEdges();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeEdgeFromTouchingVertices(E e)
+    {
+        V source = intervalGraph.getEdgeSource(e);
+        V target = intervalGraph.getEdgeTarget(e);
+
+        getEdgeContainer(source).removeEdge(e);
+
+        if (!source.equals(target)) {
+            getEdgeContainer(target).removeEdge(e);
+        }
+    }
+
+    /**
+     * Get the edge container for a specified vertex.
+     *
+     * @param vertex a vertex in this graph
+     *
+     * @return an edge container
+     */
+    protected UndirectedEdgeContainer<V, E> getEdgeContainer(V vertex)
+    {
+        UndirectedEdgeContainer<V, E> ec = intervalGraphVertexContainer.get(vertex);
+
+        if (ec == null) {
+            ec = new UndirectedEdgeContainer<>(edgeSetFactory, vertex);
+            intervalGraphVertexContainer.put(vertex, ec);
+        }
+
+        return ec;
+    }
+
 }
