@@ -218,16 +218,30 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      ******************************************************************************************************************/
 
     private Node rotateLeft(Node node) {
-        //TODO implementation: Christoph
-        return null;
+        Node rightChild = node.getRightChild();
+        node.setRightChild(rightChild.getLeftChild());
+        rightChild.setLeftChild(node);
+        rightChild.setRed(rightChild.getLeftChild().isRed());
+        rightChild.getLeftChild().setRed(true);
+        rightChild.setSize(node.getSize());
+        node.setSize(node.getLeftChild().getSize() + node.getRightChild().getSize() + 1);
+        return rightChild;
     }
 
     private Node rotateRight(Node node) {
-        //TODO implementation: Christoph
-        return null;
+        Node leftChild = node.getLeftChild();
+        node.setLeftChild(leftChild.getRightChild());
+        leftChild.setRightChild(node);
+        leftChild.setRed(leftChild.getRightChild().isRed());
+        leftChild.getRightChild().setRed(true);
+        leftChild.setSize(node.getSize());
+        node.setSize(node.getLeftChild().getSize() + node.getRightChild().getSize() + 1);
+        return leftChild;
     }
 
     private void changeColor(Node node) {
-        //TODO implementation: Christoph
+        node.setRed(!node.isRed());
+        node.getRightChild().setRed(!node.getRightChild().isRed());
+        node.getLeftChild().setRed(!node.getLeftChild().isRed());
     }
 }
