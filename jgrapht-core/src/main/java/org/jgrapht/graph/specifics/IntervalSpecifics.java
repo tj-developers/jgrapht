@@ -2,8 +2,8 @@ package org.jgrapht.graph.specifics;
 
 import org.jgrapht.graph.EdgeSetFactory;
 import org.jgrapht.intervalgraph.IntervalGraph;
+import org.jgrapht.intervalgraph.IntervalGraphVertexContainerInterface;
 import org.jgrapht.intervalgraph.IntervalGraphVertexContainer;
-import org.jgrapht.intervalgraph.IntervalVertexTree;
 import org.jgrapht.util.ArrayUnenforcedSet;
 
 import java.io.Serializable;
@@ -14,7 +14,7 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
     private static final long serialVersionUID = 1112673663745687843L;
 
     protected IntervalGraph<V, E> intervalGraph;
-    protected IntervalGraphVertexContainer<V, E> intervalGraphVertexContainer; //TODO anpassen
+    protected IntervalGraphVertexContainerInterface<V, E> intervalGraphVertexContainerInterface; //TODO anpassen
     protected EdgeSetFactory<V, E> edgeSetFactory;
 
     /**
@@ -24,7 +24,7 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
      */
     public IntervalSpecifics(IntervalGraph<V, E> intervalGraph) {
         this.intervalGraph = intervalGraph;
-        this.intervalGraphVertexContainer = new IntervalVertexTree<>();
+        this.intervalGraphVertexContainerInterface = new IntervalGraphVertexContainer<>();
         this.edgeSetFactory = new ArrayUnenforcedSetEdgeSetFactory<>();
     }
 
@@ -35,14 +35,14 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
     public void addVertex(V v)
     {
         getEdgeContainer(v);
-        intervalGraph.addIntervalEdges(v, intervalGraphVertexContainer.getOverlappingIntervalVertices(v));
+        intervalGraph.addIntervalEdges(v, intervalGraphVertexContainerInterface.getOverlappingIntervalVertices(v));
     }
 
     /**
      *
      */
     public void removeVertex(V v) {
-        intervalGraphVertexContainer.remove(v);
+        intervalGraphVertexContainerInterface.remove(v);
     }
 
     /**
@@ -51,7 +51,7 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
     @Override
     public Set<V> getVertexSet()
     {
-        return intervalGraphVertexContainer.getVertexSet();
+        return intervalGraphVertexContainerInterface.getVertexMap();
     }
 
     /**
@@ -221,11 +221,11 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
      */
     protected UndirectedEdgeContainer<V, E> getEdgeContainer(V vertex)
     {
-        UndirectedEdgeContainer<V, E> ec = intervalGraphVertexContainer.get(vertex);
+        UndirectedEdgeContainer<V, E> ec = intervalGraphVertexContainerInterface.get(vertex);
 
         if (ec == null) {
             ec = new UndirectedEdgeContainer<>(edgeSetFactory, vertex);
-            intervalGraphVertexContainer.put(vertex, ec);
+            intervalGraphVertexContainerInterface.put(vertex, ec);
         }
 
         return ec;
