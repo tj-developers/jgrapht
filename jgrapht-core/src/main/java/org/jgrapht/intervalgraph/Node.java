@@ -32,6 +32,14 @@ public class Node<K, V> implements Serializable {
         this.red = red;
     }
 
+    protected void setRed() {
+        this.red = true;
+    }
+
+    protected void setBlack() {
+        this.red = false;
+    }
+
     protected void setSize(int size) {
         this.size = size;
     }
@@ -48,15 +56,23 @@ public class Node<K, V> implements Serializable {
         return val;
     }
 
-    protected Node getLeftChild() {
+    public void setVal(V val) {
+        this.val = val;
+    }
+
+    protected Node<K, V> getLeftChild() {
         return leftChild;
     }
 
-    protected Node getRightChild() {
+    protected Node<K, V> getRightChild() {
         return rightChild;
     }
 
     protected int getSize() {
         return size;
+    }
+
+    public void setKey(K key) {
+        this.key = key;
     }
 }
