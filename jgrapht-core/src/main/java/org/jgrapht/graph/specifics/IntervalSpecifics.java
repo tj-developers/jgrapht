@@ -4,12 +4,13 @@ import org.jgrapht.graph.EdgeSetFactory;
 import org.jgrapht.intervalgraph.IntervalGraph;
 import org.jgrapht.intervalgraph.IntervalGraphVertexContainerInterface;
 import org.jgrapht.intervalgraph.IntervalGraphVertexContainer;
+import org.jgrapht.intervalgraph.interval.IntervalVertex;
 import org.jgrapht.util.ArrayUnenforcedSet;
 
 import java.io.Serializable;
 import java.util.Set;
 
-public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
+public class IntervalSpecifics<V extends IntervalVertex, E> implements Specifics<V, E>, Serializable {
 
     private static final long serialVersionUID = 1112673663745687843L;
 
@@ -51,7 +52,7 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
     @Override
     public Set<V> getVertexSet()
     {
-        return intervalGraphVertexContainerInterface.getVertexMap();
+        return intervalGraphVertexContainerInterface.getVertexSet();
     }
 
     /**

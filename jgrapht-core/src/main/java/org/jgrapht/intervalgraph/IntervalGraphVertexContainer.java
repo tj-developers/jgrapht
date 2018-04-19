@@ -2,6 +2,7 @@ package org.jgrapht.intervalgraph;
 
 import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
 import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.intervalgraph.interval.IntervalVertex;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class IntervalGraphVertexContainer<V extends Interval<T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
+public class IntervalGraphVertexContainer<V extends IntervalVertex<T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
 
     private static final long serialVersionUID = 7768940080894764546L;
 
@@ -34,13 +35,13 @@ public class IntervalGraphVertexContainer<V extends Interval<T>, E, T extends Co
     /**
      * returns a list of all vertices with overlapping interval w.r.t <code>v</code>
      *
-     * @param v the vertex with interval
+     * @param vertex the vertex with interval
      */
     @Override
-    public List<V> getOverlappingIntervalVertices(V v) {
+    public List<V> getOverlappingIntervalVertices(V vertex) {
         //TODO Daniel
-        // TODO Das sollte eigentlich wie unten angegeben funktionieren?! Man kann mit ClassBasedVertexFactory gerade solche Vertices erstellen?!
-        return (List<V>) intervalTree.overlapsWith(v);
+        // return intervalTree.overlapsWith(vertex.getInterval());
+        return null;
     }
 
     /**
@@ -62,7 +63,7 @@ public class IntervalGraphVertexContainer<V extends Interval<T>, E, T extends Co
      */
     @Override
     public UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec) {
-        intervalTree.add(vertex);
+        intervalTree.add(vertex.getInterval());
         return vertexMap.put(vertex, ec);
     }
 
@@ -74,7 +75,7 @@ public class IntervalGraphVertexContainer<V extends Interval<T>, E, T extends Co
      */
     @Override
     public UndirectedEdgeContainer<V, E> remove(V vertex) {
-        intervalTree.remove(vertex);
+        intervalTree.remove(vertex.getInterval());
         return vertexMap.remove(vertex);
     }
 }

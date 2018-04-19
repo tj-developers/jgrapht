@@ -1,12 +1,13 @@
 package org.jgrapht.intervalgraph;
 
 import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
+import org.jgrapht.intervalgraph.interval.IntervalVertex;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-public interface IntervalGraphVertexContainerInterface<V, E> {
+public interface IntervalGraphVertexContainerInterface<V extends IntervalVertex, E> {
 
     /**
      * Returns the whole vertex set of the graph.
@@ -36,7 +37,7 @@ public interface IntervalGraphVertexContainerInterface<V, E> {
      * @param vertex the vertex
      * @param ec     the edge container
      */
-    public UndirectedEdgeContainer put(V vertex, UndirectedEdgeContainer<V, E> ec);
+    public UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec);
 
     /**
      * Removes a vertex from the data structure if it is present.
@@ -44,5 +45,5 @@ public interface IntervalGraphVertexContainerInterface<V, E> {
      * @param vertex the vertex to be removed
      * @return true if this data structure contained the specified element
      */
-    public UndirectedEdgeContainer remove(V vertex);
+    public UndirectedEdgeContainer<V, E> remove(V vertex);
 }
