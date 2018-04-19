@@ -39,8 +39,8 @@ public class IntervalGraphVertexContainer<V extends Interval<T>, E, T extends Co
     @Override
     public List<V> getOverlappingIntervalVertices(V v) {
         //TODO Daniel
-        // TODO Das sollte eigentlich wie unten angegeben funktionieren?! Man kann mit ClassBasedVertexFactory gerade solche erstellen?!
-        return intervalTree.overlapsWith(V);
+        // TODO Das sollte eigentlich wie unten angegeben funktionieren?! Man kann mit ClassBasedVertexFactory gerade solche Vertices erstellen?!
+        return (List<V>) intervalTree.overlapsWith(v);
     }
 
     /**
