@@ -20,7 +20,43 @@ public class Node<K, V> implements Serializable {
         this.size = size;
     }
 
+    public void setLeftChild(Node leftChild) {
+        this.leftChild = leftChild;
+    }
+
+    public void setRightChild(Node rightChild) {
+        this.rightChild = rightChild;
+    }
+
+    public void setRed(boolean red) {
+        this.red = red;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
     public boolean isRed() {
         return red;
+    }
+
+    public K getKey() {
+        return key;
+    }
+
+    public V getVal() {
+        return val;
+    }
+
+    public Node getLeftChild() {
+        return leftChild;
+    }
+
+    public Node getRightChild() {
+        return rightChild;
+    }
+
+    public int getSize() {
+        return size;
     }
 }
