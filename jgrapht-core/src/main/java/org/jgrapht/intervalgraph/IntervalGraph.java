@@ -441,4 +441,27 @@ public class IntervalGraph<V, E> extends AbstractGraph<V, E> implements Graph<V,
             return new UniformIntrusiveEdgesSpecifics<>();
         }
     }
+
+    /**
+     * Adds edges between <code>sourceVertex</code> and every vertex from <code>vertices</code>
+     * This method should only be called from IntervalSpecifics, because interval graphs have by intervals defined edges.
+     *
+     * @param sourceVertex source vertex of all edges
+     * @param targetVertices target vertices of edges
+     */
+    public boolean addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
+
+        assertVertexExist(sourceVertex);
+
+        for(V targetVertex: targetVertices) {
+            assertVertexExist(targetVertex);
+
+            E e = edgeFactory.createEdge(sourceVertex, targetVertex);
+
+            if(intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
+                specifics.addEdgeToTouchingVertices(e);
+            }
+        }
+        return true;
+    }
 }

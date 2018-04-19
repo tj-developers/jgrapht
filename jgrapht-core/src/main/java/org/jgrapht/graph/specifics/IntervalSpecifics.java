@@ -35,13 +35,14 @@ public class IntervalSpecifics<V, E> implements Specifics<V, E>, Serializable {
     public void addVertex(V v)
     {
         getEdgeContainer(v);
+        intervalGraph.addIntervalEdges(v, intervalGraphVertexContainer.getOverlappingIntervalVertices(v));
     }
 
     /**
      *
      */
     public void removeVertex(V v) {
-        //TODO
+        intervalGraphVertexContainer.remove(v);
     }
 
     /**
