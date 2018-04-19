@@ -1,6 +1,7 @@
 package org.jgrapht.intervalgraph;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.NoSuchElementException;
 
 /**
@@ -13,11 +14,11 @@ import java.util.NoSuchElementException;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable {
+public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>, Serializable {
 
     private static final long serialVersionUID = 1199228564356373435L;
 
-    private Node root;
+    private Node<K, V> root;
 
     /**
      * Returns the value associated with the given key
@@ -28,8 +29,13 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public V get(K key) {
-        return null;
+        if (key == null) {
+            throw new IllegalArgumentException("Key is null");
+        }
+
+        return searchNode(key).getVal();
     }
+
 
     /**
      * Returns whether a key is contained in the tree
@@ -40,7 +46,11 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public boolean contains(K key) {
-        return false;
+        if (key == null) {
+            throw new IllegalArgumentException("Key is null");
+        }
+
+        return searchNode(key) != null;
     }
 
     /**
@@ -53,7 +63,41 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public void insert(K key, V val) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key is null");
+        }
 
+        root = insert(root, key, val);
+        root.setBlack();
+    }
+
+    private Node<K, V> insert(Node<K, V> current, K key, V val) {
+        if (current == null){
+            return new Node<>(key, val, true, 1);
+        }
+
+        if (key.equals(current.getKey())) {
+            current.setVal(val);
+        } else if (key.compareTo(current.getKey()) < 0) {
+            current.setLeftChild(insert(current.getLeftChild(), key, val));
+        } else {
+            current.setRightChild(insert(current.getRightChild(), key, val));
+        }
+
+        // Fixup
+
+        if (current.getRightChild().isRed() && !current.getLeftChild().isRed()) {
+            current = rotateLeft(current);
+        }
+        if (current.getLeftChild().isRed() && current.getLeftChild().getLeftChild().isRed()) {
+            current = rotateRight(current);
+        }
+        if (current.getLeftChild().isRed() && current.getRightChild().isRed()) {
+            changeColor(current);
+        }
+        current.setSize(size(current.getLeftChild()) + size(current.getRightChild()) + 1);
+
+        return current;
     }
 
     /**
@@ -64,7 +108,68 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public void delete(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key is null");
+        }
+        if (!contains(key)) {
+            return;
+        }
 
+        if (!root.getLeftChild().isRed() && !root.getRightChild().isRed()) {
+            root.setRed();
+        }
+
+        root = delete(root, key);
+        if (!isEmpty()) {
+            root.setBlack();
+        }
+    }
+
+    private boolean isEmpty() {
+        return root == null;
+    }
+
+    private Node<K, V> delete(Node<K, V> current, K key) {
+            if (key.compareTo(current.getKey()) < 0) {
+                if (!current.getLeftChild().isRed() && !current.getLeftChild().getLeftChild().isRed()) {
+                    current = moveRedLeft(current);
+                }
+                current.setLeftChild(delete(current.getLeftChild(), key));
+            } else {
+                if (current.getLeftChild().isRed()) {
+                    current = rotateRight(current);
+                }
+                if (key.compareTo(current.getKey()) == 0 && current.getRightChild() == null) {
+                    return null;
+                }
+                if (!current.getRightChild().isRed() && !current.getRightChild().getLeftChild().isRed()) {
+                    current = moveRedRight(current);
+                }
+                if (key.compareTo(current.getKey()) == 0) {
+                    Node<K, V> node = min(current.getRightChild());
+                    current.setKey(node.getKey());
+                    current.setVal(node.getVal());
+                    current.setRightChild(deleteMin(current.getRightChild()));
+                }
+                else current.setRightChild(delete(current.getRightChild(), key));
+            }
+
+            return balance(current);
+    }
+
+    private Node<K, V> balance(Node<K, V> node) {
+        if (node.getRightChild().isRed()) {
+            node = rotateLeft(node);
+        }
+        if (node.getLeftChild().isRed() && node.getLeftChild().getLeftChild().isRed()) {
+            node = rotateRight(node);
+        }
+        if (node.getLeftChild().isRed() && node.getRightChild().isRed()) {
+            changeColor(node);
+        }
+
+        node.setSize(size(node.getLeftChild()) + size(node.getRightChild() ) + 1);
+        return node;
     }
 
     /**
@@ -74,7 +179,31 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public void deleteMin() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("empty tree");
+        }
 
+        if (!root.getLeftChild().isRed() && !root.getRightChild().isRed()) {
+            root.setRed();
+        }
+
+        root = deleteMin(root);
+        if (!isEmpty()) {
+            root.setBlack();
+        }
+    }
+
+    private Node<K, V> deleteMin(Node node) {
+        if (node.getLeftChild() == null) {
+            return null;
+        }
+
+        if (!node.getLeftChild().isRed() && !node.getLeftChild().getLeftChild().isRed()) {
+            root = moveRedLeft(node);
+        }
+
+        node.setLeftChild(deleteMin(node.getLeftChild()));
+        return balance(node);
     }
 
     /**
@@ -84,7 +213,34 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public void deleteMax() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
 
+        if (!root.getRightChild().isRed() && !root.getRightChild().isRed()) {
+            root.setRed();
+        }
+
+        root = deleteMax(root);
+        if (!isEmpty()) {
+            root.setBlack();
+        }
+    }
+
+    private Node<K, V> deleteMax(Node<K, V> node) {
+        if (node.getLeftChild().isRed()) {
+            node = rotateRight(node);
+        }
+        if (node.getRightChild() == null) {
+            return null;
+        }
+        if (!node.getRightChild().isRed() && !node.getRightChild().getLeftChild().isRed()) {
+            node = moveRedRight(node);
+        }
+
+        node.setRightChild(deleteMax(node.getRightChild()));
+
+        return balance(node);
     }
 
     /**
@@ -94,7 +250,15 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public int height() {
-        return 0;
+        return height(root);
+    }
+
+    private int height(Node<K, V> node) {
+        if (node == null) {
+            return -1;
+        }
+
+        return 1 + Math.max(height(node.getLeftChild()), height(node.getRightChild()));
     }
 
     /**
@@ -105,7 +269,18 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public K min() {
-        return null;
+        if (isEmpty()) {
+            throw new NoSuchElementException("empty tree");
+        }
+
+        return min(root).getKey();
+    }
+
+    private Node<K, V> min(Node node) {
+        if (node.getLeftChild() == null) {
+            return node;
+        }
+        return max(node.getLeftChild());
     }
 
     /**
@@ -116,7 +291,19 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public K max() {
-        return null;
+        if (isEmpty()) {
+            throw new NoSuchElementException("empty tree");
+        }
+
+        return max(root.getRightChild()).getKey();
+    }
+
+    private Node<K,V> max(Node node) {
+        if (node.getRightChild() == null) {
+            return node;
+        }
+
+        return max(node.getRightChild());
     }
 
     /**
@@ -213,6 +400,14 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
         return 0;
     }
 
+    public int size(Node<K,V> node) {
+        if (node == null) {
+            return 0;
+        }
+
+        return node.getSize();
+    }
+
     /*******************************************************************************************************************
      * HELPER METHODS                                                                                                  *
      ******************************************************************************************************************/
@@ -243,5 +438,41 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
         node.setRed(!node.isRed());
         node.getRightChild().setRed(!node.getRightChild().isRed());
         node.getLeftChild().setRed(!node.getLeftChild().isRed());
+    }
+
+    private Node<K, V> searchNode(K key) {
+        Node<K, V> current = root;
+        while (current != null) {
+            if (current.getKey().equals(key)) {
+                return current;
+            } else if (current.getKey().compareTo(key) < 0) {
+                current = current.getRightChild();
+            } else {
+                current = current.getLeftChild();
+            }
+        }
+
+        return null;
+    }
+
+    private Node<K, V> moveRedRight(Node<K, V> node) {
+        changeColor(node);
+        if (node.getLeftChild().getLeftChild().isRed()) {
+            node = rotateRight(node);
+            changeColor(node);
+        }
+
+        return node;
+    }
+
+    private Node<K,V> moveRedLeft(Node<K,V> node) {
+        changeColor(node);
+        if (node.getRightChild().getLeftChild().isRed()) {
+            node.setRightChild(rotateRight(node.getRightChild()));
+            node = rotateLeft(node);
+            changeColor(node);
+        }
+
+        return node;
     }
 }
