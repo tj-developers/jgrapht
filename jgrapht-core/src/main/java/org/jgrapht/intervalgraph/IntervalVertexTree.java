@@ -14,6 +14,11 @@ public class IntervalVertexTree<V, E> implements IntervalGraphVertexContainer<V,
     private IntervalTree intervalTree;
     private LinkedHashMap<V, UndirectedEdgeContainer> vertexSet;
 
+    public IntervalVertexTree() {
+        this.intervalTree = new IntervalTree();
+        this.vertexSet = new LinkedHashMap<>();
+    }
+
     /**
      * Returns the whole vertex set of the graph.
      *
