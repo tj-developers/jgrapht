@@ -2,6 +2,8 @@ package org.jgrapht.intervalgraph;
 
 import org.jgrapht.intervalgraph.interval.Interval;
 
+// Essentially, this class updates the hi value after any operation on this tree.
+// The hi value equals to the highest endpoint in the subtree
 public class RedBlackIntervalTree<T extends Comparable<T>, I extends Interval<T>> extends RedBlackTree<T, I>{
     @Override
     protected Node<T, I> rotateRight(Node<T, I> node) {

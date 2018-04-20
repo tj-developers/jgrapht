@@ -29,5 +29,11 @@ public class IntervalTreeTest {
         }
     }
 
-
+    @Test
+    public void testIntervalOverlap() {
+        assertEquals(4, tree.overlapsWith(new IntegerInterval(0,3)).size());
+        assertEquals(1 , tree.overlapsWith(new IntegerInterval(0,0)).size());
+        assertEquals(0, tree.overlapsWith(new IntegerInterval(-3, -1)).size());
+        assertEquals(20, tree.overlapsWith(new IntegerInterval(-5, 20)).size());
+    }
 }
