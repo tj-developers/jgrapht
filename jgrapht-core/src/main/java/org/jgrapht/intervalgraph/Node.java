@@ -75,4 +75,14 @@ public class Node<K, V> implements Serializable {
     public void setKey(K key) {
         this.key = key;
     }
+
+    private K hi;
+
+    public K getHi() {
+        return hi;
+    }
+
+    public void setHi(K hi) {
+        this.hi = hi;
+    }
 }

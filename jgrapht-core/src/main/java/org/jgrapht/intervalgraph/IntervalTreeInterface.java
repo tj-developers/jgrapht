@@ -12,15 +12,22 @@ public interface IntervalTreeInterface<T extends Comparable<T>> {
      * @param interval the interval
      * @return all intervals that overlap with the given <code>interval</code>
      */
-    List<Interval<T>> overlapsWith(Interval<T> interval);
+    public List<Interval<T>> overlapsWith(Interval<T> interval);
+
+
+    /**
+     * Returns all intervals that overlap with the given <code>point</code>
+     * @param point the point
+     * @return all intervals that overlap with the given <code>point</code>
+     */
+    public List<Interval<T>> overlapsWithPoint(T point);
 
     /**
      * adds an interval to the interval tree
      *
      * @param interval the interval
-     * @return
      */
-    boolean add(Interval<T> interval);
+    public void add(Interval<T> interval);
 
     /**
      * removes an interval from the tree
@@ -28,5 +35,5 @@ public interface IntervalTreeInterface<T extends Comparable<T>> {
      * @param interval the interval
      * @return
      */
-    boolean remove(Interval<T> interval);
+    public void remove(Interval<T> interval);
 }

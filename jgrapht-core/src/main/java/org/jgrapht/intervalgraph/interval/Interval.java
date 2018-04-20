@@ -69,4 +69,9 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     public boolean isValid() {
         return getStart().compareTo(getEnd()) <= 0;
     }
+
+    @Override
+    public String toString() {
+        return "Interval[" + start + ", " + end + "]";
+    }
 }

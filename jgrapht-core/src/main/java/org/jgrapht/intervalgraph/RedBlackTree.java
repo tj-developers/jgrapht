@@ -1,8 +1,7 @@
 package org.jgrapht.intervalgraph;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Implementation of a Red-Black-Tree
@@ -18,7 +17,11 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
 
     private static final long serialVersionUID = 1199228564356373435L;
 
-    private Node<K, V> root;
+    protected Node<K, V> root;
+
+    public Node<K, V> getRoot() {
+        return root;
+    }
 
     /**
      * Returns the value associated with the given key
@@ -36,6 +39,12 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         return searchNode(key).getVal();
     }
 
+    private boolean isRed(Node<K, V> node){
+        if (node == null) {
+            return false;
+        }
+        return node.isRed();
+    }
 
     /**
      * Returns whether a key is contained in the tree
@@ -71,7 +80,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         root.setBlack();
     }
 
-    private Node<K, V> insert(Node<K, V> current, K key, V val) {
+    protected Node<K, V> insert(Node<K, V> current, K key, V val) {
         if (current == null){
             return new Node<>(key, val, true, 1);
         }
@@ -86,13 +95,13 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
 
         // Fixup
 
-        if (current.getRightChild().isRed() && !current.getLeftChild().isRed()) {
+        if (isRed(current.getRightChild()) && !isRed(current.getLeftChild())) {
             current = rotateLeft(current);
         }
-        if (current.getLeftChild().isRed() && current.getLeftChild().getLeftChild().isRed()) {
+        if (isRed(current.getLeftChild()) && isRed(current.getLeftChild().getLeftChild())) {
             current = rotateRight(current);
         }
-        if (current.getLeftChild().isRed() && current.getRightChild().isRed()) {
+        if (isRed(current.getLeftChild()) && isRed(current.getRightChild())) {
             changeColor(current);
         }
         current.setSize(size(current.getLeftChild()) + size(current.getRightChild()) + 1);
@@ -115,7 +124,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             return;
         }
 
-        if (!root.getLeftChild().isRed() && !root.getRightChild().isRed()) {
+        if (!isRed(root.getLeftChild()) && !isRed(root.getRightChild())) {
             root.setRed();
         }
 
@@ -129,20 +138,20 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         return root == null;
     }
 
-    private Node<K, V> delete(Node<K, V> current, K key) {
+    protected Node<K, V> delete(Node<K, V> current, K key) {
             if (key.compareTo(current.getKey()) < 0) {
-                if (!current.getLeftChild().isRed() && !current.getLeftChild().getLeftChild().isRed()) {
+                if (!isRed(current.getLeftChild()) && !isRed(current.getLeftChild().getLeftChild())) {
                     current = moveRedLeft(current);
                 }
                 current.setLeftChild(delete(current.getLeftChild(), key));
             } else {
-                if (current.getLeftChild().isRed()) {
+                if (isRed(current.getLeftChild())) {
                     current = rotateRight(current);
                 }
                 if (key.compareTo(current.getKey()) == 0 && current.getRightChild() == null) {
                     return null;
                 }
-                if (!current.getRightChild().isRed() && !current.getRightChild().getLeftChild().isRed()) {
+                if (!isRed(current.getRightChild()) && !isRed(current.getRightChild().getLeftChild())) {
                     current = moveRedRight(current);
                 }
                 if (key.compareTo(current.getKey()) == 0) {
@@ -157,14 +166,14 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             return balance(current);
     }
 
-    private Node<K, V> balance(Node<K, V> node) {
-        if (node.getRightChild().isRed()) {
+    protected Node<K, V> balance(Node<K, V> node) {
+        if (isRed(node.getRightChild())) {
             node = rotateLeft(node);
         }
-        if (node.getLeftChild().isRed() && node.getLeftChild().getLeftChild().isRed()) {
+        if (isRed(node.getLeftChild()) && isRed(node.getLeftChild().getLeftChild())) {
             node = rotateRight(node);
         }
-        if (node.getLeftChild().isRed() && node.getRightChild().isRed()) {
+        if (isRed(node.getLeftChild()) && isRed(node.getRightChild())) {
             changeColor(node);
         }
 
@@ -183,7 +192,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             throw new NoSuchElementException("empty tree");
         }
 
-        if (!root.getLeftChild().isRed() && !root.getRightChild().isRed()) {
+        if (!isRed(root.getLeftChild()) && !isRed(root.getRightChild())) {
             root.setRed();
         }
 
@@ -198,7 +207,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             return null;
         }
 
-        if (!node.getLeftChild().isRed() && !node.getLeftChild().getLeftChild().isRed()) {
+        if (!isRed(node.getLeftChild()) && !isRed(node.getLeftChild().getLeftChild())) {
             root = moveRedLeft(node);
         }
 
@@ -217,7 +226,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             throw new NoSuchElementException();
         }
 
-        if (!root.getRightChild().isRed() && !root.getRightChild().isRed()) {
+        if (!isRed(root.getRightChild()) && !isRed(root.getRightChild())) {
             root.setRed();
         }
 
@@ -228,13 +237,13 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     }
 
     private Node<K, V> deleteMax(Node<K, V> node) {
-        if (node.getLeftChild().isRed()) {
+        if (isRed(node.getLeftChild())) {
             node = rotateRight(node);
         }
         if (node.getRightChild() == null) {
             return null;
         }
-        if (!node.getRightChild().isRed() && !node.getRightChild().getLeftChild().isRed()) {
+        if (!isRed(node.getRightChild()) && !isRed(node.getRightChild().getLeftChild())) {
             node = moveRedRight(node);
         }
 
@@ -405,39 +414,43 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             return 0;
         }
 
-        return node.getSize();
+        return getSize(node);
     }
 
     /*******************************************************************************************************************
      * HELPER METHODS                                                                                                  *
      ******************************************************************************************************************/
 
-    private Node<K, V> rotateLeft(Node<K, V> node) {
+    protected Node<K, V> rotateLeft(Node<K, V> node) {
         Node<K, V> rightChild = node.getRightChild();
         node.setRightChild(rightChild.getLeftChild());
         rightChild.setLeftChild(node);
-        rightChild.setRed(rightChild.getLeftChild().isRed());
+        rightChild.setRed(isRed(rightChild.getLeftChild()));
         rightChild.getLeftChild().setRed(true);
-        rightChild.setSize(node.getSize());
-        node.setSize(node.getLeftChild().getSize() + node.getRightChild().getSize() + 1);
+        rightChild.setSize(getSize(node));
+        node.setSize(getSize(node.getLeftChild()) + getSize(node.getRightChild()) + 1);
         return rightChild;
     }
 
-    private Node<K, V> rotateRight(Node<K, V> node) {
+    private int getSize(Node<K, V> node) {
+        return node != null ? node.getSize() : 0;
+    }
+
+    protected Node<K, V> rotateRight(Node<K, V> node) {
         Node<K, V> leftChild = node.getLeftChild();
         node.setLeftChild(leftChild.getRightChild());
         leftChild.setRightChild(node);
-        leftChild.setRed(leftChild.getRightChild().isRed());
+        leftChild.setRed(isRed(leftChild.getRightChild()));
         leftChild.getRightChild().setRed(true);
-        leftChild.setSize(node.getSize());
-        node.setSize(node.getLeftChild().getSize() + node.getRightChild().getSize() + 1);
+        leftChild.setSize(getSize(node));
+        node.setSize(getSize(node.getLeftChild()) + getSize(node.getRightChild()) + 1);
         return leftChild;
     }
 
     private void changeColor(Node<K, V> node) {
-        node.setRed(!node.isRed());
-        node.getRightChild().setRed(!node.getRightChild().isRed());
-        node.getLeftChild().setRed(!node.getLeftChild().isRed());
+        node.setRed(!isRed(node));
+        node.getRightChild().setRed(!isRed(node.getRightChild()));
+        node.getLeftChild().setRed(!isRed(node.getLeftChild()));
     }
 
     private Node<K, V> searchNode(K key) {
@@ -457,7 +470,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
 
     private Node<K, V> moveRedRight(Node<K, V> node) {
         changeColor(node);
-        if (node.getLeftChild().getLeftChild().isRed()) {
+        if (isRed(node.getLeftChild().getLeftChild())) {
             node = rotateRight(node);
             changeColor(node);
         }
@@ -467,12 +480,70 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
 
     private Node<K,V> moveRedLeft(Node<K,V> node) {
         changeColor(node);
-        if (node.getRightChild().getLeftChild().isRed()) {
+        if (isRed(node.getRightChild().getLeftChild())) {
             node.setRightChild(rotateRight(node.getRightChild()));
             node = rotateLeft(node);
             changeColor(node);
         }
 
+        return node;
+    }
+
+    // returns the nodes inorder
+    private List<Node<K, V>> inorder() {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+
+        List<Node<K, V>> result = new ArrayList<>(getSize(root));
+        inorder(root, result);
+        return result;
+    }
+
+    private void inorder(Node<K, V> current, List<Node<K, V>> result) {
+        if (current == null) {
+            return;
+        }
+
+        inorder(current.getLeftChild(), result);
+        result.add(current);
+        inorder(current.getRightChild(), result);
+    }
+
+    public List<V> inorderValues(){
+        List<Node<K, V>> inorder = inorder();
+        List<V> result = new ArrayList<>(inorder.size());
+        for (Node<K, V> node: inorder) {
+            result.add(node.getVal());
+        }
+        return result;
+    }
+
+    private List<Node<K, V>> preorder() {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+
+        List<Node<K, V>> result = new ArrayList<>(getSize(root));
+        preorder(root, result);
+        return result;
+    }
+
+    private void preorder(Node<K, V> current, List<Node<K, V>> result) {
+        if (current == null) {
+            return;
+        }
+
+        result.add(current);
+        inorder(current.getLeftChild(), result);
+        inorder(current.getRightChild(), result);
+    }
+
+    // returns the minimum node in the subtree of input node
+    private Node<K, V> getMin(Node<K, V> node) {
+        while (node.getLeftChild() != null) {
+            node = node.getLeftChild();
+        }
         return node;
     }
 }
