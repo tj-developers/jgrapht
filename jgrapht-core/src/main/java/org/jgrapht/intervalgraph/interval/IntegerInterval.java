@@ -8,4 +8,9 @@ public class IntegerInterval extends Interval<Integer> {
     public int length() {
         return getEnd() - getStart();
     }
+
+    @Override
+    public String toString() {
+        return "[" + getStart() + ", " + getEnd() + "]";
+    }
 }
