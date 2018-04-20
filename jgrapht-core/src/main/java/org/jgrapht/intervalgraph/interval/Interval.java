@@ -29,12 +29,12 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
         }
 
         boolean result = point.compareTo(getStart()) >= 0 && point.compareTo(getEnd()) <= 0;
-        assert result == (relativeDistance(point) == 0);
+        assert result == (compareToPoint(point) == 0);
         return result;
     }
 
 
-    public int relativeDistance(T o) {
+    public int compareToPoint(T o) {
         if (o == null) {
             throw new IllegalArgumentException();
         }
@@ -44,10 +44,8 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
 
         if (relativeStart <= 0 && relativeEnd >= 0) {
             return 0;
-        } else if (relativeStart > 0) {
+        } else  {
             return relativeStart;
-        } else {
-            return relativeEnd;
         }
     }
 
