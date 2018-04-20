@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class CenteredIntervalTreeTest {
+public class CenteredIntervalTreeStructureTest {
 
     IntegerInterval i00 = new IntegerInterval(0,0);
     IntegerInterval i01 = new IntegerInterval(0,1);

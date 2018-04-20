@@ -4,36 +4,10 @@ import org.jgrapht.intervalgraph.interval.Interval;
 
 import java.util.List;
 
-public interface IntervalTreeInterface<T extends Comparable<T>> {
+public interface IntervalTreeInterface<T extends Comparable<T>, I extends Interval<T>> extends BinarySearchTree<T, I> {
 
-    /**
-     * Returns all intervals that overlap with the given <code>interval</code>
-     *
-     * @param interval the interval
-     * @return all intervals that overlap with the given <code>interval</code>
-     */
-    public List<Interval<T>> overlapsWith(Interval<T> interval);
+    List<I> overlapsWith(I interval);
 
+    List<I> overlapsWithPoint(T point);
 
-    /**
-     * Returns all intervals that overlap with the given <code>point</code>
-     * @param point the point
-     * @return all intervals that overlap with the given <code>point</code>
-     */
-    public List<Interval<T>> overlapsWithPoint(T point);
-
-    /**
-     * adds an interval to the interval tree
-     *
-     * @param interval the interval
-     */
-    public void add(Interval<T> interval);
-
-    /**
-     * removes an interval from the tree
-     *
-     * @param interval the interval
-     * @return
-     */
-    public void remove(Interval<T> interval);
 }

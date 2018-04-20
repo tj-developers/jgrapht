@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class RedBlackIntervalTreeTest {
+public class RedBlackIntervalTreeStructureTest {
     List<IntegerInterval> list = new LinkedList<>();
     List<IntegerInterval> sorted = new LinkedList<>();
     RedBlackIntervalTree<Integer, IntegerInterval> tree = new RedBlackIntervalTree<>();

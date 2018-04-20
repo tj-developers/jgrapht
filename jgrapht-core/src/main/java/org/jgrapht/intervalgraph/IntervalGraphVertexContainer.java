@@ -5,21 +5,20 @@ import org.jgrapht.intervalgraph.interval.Interval;
 import org.jgrapht.intervalgraph.interval.IntervalVertex;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class IntervalGraphVertexContainer<V extends IntervalVertex<T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
 
     private static final long serialVersionUID = 7768940080894764546L;
 
-    private IntervalTreeInterface<T> intervalTree;
+    private IntervalStructureInterface<T> intervalTree;
     private Map<V, UndirectedEdgeContainer<V, E>> vertexMap;
+    private Map<Interval<T>, V> intervalMap;
 
     public IntervalGraphVertexContainer() {
-        this.intervalTree = new IntervalTree<>();
+        this.intervalTree = new IntervalTreeStructure<>();
         this.vertexMap = new LinkedHashMap<>();
+        this.intervalMap = new LinkedHashMap<>();
     }
 
     /**
@@ -39,9 +38,14 @@ public class IntervalGraphVertexContainer<V extends IntervalVertex<T>, E, T exte
      */
     @Override
     public List<V> getOverlappingIntervalVertices(V vertex) {
-        //TODO Daniel
-        // return intervalTree.overlapsWith(vertex.getInterval());
-        return null;
+        List<Interval<T>> intervalList = intervalTree.overlapsWith(vertex.getInterval());
+        List<V> vertexList = new LinkedList<>();
+
+        for(Interval<T> interval: intervalList) {
+            vertexList.add(intervalMap.get(interval));
+        }
+
+        return vertexList;
     }
 
     /**
@@ -64,6 +68,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertex<T>, E, T exte
     @Override
     public UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec) {
         intervalTree.add(vertex.getInterval());
+        intervalMap.put(vertex.getInterval(), vertex);
         return vertexMap.put(vertex, ec);
     }
 
@@ -76,6 +81,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertex<T>, E, T exte
     @Override
     public UndirectedEdgeContainer<V, E> remove(V vertex) {
         intervalTree.remove(vertex.getInterval());
+        intervalMap.remove(vertex.getInterval());
         return vertexMap.remove(vertex);
     }
 }

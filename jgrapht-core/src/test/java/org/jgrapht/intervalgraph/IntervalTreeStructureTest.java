@@ -9,9 +9,9 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class IntervalTreeTest {
+public class IntervalTreeStructureTest {
     List<IntegerInterval> sorted = new LinkedList<>();
-    IntervalTree<Integer> tree = new IntervalTree<>();
+    IntervalTreeStructure<Integer> tree = new IntervalTreeStructure<>();
 
     @Before
     public void setUp() throws Exception {
