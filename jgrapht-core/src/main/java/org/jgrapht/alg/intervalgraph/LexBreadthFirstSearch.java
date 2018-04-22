@@ -15,7 +15,7 @@ public class LexBreadthFirstSearch<V, E>
      * @param startingVertex the starting vertex of the LBFS
      * @return an array of vertices representing the order in which the vertices were found
      */
-    public List<V> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex)
+    public static <V, E> List<V> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex)
     {
        ArrayList<V> result = new ArrayList<>(graph.vertexSet().size());
        LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
@@ -36,7 +36,7 @@ public class LexBreadthFirstSearch<V, E>
      * @return an array of vertices representing the order in which the vertices were found
      */
     
-    public List<V> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex, V[] priority)
+    public static <V, E> List<V> lexBreadthFirstSearchPlus(Graph<V, E> graph, V startingVertex, V[] priority)
     {
        ArrayList<V> result = new ArrayList<>(graph.vertexSet().size());
        LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph, priority);
