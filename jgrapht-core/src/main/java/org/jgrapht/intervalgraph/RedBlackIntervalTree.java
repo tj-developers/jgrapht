@@ -7,11 +7,11 @@ import java.util.List;
 
 // Essentially, this class updates the hi value after any operation on this tree.
 // The hi value equals to the highest endpoint in the subtree
-public class RedBlackIntervalTree<T extends Comparable<T>, I extends Interval<T>> extends RedBlackTree<T, I> implements IntervalTreeInterface<T, I> {
+public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackTree<T, NodeValue> implements IntervalTreeInterface<T, NodeValue> {
 
     @Override
-    public List<I> overlapsWith(I interval) {
-        List<I> result = new LinkedList<>();
+    public List<Interval<T>> overlapsWith(Interval<T> interval) {
+        List<Interval<T>> result = new LinkedList<>();
 
         overlapsWith(this.getRoot(), interval, result);
 
@@ -19,74 +19,74 @@ public class RedBlackIntervalTree<T extends Comparable<T>, I extends Interval<T>
     }
 
     @Override
-    public List<I> overlapsWithPoint(T point) {
-        List<I> result = new LinkedList<>();
+    public List<Interval<T>> overlapsWithPoint(T point) {
+        List<Interval<T>> result = new LinkedList<>();
 
         overlapsWithPoint(this.getRoot(), point, result);
         return result;
     }
 
     @Override
-    protected Node<T, I> rotateRight(Node<T, I> node) {
+    protected Node<T, NodeValue> rotateRight(Node<T, NodeValue> node) {
         // Perform rotation as usual
-        Node<T, I> result = super.rotateRight(node);
+        Node<T, NodeValue> result = super.rotateRight(node);
 
         // update hi vals
-        result.setHi(node.getHi());
+        result.getVal().setHighValue(node.getVal().getHighValue());
         updateHi(node);
 
         return result;
     }
 
     @Override
-    protected Node<T, I> rotateLeft(Node<T, I> node) {
+    protected Node<T, NodeValue> rotateLeft(Node<T, NodeValue> node) {
         // Perform rotation as usual
-        Node<T, I> result = super.rotateLeft(node);
+        Node<T, NodeValue> result = super.rotateLeft(node);
 
         // update hi vals
-        result.setHi(node.getHi());
+        result.getVal().setHighValue(node.getVal().getHighValue());
         updateHi(node);
 
         return result;
     }
 
     @Override
-    protected Node<T, I> delete(Node<T, I> current, T key) {
-        Node<T, I> result = super.delete(current, key);
+    protected Node<T, NodeValue> delete(Node<T, NodeValue> current, T key) {
+        Node<T, NodeValue> result = super.delete(current, key);
         updateHi(result);
         return result;
     }
 
     @Override
-    protected Node<T, I> insert(Node<T, I> current, T key, I val) {
-        Node<T, I> result = super.insert(current, key, val);
+    protected Node<T, NodeValue> insert(Node<T, NodeValue> current, T key, NodeValue val) {
+        Node<T, NodeValue> result = super.insert(current, key, val);
         updateHi(result);
         return result;
     }
 
     @Override
-    protected Node<T, I> balance(Node<T, I> node) {
-        Node<T, I> result = super.balance(node);
+    protected Node<T, NodeValue> balance(Node<T, NodeValue> node) {
+        Node<T, NodeValue> result = super.balance(node);
         updateHi(result);
         return result;
     }
 
     // sets the hi attribute of the given node to the max of the subtree or itself
-    private void updateHi(Node<T, I> node) {
+    private void updateHi(Node<T, NodeValue> node) {
         if (node == null) {
             return;
         }
 
-        T result = node.getVal().getEnd();
+        T result = node.getVal().getInterval().getEnd();
         if (node.getRightChild() != null) {
-            result = max(result, node.getRightChild().getHi());
+            result = max(result, node.getRightChild().getVal().getHighValue());
         }
 
         if (node.getLeftChild() != null) {
-            result = max(result, node.getLeftChild().getHi());
+            result = max(result, node.getLeftChild().getVal().getHighValue());
         }
 
-        node.setHi(result);
+        node.getVal().setHighValue(result);
     }
 
 
@@ -99,36 +99,36 @@ public class RedBlackIntervalTree<T extends Comparable<T>, I extends Interval<T>
         }
     }
 
-    private void overlapsWith(Node<T, I> node, Interval<T> interval, List<I> result) {
+    private void overlapsWith(Node<T, NodeValue> node, Interval<T> interval, List<Interval<T>> result) {
         if (node == null) {
             return;
         }
 
         // query starts strictly after any interval in the subtree
-        if (interval.getStart().compareTo(node.getHi()) > 0) {
+        if (interval.getStart().compareTo(node.getVal().getHighValue()) > 0) {
             return;
         }
 
         // node and query overlap
-        if (node.getVal().isIntersecting(interval)) {
-            result.add(node.getVal());
+        if (node.getVal().getInterval().isIntersecting(interval)) {
+            result.add(node.getVal().getInterval());
         }
 
         // if the node starts before the query ends, check right children
-        if (node.getVal().getStart().compareTo(interval.getEnd()) <= 0) {
+        if (node.getVal().getInterval().getStart().compareTo(interval.getEnd()) <= 0) {
             overlapsWith(node.getRightChild(), interval, result);
         }
 
         overlapsWith(node.getLeftChild(), interval, result);
     }
 
-    private void overlapsWithPoint(Node<T, I> node, T point, List<I> result) {
+    private void overlapsWithPoint(Node<T, NodeValue> node, T point, List<Interval<T>> result) {
         if (node == null) {
             return;
         }
 
         // point is bigger than the endpoint of any interval in the subtree
-        if (point.compareTo(node.getHi()) > 0) {
+        if (point.compareTo(node.getVal().getHighValue()) > 0) {
             return;
         }
 
@@ -136,12 +136,12 @@ public class RedBlackIntervalTree<T extends Comparable<T>, I extends Interval<T>
         overlapsWithPoint(node.getLeftChild(), point, result);
 
         // add node interval if it contains the query point
-        if (node.getVal().contains(point)) {
-            result.add(node.getVal());
+        if (node.getVal().getInterval().contains(point)) {
+            result.add(node.getVal().getInterval());
         }
 
         // check right subtree if their start values are smaller (equal) than query point
-        if (point.compareTo(node.getVal().getStart()) >= 0) {
+        if (point.compareTo(node.getVal().getInterval().getStart()) >= 0) {
             overlapsWithPoint(node.getRightChild(), point, result);
         }
     }

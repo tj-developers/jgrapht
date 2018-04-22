@@ -1,13 +1,15 @@
 package org.jgrapht.intervalgraph;
 
+import jdk.javadoc.internal.doclets.formats.html.PackageIndexFrameWriter;
+import org.jgrapht.alg.util.Pair;
 import org.jgrapht.intervalgraph.interval.Interval;
 
 import java.util.List;
 
-public interface IntervalTreeInterface<T extends Comparable<T>, I extends Interval<T>> extends BinarySearchTree<T, I> {
+public interface IntervalTreeInterface<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends BinarySearchTree<T, NodeValue> {
 
-    List<I> overlapsWith(I interval);
+    List<Interval<T>> overlapsWith(Interval<T> interval);
 
-    List<I> overlapsWithPoint(T point);
+    List<Interval<T>> overlapsWithPoint(T point);
 
 }
