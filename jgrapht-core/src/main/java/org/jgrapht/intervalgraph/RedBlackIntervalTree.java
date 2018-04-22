@@ -57,7 +57,6 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
         return result;
     }
 
-    @Override
     protected Node<T, NodeValue> insert(Node<T, NodeValue> current, T key, NodeValue val) {
         Node<T, NodeValue> result = super.insert(current, key, val);
         updateHi(result);
