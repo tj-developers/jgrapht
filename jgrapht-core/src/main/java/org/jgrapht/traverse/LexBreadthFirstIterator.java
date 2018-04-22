@@ -74,6 +74,18 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         GraphTests.requireUndirected(graph);
         bucketList = new BucketList(graph.vertexSet());
     }
+    
+    /**
+     * Creates new lexicographical breadth-first iterator with a static priority list for {@code graph}.
+     *
+     * @param graph the graph to be iterated.
+     * @param priority the vertex array sorted by their priorities.
+     */
+    public LexBreadthFirstIterator(Graph<V, E> graph, V[] priority) {
+        super(graph);
+        GraphTests.requireUndirected(graph);
+        bucketList = new BucketList(graph.vertexSet(), new PriorityComparator(priority));
+    }
 
     /**
      * Checks whether there exist unvisited vertices.
@@ -182,14 +194,34 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
          * the vertex in constant time.
          */
         private Map<V, Bucket> bucketMap;
-
+        
+        /**
+         * Comparator used for tiebreaking when multiple vertices have the same label
+         */
+        private Comparator<V> priorityComparator = null;
+        
         /**
          * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
          *
          * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
          */
         BucketList(Collection<V> vertices) {
-            head = new Bucket(vertices);
+            head = new Bucket(vertices, priorityComparator); // we do not need a comparator
+            bucketMap = new HashMap<>(vertices.size());
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head);
+            }
+        }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param priorityComparator a comparator which defines a priority for tiebreaking.
+         */
+        BucketList(Collection<V> vertices, Comparator<V> priorityComparator) {
+            this.priorityComparator = priorityComparator;
+            head = new Bucket(vertices, priorityComparator);
             bucketMap = new HashMap<>(vertices.size());
             for (V vertex : vertices) {
                 bucketMap.put(vertex, head);
@@ -251,7 +283,7 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
                     bucketMap.put(vertex, bucket.prev);
                 } else {
                     visitedBuckets.add(bucket);
-                    Bucket newBucket = new Bucket(vertex);
+                    Bucket newBucket = new Bucket(vertex, priorityComparator);
                     newBucket.insertBefore(bucket);
                     bucketMap.put(vertex, newBucket);
                     if (head == bucket) {
@@ -285,15 +317,20 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
             /**
              * Set of vertices currently stored in this bucket.
              */
-            private Set<V> vertices;
+            private Queue<V> vertices;
 
             /**
              * Creates a new bucket with all {@code vertices} stored in it.
              *
              * @param vertices vertices to store in this bucket.
              */
-            Bucket(Collection<V> vertices) {
-                this.vertices = new HashSet<>(vertices);
+            Bucket(Collection<V> vertices, Comparator<V> c) {
+                if(c == null) {
+                    this.vertices = new PriorityQueue<>();
+                } else {
+                    this.vertices = new PriorityQueue<>(c);
+                }
+                this.vertices.addAll(vertices);
             }
 
             /**
@@ -301,8 +338,12 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param vertex the vertex to store in this bucket.
              */
-            Bucket(V vertex) {
-                this.vertices = new HashSet<>();
+            Bucket(V vertex, Comparator<V> c) {
+                if(c == null) {
+                    this.vertices = new PriorityQueue<>();
+                } else {
+                    this.vertices = new PriorityQueue<>(c);
+                }
                 vertices.add(vertex);
             }
 
@@ -363,8 +404,7 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
                 if (vertices.isEmpty()) {
                     return null;
                 } else {
-                    V vertex = vertices.iterator().next();
-                    vertices.remove(vertex);
+                    V vertex = vertices.poll();
                     return vertex;
                 }
             }
@@ -377,6 +417,36 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
             boolean isEmpty() {
                 return vertices.size() == 0;
             }
+        }
+    }
+    
+    class PriorityComparator implements Comparator<V>
+    {
+        private final V[] priority;
+        
+        public PriorityComparator(V[] priority) throws IllegalArgumentException {
+            if(priority == null) {
+                throw new IllegalArgumentException("Priority array must not be null");
+            }
+            this.priority = priority;
+        }
+        
+        private int indexOf(V vertex) throws NoSuchElementException {
+            for(int index = 0; index < priority.length; index++) {
+                if(priority[index].equals(vertex)) {
+                    return index;
+                }
+            }
+            throw new NoSuchElementException("Priority is on a different vertex set.");
+        }
+        
+        @Override
+        public int compare(V vertex1, V vertex2)
+        {
+            int index1 = indexOf(vertex1);
+            int index2 = indexOf(vertex2);
+            
+            return (index1 - index2);
         }
     }
 }
