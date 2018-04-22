@@ -173,7 +173,7 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
             return false;
         } else {
             specifics.addVertex(v);
-
+            addIntervalEdges(v, specifics.getOverlappingIntervalVertices(v));
             return true;
         }
     }
@@ -450,7 +450,7 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
      * @param sourceVertex source vertex of all edges
      * @param targetVertices target vertices of edges
      */
-    public boolean addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
+    private boolean addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
 
         assertVertexExist(sourceVertex);
 
