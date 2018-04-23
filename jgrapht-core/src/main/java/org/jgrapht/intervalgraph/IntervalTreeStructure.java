@@ -9,7 +9,7 @@ import java.util.List;
 public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalStructureInterface<T>, Serializable {
     private static final long serialVersionUID = 2834567756342332325L;
 
-    private IntervalTreeInterface<T, Interval<T>> tree = new RedBlackIntervalTree<>();
+    private IntervalTreeInterface<T, IntervalTreeNodeValue<Interval<T>, T>> tree = new RedBlackIntervalTree<>();
 
     /**
      * Returns all intervals that overlap with the given <code>interval</code>
@@ -35,7 +35,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      */
     @Override
     public void add(Interval<T> interval) {
-        tree.insert(interval.getStart(), interval);
+        tree.insert(interval.getStart(), new IntervalTreeNodeValue<>(interval, null));
     }
 
     /**
