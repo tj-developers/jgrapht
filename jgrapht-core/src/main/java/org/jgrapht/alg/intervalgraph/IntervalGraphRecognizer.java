@@ -1,13 +1,12 @@
 package org.jgrapht.alg.intervalgraph;
 
-import org.jgrapht.Graph;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
 import static org.jgrapht.alg.intervalgraph.LexBreadthFirstSearch.*;
+
+import java.util.*;
+
+import org.jgrapht.*;
+import org.jgrapht.intervalgraph.*;
+import org.jgrapht.intervalgraph.interval.*;
 
 public final class IntervalGraphRecognizer {
 
@@ -23,25 +22,25 @@ public final class IntervalGraphRecognizer {
     // Step 1 - LBFS from an arbitrary vertex
     // Input - random vertex r
     // Output - the result of current sweep alpha, further last vertex a visited by current sweep
-    List<V> sweepAlpha = lexBreadthFirstSearch(graph, randomElementOf(graph.vertexSet()));
+    HashMap<V, Integer> sweepAlpha = lexBreadthFirstSearch(graph, randomElementOf(graph.vertexSet()));
     V vertexA = lastElementOf(sweepAlpha);
 
     // Step 2 - LBFS+ from the last vertex of the previous sweep
     // Input - the result of previous sweep alpha, vertex a
     // Output - the result of current sweep beta, further last vertex b visited by current sweep
-    List<V> sweepBeta = lexBreadthFirstSearchPlus(graph, vertexA, arrayOf(sweepAlpha));
+    HashMap<V, Integer> sweepBeta = lexBreadthFirstSearchPlus(graph, vertexA, sweepAlpha);
     V vertexB = lastElementOf(sweepBeta);
 
     // Step 3 - LBFS+ from the last vertex of the previous sweep
     // Input - the result of previous sweep beta, vertex b
     // Output - the result of current sweep gamma, further last vertex c visited by current sweep
-    List<V> sweepGamma = lexBreadthFirstSearchPlus(graph, vertexB, arrayOf(sweepBeta));
+    HashMap<V, Integer> sweepGamma = lexBreadthFirstSearchPlus(graph, vertexB, sweepBeta);
     V vertexC = lastElementOf(sweepGamma);
 
     // Step 4 - LBFS+ from the last vertex of the previous sweep
     // Input - the result of previous sweep gamma, vertex c
     // Output - the result of current sweep delta, further last vertex d visited by current sweep
-    List<V> sweepDelta = lexBreadthFirstSearchPlus(graph, vertexC, arrayOf(sweepGamma));
+    HashMap<V, Integer> sweepDelta = lexBreadthFirstSearchPlus(graph, vertexC, sweepGamma);
     V vertexD = lastElementOf(sweepDelta);
 
     // Additionally, calculate the index and the corresponding A set for each vertex
@@ -49,57 +48,87 @@ public final class IntervalGraphRecognizer {
     // Step 5 - LBFS+ from the last vertex of the previous sweep
     // Input - the result of previous sweep delta, vertex d
     // Output - the result of current sweep epsilon, further last vertex e visited by current sweep
-    List<V> sweepEpsilon = lexBreadthFirstSearchPlus(graph, vertexD, arrayOf(sweepDelta));
-    V vertexE = lastElementOf(sweepEpsilon);
+    HashMap<V, Integer> sweepEpsilon = lexBreadthFirstSearchPlus(graph, vertexD, sweepDelta);
+    // V vertexE = lastElementOf(sweepEpsilon); TODO: not used?
 
     // Additionally, calculate the index and the corresponding B set for each vertex
 
     // Step 6 - LBFS* with the resulting sweeps
     // Input - the result of sweep gamma and sweep epsilon
     // Output - the result of current sweep zeta
-    List<V> sweepZeta = null; // TODO: replace by the invocation of lexBreadthFirstSearchStar
+    HashMap<V, Integer> sweepZeta = lexBreadthFirstSearchStar(graph, vertexD, sweepDelta, sweepEpsilon); 
 
     // if sweepZeta is umbrella-free, then the graph is interval.
     // otherwise, the graph is not interval
-    return isIOrdering(arrayOf(sweepZeta), graph);
+    //return isIOrdering(sweepZeta, graph);
+    
+    // Compute interval representation -- TODO: complete after merge
+    HashMap<V, Integer> neighborIndex = new HashMap<>();
+    for(V vertex : graph.vertexSet()) {
+        int maxNeighbor = 0;
+        
+        List<V> neighbors = Graphs.neighborListOf(graph, vertex);
+        neighbors.add(vertex);
+        
+        for(V neighbor : neighbors) {
+            maxNeighbor = Math.max(maxNeighbor, sweepZeta.get(neighbor));
+        }
+        
+        neighborIndex.put(vertex, maxNeighbor);
+    }
+    
+    ArrayList<Interval<Integer>> intervals = new ArrayList<>(graph.vertexSet().size());
+    
+    for(V vertex : graph.vertexSet()) {
+        Interval<Integer> vertexInterval = new Interval<>(sweepZeta.get(vertex), neighborIndex.get(vertex));
+        intervals.add(vertexInterval);
+    }
+    
+    return isIOrdering(sweepZeta, graph);
   }
 
   /**
    * Calculates if the given sweep is an I-Ordering
    * (according to the Graph graph)
+ * @param <E>
    *
    * @param sweep the order we want to check if its an I-Order
    * @param graph the graph we want to check if its an I-Order
    * @return true, if sweep is an I-Order according to graph
    */
-  private static <V> boolean isIOrdering(V[] sweep, Graph graph) {
-    for (int i = 0; i < sweep.length - 2; i++) {
-      for (int j = i + 1; j < sweep.length - 1; j++) {
-        for (int k = j + 1; k < sweep.length; k++) {
-          boolean edgeIJ = graph.containsEdge(sweep[i], sweep[j]);
-          boolean edgeIK = graph.containsEdge(sweep[i], sweep[k]);
-          if (!edgeIJ && edgeIK) {
-            return false;
-          }
-        }
+  private static <V, E> boolean isIOrdering(HashMap<V, Integer> sweep, Graph<V, E> graph) {
+      HashMap<V, Integer> last = new HashMap<>();
+      HashMap<Integer, V> inverseSweep = new HashMap<>();
+      
+      for(V vertex : graph.vertexSet()) {
+          int index = sweep.get(vertex);
+          inverseSweep.put(index, vertex);
       }
-    }
-    return true;
+      
+      for(int i = 0; i < graph.vertexSet().size(); i++) {
+          V vertex = inverseSweep.get(i);
+          
+          for(V neighbor : Graphs.neighborListOf(graph, vertex)) {
+              if(last.get(neighbor) != null && last.get(neighbor) != i - 1) {
+                  return false;
+              } else {
+                 last.replace(neighbor, i);
+              }
+          }
+      }
+      
+      return true;
   }
 
   /**
-   * return the last element of the given list
+   * return the last element of the given map
    *
-   * @param list
+   * @param map
    * @param <V>  the generic type representing vertices
    * @return
    */
-  private static <V> V lastElementOf(List<V> list) {
-    if (list == null) {
-      throw new IllegalArgumentException("List parameter cannot be null.");
-    }
-
-    return list.get(list.size() - 1);
+  private static <V> V lastElementOf(HashMap<V, Integer> map) {
+      return Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
   }
 
   /**
@@ -121,22 +150,4 @@ public final class IntervalGraphRecognizer {
     }
     return iterator.next();
   }
-
-  /**
-   * convert the given list into array in weak typing way
-   *
-   * @param list
-   * @param <V>  the generic type representing vertices
-   * @return
-   */
-  private static <V> V[] arrayOf(List<V> list) {
-    if (list == null) {
-      throw new IllegalArgumentException("List parameter cannot be null.");
-    }
-
-    V[] resultArray = (V[]) new Object[list.size()];
-    list.toArray(resultArray);
-    return resultArray;
-  }
-
 }
