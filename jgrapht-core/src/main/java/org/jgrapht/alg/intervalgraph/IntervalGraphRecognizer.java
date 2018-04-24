@@ -19,6 +19,12 @@ public final class IntervalGraphRecognizer {
    * @return
    */
   public static <V, E> boolean isIntervalGraph(Graph<V, E> graph) {
+
+      // An empty graph is an interval graph.
+      if (graph.vertexSet().isEmpty()) {
+          return true;
+      }
+
     // Step 1 - LBFS from an arbitrary vertex
     // Input - random vertex r
     // Output - the result of current sweep alpha, further last vertex a visited by current sweep
@@ -104,19 +110,20 @@ public final class IntervalGraphRecognizer {
           int index = sweep.get(vertex);
           inverseSweep.put(index, vertex);
       }
-      
-      for(int i = 0; i < graph.vertexSet().size(); i++) {
-          V vertex = inverseSweep.get(i);
-          
-          for(V neighbor : Graphs.neighborListOf(graph, vertex)) {
-              if(last.get(neighbor) != null && last.get(neighbor) != i - 1) {
-                  return false;
-              } else {
-                 last.replace(neighbor, i);
+
+      for (int i=0; i<sweep.size()-2; i++) {
+          for (int j=i+1; j<sweep.size()-1; j++) {
+              for (int k=j+1; k<sweep.size(); k++) {
+                  boolean edgeIJ = graph.containsEdge(inverseSweep.get(i), inverseSweep.get(j));
+                  boolean edgeIK = graph.containsEdge(inverseSweep.get(i), inverseSweep.get(k));
+                  if (edgeIK) {
+                      if (edgeIJ) { } else {
+                          return false;
+                      }
+                  }
               }
           }
       }
-      
       return true;
   }
 

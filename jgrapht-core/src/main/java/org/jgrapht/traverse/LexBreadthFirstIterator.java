@@ -84,7 +84,11 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     public LexBreadthFirstIterator(Graph<V, E> graph, V startingVertex) {
         super(graph);
         GraphTests.requireUndirected(graph);
-        bucketList = new BucketList(graph.vertexSet(), startingVertex);
+
+        Set<V> copyOfSet = new HashSet<>();
+
+        copyOfSet.addAll(graph.vertexSet());
+        bucketList = new BucketList(copyOfSet, startingVertex);
     }
     
     
@@ -98,7 +102,11 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     public LexBreadthFirstIterator(Graph<V, E> graph, HashMap<V, Integer> priority, V startingVertex) {
         super(graph);
         GraphTests.requireUndirected(graph);
-        bucketList = new BucketList(graph.vertexSet(), new PriorityComparator(priority), startingVertex);
+
+        Set<V> copyOfSet = new HashSet<>();
+
+        copyOfSet.addAll(graph.vertexSet());
+        bucketList = new BucketList(copyOfSet, new PriorityComparator(priority), startingVertex);
     }
     
     /**
@@ -111,7 +119,11 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     public LexBreadthFirstIterator(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB, HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB, HashMap<V, Set<V>> ASets, HashMap<V, Set<V>> BSets, V startingVertex) {
         super(graph);
         GraphTests.requireUndirected(graph);
-        bucketList = new BucketList(graph.vertexSet(), priorityA, priorityB, neighborIndexA, neighborIndexB, ASets, BSets, startingVertex);
+
+        Set<V> copyOfSet = new HashSet<>();
+
+        copyOfSet.addAll(graph.vertexSet());
+        bucketList = new BucketList(copyOfSet, priorityA, priorityB, neighborIndexA, neighborIndexB, ASets, BSets, startingVertex);
     }
 
     /**
@@ -383,7 +395,13 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
                     bucketMap.put(vertex, bucket.prev);
                 } else {
                     visitedBuckets.add(bucket);
-                    Bucket newBucket = new Bucket(vertex, priorityComparator);
+                    Bucket newBucket;
+                    if (priorityB != null) {
+                        newBucket = new Bucket(vertex, new PriorityComparator(priorityA), new PriorityComparator(priorityB));
+                    }
+                    else{
+                        newBucket = new Bucket(vertex, priorityComparator);
+                    }
                     newBucket.insertBefore(bucket);
                     bucketMap.put(vertex, newBucket);
                     if (head == bucket) {
@@ -564,14 +582,19 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
                     V beta = verticesB.peek();
                     
                     if(neighborIndexA.get(alpha) > priorityA.get(alpha)) {
+                        vertices.remove(beta);
                         return verticesB.poll(); // return Beta
                     } else if(neighborIndexB.get(beta) > priorityB.get(beta)) {
+                        verticesB.remove(beta);
                         return vertices.poll(); // return Alpha
                     } else if(BSets.get(beta).isEmpty() || !ASets.get(alpha).isEmpty()) {
+                        vertices.remove(beta);
                         return verticesB.poll(); // return Beta
                     } else if(neighborIndexA.get(BSets.get(beta).iterator().next()) == priorityA.get(alpha)) {
+                        vertices.remove(beta);
                         return verticesB.poll(); // return Beta
                     } else {
+                        verticesB.remove(beta);
                         return vertices.poll(); // return Alpha
                     }
                 }
