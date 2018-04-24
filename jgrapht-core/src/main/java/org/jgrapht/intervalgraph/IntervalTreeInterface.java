@@ -1,7 +1,5 @@
 package org.jgrapht.intervalgraph;
 
-import jdk.javadoc.internal.doclets.formats.html.PackageIndexFrameWriter;
-import org.jgrapht.alg.util.Pair;
 import org.jgrapht.intervalgraph.interval.Interval;
 
 import java.util.List;

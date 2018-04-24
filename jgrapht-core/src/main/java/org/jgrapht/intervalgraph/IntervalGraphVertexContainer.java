@@ -2,12 +2,12 @@ package org.jgrapht.intervalgraph;
 
 import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
 import org.jgrapht.intervalgraph.interval.Interval;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 
 import java.io.Serializable;
 import java.util.*;
 
-public class IntervalGraphVertexContainer<V extends IntervalVertex<T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
+public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
 
     private static final long serialVersionUID = 7768940080894764546L;
 

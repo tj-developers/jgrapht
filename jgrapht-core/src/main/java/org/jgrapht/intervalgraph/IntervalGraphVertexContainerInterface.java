@@ -1,13 +1,12 @@
 package org.jgrapht.intervalgraph;
 
 import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-public interface IntervalGraphVertexContainerInterface<V extends IntervalVertex, E> {
+public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexInterface, E> {
 
     /**
      * Returns the whole vertex set of the graph.

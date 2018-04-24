@@ -5,12 +5,8 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.*;
-import org.jgrapht.graph.specifics.FastLookupDirectedSpecifics;
-import org.jgrapht.graph.specifics.FastLookupUndirectedSpecifics;
 import org.jgrapht.graph.specifics.IntervalSpecifics;
-import org.jgrapht.graph.specifics.Specifics;
-import org.jgrapht.intervalgraph.interval.Interval;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.jgrapht.util.TypeUtil;
 
 import java.io.Serializable;
@@ -25,7 +21,7 @@ import java.util.*;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V, E> implements Graph<V, E>, Cloneable, Serializable {
+public class IntervalGraph<V extends IntervalVertexInterface, E> extends AbstractGraph<V, E> implements Graph<V, E>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 7835287075273098344L;
 
