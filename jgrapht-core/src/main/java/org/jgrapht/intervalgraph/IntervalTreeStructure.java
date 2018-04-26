@@ -15,6 +15,7 @@ import java.util.List;
  * @since Apr 26, 2018
  */
 public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalStructureInterface<T>, Serializable {
+
     private static final long serialVersionUID = 2834567756342332325L;
 
     private IntervalTreeInterface<T, IntervalTreeNodeValue<Interval<T>, T>> tree = new RedBlackIntervalTree<>();

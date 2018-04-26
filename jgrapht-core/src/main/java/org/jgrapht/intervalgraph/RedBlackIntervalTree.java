@@ -2,6 +2,7 @@ package org.jgrapht.intervalgraph;
 
 import org.jgrapht.intervalgraph.interval.Interval;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,7 +18,9 @@ import java.util.List;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackTree<T, NodeValue> implements IntervalTreeInterface<T, NodeValue> {
+public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackTree<T, NodeValue> implements IntervalTreeInterface<T, NodeValue>, Serializable {
+
+    private static final long serialVersionUID = 4353687394654923429L;
 
     @Override
     public List<Interval<T>> overlapsWith(Interval<T> interval) {

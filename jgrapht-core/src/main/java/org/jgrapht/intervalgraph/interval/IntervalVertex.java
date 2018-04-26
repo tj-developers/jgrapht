@@ -1,5 +1,6 @@
 package org.jgrapht.intervalgraph.interval;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -12,9 +13,11 @@ import java.util.Objects;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class IntervalVertex<V, T extends Comparable<T>> implements IntervalVertexInterface {
+public class IntervalVertex<V, T extends Comparable<T>> implements IntervalVertexInterface, Serializable {
     private V vertex;
     private Interval<T> interval;
+
+    private static final long serialVersionUID = 7632653463458053425L;
 
     /**
      * Constructor for an IntervalVertex (container class for vertices in interval graphs)
