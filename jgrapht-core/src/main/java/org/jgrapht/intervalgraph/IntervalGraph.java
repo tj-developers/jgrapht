@@ -69,6 +69,41 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
                 createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
     }
 
+    /**
+     * Construct a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
+     * specified edge factory.
+     *
+     * @param vertices initial vertices
+     * @param ef the edge factory of the new graph.
+     * @param directed if true the graph will be directed, otherwise undirected
+     * @param allowMultipleEdges whether to allow multiple (parallel) edges or not.
+     * @param allowLoops whether to allow edges that are self-loops or not.
+     * @param weighted whether the graph is weighted, i.e. the edges support a weight attribute
+     *
+     * @throws NullPointerException if the specified edge factory is <code>
+     * null</code>.
+     */
+    protected IntervalGraph(
+            List<V> vertices, EdgeFactory<V, E> ef, boolean directed, boolean allowMultipleEdges, boolean allowLoops,
+            boolean weighted)
+    {
+        Objects.requireNonNull(ef);
+
+        this.edgeFactory = ef;
+        this.allowingLoops = allowLoops;
+        this.allowingMultipleEdges = allowMultipleEdges;
+        this.directed = directed;
+        this.specifics =
+                Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+        this.weighted = weighted;
+        this.intrusiveEdgesSpecifics = Objects.requireNonNull(
+                createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+
+        for(V vertex : vertices) {
+            this.addVertex(vertex);
+        }
+    }
+
 
     /**
      * {@inheritDoc}
