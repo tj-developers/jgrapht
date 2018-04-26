@@ -5,8 +5,18 @@ import org.jgrapht.intervalgraph.interval.Interval;
 import java.util.LinkedList;
 import java.util.List;
 
-// Essentially, this class updates the hi value after any operation on this tree.
-// The hi value equals to the highest endpoint in the subtree
+/**
+ * Implementation of RedBlackIntervalTree
+ * This class implements the augmented interval tree. Essentially, this class updates the highValue
+ * after any operation on this tree. The highValue equals to the highest endpoint in the subtree
+ *
+ * @param <T> the type of the interval
+ * @param <NodeValue> the type of the node value
+ *
+ * @author Daniel Mock (danielmock)
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackTree<T, NodeValue> implements IntervalTreeInterface<T, NodeValue> {
 
     @Override
@@ -19,7 +29,7 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
     }
 
     @Override
-    public List<Interval<T>> overlapsWithPoint(T point) {
+    public List<Interval<T>> overlapsWith(T point) {
         List<Interval<T>> result = new LinkedList<>();
 
         overlapsWithPoint(this.getRoot(), point, result);

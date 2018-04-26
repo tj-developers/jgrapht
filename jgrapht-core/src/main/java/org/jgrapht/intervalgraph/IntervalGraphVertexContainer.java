@@ -7,16 +7,38 @@ import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Implementation of IntervalGraphVertexContainer
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ * @param <T> the type of the interval
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
 
     private static final long serialVersionUID = 7768940080894764546L;
 
-    private IntervalStructureInterface<T> intervalTree;
+    /**
+     * <code>intervalStructure</code> maintains all intervals in order to get intersecting intervals efficiently.
+     */
+    private IntervalStructureInterface<T> intervalStructure;
+    /**
+     * <code>vertexMap</code> maintains an EdgeContainer for every Vertex
+     */
     private Map<V, UndirectedEdgeContainer<V, E>> vertexMap;
+    /**
+     * <code>intervalMap</code> maintains the assignment of every interval to vertex
+     */
     private Map<Interval<T>, V> intervalMap;
 
+    /**
+     * Constructs a vertex container for an interval graph with all necessary objects.
+     */
     public IntervalGraphVertexContainer() {
-        this.intervalTree = new IntervalTreeStructure<>();
+        this.intervalStructure = new IntervalTreeStructure<>();
         this.vertexMap = new LinkedHashMap<>();
         this.intervalMap = new LinkedHashMap<>();
     }
@@ -38,7 +60,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T
      */
     @Override
     public List<V> getOverlappingIntervalVertices(V vertex) {
-        List<Interval<T>> intervalList = intervalTree.overlapsWith(vertex.getInterval());
+        List<Interval<T>> intervalList = intervalStructure.overlapsWith(vertex.getInterval());
         List<V> vertexList = new LinkedList<>();
 
         for(Interval<T> interval: intervalList) {
@@ -67,7 +89,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T
      */
     @Override
     public UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec) {
-        intervalTree.add(vertex.getInterval());
+        intervalStructure.add(vertex.getInterval());
         intervalMap.put(vertex.getInterval(), vertex);
         return vertexMap.put(vertex, ec);
     }
@@ -80,7 +102,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T
      */
     @Override
     public UndirectedEdgeContainer<V, E> remove(V vertex) {
-        intervalTree.remove(vertex.getInterval());
+        intervalStructure.remove(vertex.getInterval());
         intervalMap.remove(vertex.getInterval());
         return vertexMap.remove(vertex);
     }

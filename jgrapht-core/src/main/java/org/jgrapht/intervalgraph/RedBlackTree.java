@@ -1,7 +1,9 @@
 package org.jgrapht.intervalgraph;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Implementation of a Red-Black-Tree

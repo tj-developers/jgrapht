@@ -4,6 +4,15 @@ import org.jgrapht.intervalgraph.interval.Interval;
 
 import java.util.List;
 
+/**
+ * Interface of IntervalStructure
+ * This interface is used for an implementation of an efficient data structure to maintain intervals.
+ *
+ * @param <T> the type of the interval
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public interface IntervalStructureInterface<T extends Comparable<T>> {
 
     /**

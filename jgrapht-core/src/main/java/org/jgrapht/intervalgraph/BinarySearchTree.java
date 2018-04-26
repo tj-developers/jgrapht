@@ -1,5 +1,7 @@
 package org.jgrapht.intervalgraph;
 
+import java.util.NoSuchElementException;
+
 /**
  * Interface for Binary Search Trees
  *

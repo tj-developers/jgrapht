@@ -6,6 +6,15 @@ import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Interface of IntervalGraphVertexContainer
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexInterface, E> {
 
     /**
@@ -20,7 +29,7 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexI
      *
      * @param v the vertex with interval
      */
-    public List<V> getOverlappingIntervalVertices(V v);
+    List<V> getOverlappingIntervalVertices(V v);
 
     /**
      * Returns the edge container to the vertex
@@ -36,7 +45,7 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexI
      * @param vertex the vertex
      * @param ec     the edge container
      */
-    public UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec);
+    UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec);
 
     /**
      * Removes a vertex from the data structure if it is present.
@@ -44,5 +53,5 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexI
      * @param vertex the vertex to be removed
      * @return true if this data structure contained the specified element
      */
-    public UndirectedEdgeContainer<V, E> remove(V vertex);
+    UndirectedEdgeContainer<V, E> remove(V vertex);
 }

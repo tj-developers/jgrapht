@@ -1,23 +1,47 @@
 package org.jgrapht.intervalgraph.interval;
 
-import org.jgrapht.alg.util.Pair;
-
 import java.util.Objects;
 
+/**
+ * Implementation for IntervalVertex
+ * This class implements the container class for vertices in an interval graph.
+ *
+ * @param <V> the vertex
+ * @param <T> the interval element
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public class IntervalVertex<V, T extends Comparable<T>> implements IntervalVertexInterface {
     private V vertex;
     private Interval<T> interval;
 
-    public IntervalVertex(V vertex, Interval<T> interval) {
+    /**
+     * Constructor for an IntervalVertex (container class for vertices in interval graphs)
+     *
+     * @param vertex the vertex
+     * @param interval the interval
+     */
+    private IntervalVertex(V vertex, Interval<T> interval) {
         this.vertex = vertex;
         this.interval = interval;
     }
 
+    /**
+     * Getter for <code>interval</code>
+     *
+     * @return the interval
+     */
     @Override
     public Interval<T> getInterval() {
         return interval;
     }
 
+    /**
+     * Getter for <code>vertex</code>
+     *
+     * @return the vertex
+     */
     @Override
     public V getVertex() {
         return vertex;
@@ -47,6 +71,16 @@ public class IntervalVertex<V, T extends Comparable<T>> implements IntervalVerte
         return Objects.hash(vertex, interval);
     }
 
+    /**
+     * Creates new IntervalVertex of elements pulling of the necessity to provide corresponding types of the
+     * elements supplied.
+     *
+     * @param <V> the vertex type
+     * @param <T> the interval element type
+     * @param vertex the vertex
+     * @param interval the interval
+     * @return new pair
+     */
     public static <V, T extends Comparable<T>> IntervalVertex<V, T> of(V vertex, Interval<T> interval) {
         return new IntervalVertex<>(vertex, interval);
     }

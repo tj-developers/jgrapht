@@ -11,16 +11,26 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Implementation of IntervalSpecifics.
+ * This class implements necessary methods for IntervalGraph.
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public class IntervalSpecifics<V extends IntervalVertexInterface, E> implements Specifics<V, E>, Serializable {
 
     private static final long serialVersionUID = 1112673663745687843L;
 
-    protected IntervalGraph<V, E> intervalGraph;
-    protected IntervalGraphVertexContainerInterface<V, E> intervalGraphVertexContainerInterface;
-    protected EdgeSetFactory<V, E> edgeSetFactory;
+    private IntervalGraph<V, E> intervalGraph;
+    private IntervalGraphVertexContainerInterface<V, E> intervalGraphVertexContainerInterface;
+    private EdgeSetFactory<V, E> edgeSetFactory;
 
     /**
-     * Construct a new interval specifics.
+     * Constructs new interval specifics.
      *
      * @param intervalGraph the graph for which these specifics are for
      */

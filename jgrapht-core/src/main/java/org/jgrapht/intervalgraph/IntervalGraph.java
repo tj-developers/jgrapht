@@ -140,6 +140,8 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not add edges to an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -149,6 +151,8 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not add edges to an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -169,6 +173,7 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
             return false;
         } else {
             specifics.addVertex(v);
+            // add all edges between the new vertex and vertices with intersecting intervals
             addIntervalEdges(v, specifics.getOverlappingIntervalVertices(v));
             return true;
         }
@@ -314,6 +319,8 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not remove edges from an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -323,6 +330,8 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not remove edges from an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
