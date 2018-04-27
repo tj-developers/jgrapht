@@ -3,13 +3,22 @@ package org.jgrapht.intervalgraph;
 import org.jgrapht.intervalgraph.interval.Interval;
 
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Implementation of IntervalTreeStructure
+ * This class realises the interval tree structure, which has a interval tree as maintaining object.
+ *
+ * @param <T> the type of the interval
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
 public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalStructureInterface<T>, Serializable {
+
     private static final long serialVersionUID = 2834567756342332325L;
 
-    private IntervalTreeInterface<T, Interval<T>> tree = new RedBlackIntervalTree<>();
+    private IntervalTreeInterface<T, IntervalTreeNodeValue<Interval<T>, T>> tree = new RedBlackIntervalTree<>();
 
     /**
      * Returns all intervals that overlap with the given <code>interval</code>
@@ -24,7 +33,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
 
     @Override
     public List<Interval<T>> overlapsWithPoint(T point) {
-        return tree.overlapsWithPoint(point);
+        return tree.overlapsWith(point);
     }
 
 
@@ -35,7 +44,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      */
     @Override
     public void add(Interval<T> interval) {
-        tree.insert(interval.getStart(), interval);
+        tree.insert(interval.getStart(), new IntervalTreeNodeValue<>(interval, null));
     }
 
     /**

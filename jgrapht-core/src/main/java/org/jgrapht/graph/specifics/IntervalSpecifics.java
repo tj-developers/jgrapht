@@ -4,22 +4,33 @@ import org.jgrapht.graph.EdgeSetFactory;
 import org.jgrapht.intervalgraph.IntervalGraph;
 import org.jgrapht.intervalgraph.IntervalGraphVertexContainerInterface;
 import org.jgrapht.intervalgraph.IntervalGraphVertexContainer;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.jgrapht.util.ArrayUnenforcedSet;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
-public class IntervalSpecifics<V extends IntervalVertex, E> implements Specifics<V, E>, Serializable {
+/**
+ * Implementation of IntervalSpecifics.
+ * This class implements necessary methods for IntervalGraph.
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
+public class IntervalSpecifics<V extends IntervalVertexInterface, E> implements Specifics<V, E>, Serializable {
 
     private static final long serialVersionUID = 1112673663745687843L;
 
-    protected IntervalGraph<V, E> intervalGraph;
-    protected IntervalGraphVertexContainerInterface<V, E> intervalGraphVertexContainerInterface; //TODO anpassen
-    protected EdgeSetFactory<V, E> edgeSetFactory;
+    private IntervalGraph<V, E> intervalGraph;
+    private IntervalGraphVertexContainerInterface<V, E> intervalGraphVertexContainerInterface;
+    private EdgeSetFactory<V, E> edgeSetFactory;
 
     /**
-     * Construct a new interval specifics.
+     * Constructs new interval specifics.
      *
      * @param intervalGraph the graph for which these specifics are for
      */
@@ -33,10 +44,16 @@ public class IntervalSpecifics<V extends IntervalVertex, E> implements Specifics
      * {@inheritDoc}
      */
     @Override
-    public void addVertex(V v)
+    public void addVertex(V vertex)
     {
-        getEdgeContainer(v);
-        intervalGraph.addIntervalEdges(v, intervalGraphVertexContainerInterface.getOverlappingIntervalVertices(v));
+        getEdgeContainer(vertex);
+    }
+
+    /**
+     *
+     */
+    public List<V> getOverlappingIntervalVertices(V vertex) {
+        return intervalGraphVertexContainerInterface.getOverlappingIntervalVertices(vertex);
     }
 
     /**

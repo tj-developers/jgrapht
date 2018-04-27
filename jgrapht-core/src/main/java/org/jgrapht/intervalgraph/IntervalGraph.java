@@ -5,12 +5,8 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.*;
-import org.jgrapht.graph.specifics.FastLookupDirectedSpecifics;
-import org.jgrapht.graph.specifics.FastLookupUndirectedSpecifics;
 import org.jgrapht.graph.specifics.IntervalSpecifics;
-import org.jgrapht.graph.specifics.Specifics;
-import org.jgrapht.intervalgraph.interval.Interval;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.jgrapht.util.TypeUtil;
 
 import java.io.Serializable;
@@ -25,7 +21,7 @@ import java.util.*;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V, E> implements Graph<V, E>, Cloneable, Serializable {
+public class IntervalGraph<V extends IntervalVertexInterface, E> extends AbstractGraph<V, E> implements Graph<V, E>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 7835287075273098344L;
 
@@ -71,6 +67,41 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
         this.weighted = weighted;
         this.intrusiveEdgesSpecifics = Objects.requireNonNull(
                 createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+    }
+
+    /**
+     * Construct a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
+     * specified edge factory.
+     *
+     * @param vertices initial vertices
+     * @param ef the edge factory of the new graph.
+     * @param directed if true the graph will be directed, otherwise undirected
+     * @param allowMultipleEdges whether to allow multiple (parallel) edges or not.
+     * @param allowLoops whether to allow edges that are self-loops or not.
+     * @param weighted whether the graph is weighted, i.e. the edges support a weight attribute
+     *
+     * @throws NullPointerException if the specified edge factory is <code>
+     * null</code>.
+     */
+    protected IntervalGraph(
+            List<V> vertices, EdgeFactory<V, E> ef, boolean directed, boolean allowMultipleEdges, boolean allowLoops,
+            boolean weighted)
+    {
+        Objects.requireNonNull(ef);
+
+        this.edgeFactory = ef;
+        this.allowingLoops = allowLoops;
+        this.allowingMultipleEdges = allowMultipleEdges;
+        this.directed = directed;
+        this.specifics =
+                Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+        this.weighted = weighted;
+        this.intrusiveEdgesSpecifics = Objects.requireNonNull(
+                createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+
+        for(V vertex : vertices) {
+            this.addVertex(vertex);
+        }
     }
 
 
@@ -144,6 +175,8 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not add edges to an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -153,6 +186,8 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not add edges to an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -173,7 +208,8 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
             return false;
         } else {
             specifics.addVertex(v);
-
+            // add all edges between the new vertex and vertices with intersecting intervals
+            addIntervalEdges(v, specifics.getOverlappingIntervalVertices(v));
             return true;
         }
     }
@@ -318,6 +354,8 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not remove edges from an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -327,6 +365,8 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
     }
 
     /**
+     * This method an IllegalArgumentException in every case because you can not remove edges from an interval graph manually.
+     *
      * {@inheritDoc}
      */
     @Override
@@ -450,7 +490,7 @@ public class IntervalGraph<V extends IntervalVertex, E> extends AbstractGraph<V,
      * @param sourceVertex source vertex of all edges
      * @param targetVertices target vertices of edges
      */
-    public boolean addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
+    private boolean addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
 
         assertVertexExist(sourceVertex);
 

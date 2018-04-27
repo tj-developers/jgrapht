@@ -1,13 +1,21 @@
 package org.jgrapht.intervalgraph;
 
 import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-public interface IntervalGraphVertexContainerInterface<V extends IntervalVertex, E> {
+/**
+ * Interface of IntervalGraphVertexContainer
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since Apr 26, 2018
+ */
+public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexInterface, E> {
 
     /**
      * Returns the whole vertex set of the graph.
@@ -21,7 +29,7 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertex,
      *
      * @param v the vertex with interval
      */
-    public List<V> getOverlappingIntervalVertices(V v);
+    List<V> getOverlappingIntervalVertices(V v);
 
     /**
      * Returns the edge container to the vertex
@@ -37,7 +45,7 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertex,
      * @param vertex the vertex
      * @param ec     the edge container
      */
-    public UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec);
+    UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec);
 
     /**
      * Removes a vertex from the data structure if it is present.
@@ -45,5 +53,5 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertex,
      * @param vertex the vertex to be removed
      * @return true if this data structure contained the specified element
      */
-    public UndirectedEdgeContainer<V, E> remove(V vertex);
+    UndirectedEdgeContainer<V, E> remove(V vertex);
 }
