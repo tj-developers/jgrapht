@@ -5,7 +5,6 @@ import org.jgrapht.intervalgraph.interval.Interval;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,19 +12,54 @@ import static org.junit.Assert.*;
 
 public class CenteredIntervalTreeTest {
 
-    IntegerInterval i00 = new IntegerInterval(0,0);
-    IntegerInterval i01 = new IntegerInterval(0,1);
-    IntegerInterval i56 = new IntegerInterval(5,6);
-
     List<Interval<Integer>> list;
 
+    @Test
+    public void testCompareToPoint() {
+        IntegerInterval interval = new IntegerInterval(0, 1);
+        assertEquals(-1, interval.compareToPoint(-1));
+        assertEquals(0, interval.compareToPoint(0));
+        assertEquals(0, interval.compareToPoint(1));
+        assertEquals(1, interval.compareToPoint(2));
+    }
 
     @Test
-    public void intersections() {
+    public void testEmptyTree() {
         CenteredIntervalTree<Integer> tree = new CenteredIntervalTree<>(list);
-        assertEquals(0, tree.intersections(2).size());
-        assertEquals(2, tree.intersections(0).size());
-        assertEquals(0, new CenteredIntervalTree<Integer>(new LinkedList<>()).intersections(0).size());
+        assertEquals(0, tree.intersections(-2).size());
+        assertEquals(0, tree.intersections(0).size());
+        assertEquals(0, tree.intersections((2)).size());
+    }
+
+    @Test
+    public void testSingleInterval() {
+        list.add(new IntegerInterval(0, 2));
+        CenteredIntervalTree<Integer> tree = new CenteredIntervalTree<>(list);
+        assertEquals(0, tree.intersections(-1).size());
+        assertEquals(1, tree.intersections(0).size());
+        assertEquals(1, tree.intersections(1).size());
+        assertEquals(1, tree.intersections(2).size());
+        assertEquals(0, tree.intersections(3).size());
+    }
+
+    @Test
+    public void testPath() {
+        list.add(new IntegerInterval(0, 1));
+        list.add(new IntegerInterval(1, 2));
+        list.add(new IntegerInterval(2, 3));
+        list.add(new IntegerInterval(3, 4));
+        list.add(new IntegerInterval(4, 5));
+        list.add(new IntegerInterval(5, 6));
+        CenteredIntervalTree<Integer> tree = new CenteredIntervalTree<>(list);
+        assertEquals(0, tree.intersections(-1).size());
+        assertEquals(1, tree.intersections(0).size());
+        assertEquals(2, tree.intersections(1).size());
+        assertEquals(2, tree.intersections(2).size());
+        assertEquals(2, tree.intersections(3).size());
+        assertEquals(2, tree.intersections(4).size());
+        assertEquals(2, tree.intersections(5).size());
+        assertEquals(1, tree.intersections(6).size());
+        assertEquals(0, tree.intersections(7).size());
     }
 
     @Before

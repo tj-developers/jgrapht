@@ -74,6 +74,57 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         GraphTests.requireUndirected(graph);
         bucketList = new BucketList(graph.vertexSet());
     }
+    
+    /**
+     * Creates new lexicographical breadth-first iterator for {@code graph}.
+     *
+     * @param graph the graph to be iterated.
+     * @param startingVertex the initial vertex.
+     */
+    public LexBreadthFirstIterator(Graph<V, E> graph, V startingVertex) {
+        super(graph);
+        GraphTests.requireUndirected(graph);
+
+        Set<V> copyOfSet = new HashSet<>();
+
+        copyOfSet.addAll(graph.vertexSet());
+        bucketList = new BucketList(copyOfSet, startingVertex);
+    }
+    
+    
+    /**
+     * Creates new lexicographical breadth-first iterator with a static priority list for {@code graph}.
+     *
+     * @param graph the graph to be iterated.
+     * @param priority the vertex array sorted by their priorities.
+     * @param startingVertex the initial vertex.
+     */
+    public LexBreadthFirstIterator(Graph<V, E> graph, HashMap<V, Integer> priority, V startingVertex) {
+        super(graph);
+        GraphTests.requireUndirected(graph);
+
+        Set<V> copyOfSet = new HashSet<>();
+
+        copyOfSet.addAll(graph.vertexSet());
+        bucketList = new BucketList(copyOfSet, new PriorityComparator(priority), startingVertex);
+    }
+    
+    /**
+     * Creates new lexicographical breadth-first iterator with a static priority list for {@code graph}.
+     *
+     * @param graph the graph to be iterated.
+     * @param priority the vertex array sorted by their priorities.
+     * @param startingVertex the initial vertex.
+     */
+    public LexBreadthFirstIterator(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB, HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB, HashMap<V, Set<V>> ASets, HashMap<V, Set<V>> BSets, V startingVertex) {
+        super(graph);
+        GraphTests.requireUndirected(graph);
+
+        Set<V> copyOfSet = new HashSet<>();
+
+        copyOfSet.addAll(graph.vertexSet());
+        bucketList = new BucketList(copyOfSet, priorityA, priorityB, neighborIndexA, neighborIndexB, ASets, BSets, startingVertex);
+    }
 
     /**
      * Checks whether there exist unvisited vertices.
@@ -182,17 +233,103 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
          * the vertex in constant time.
          */
         private Map<V, Bucket> bucketMap;
-
+        
+        /**
+         * Comparator used for tiebreaking when multiple vertices have the same label
+         */
+        private Comparator<V> priorityComparator = null;
+        
+        /**
+         * LBFS* static parameters
+         */
+        private HashMap<V, Integer> neighborIndexA = null;
+        private HashMap<V, Integer> neighborIndexB = null;
+        
+        private HashMap<V, Set<V>> ASets = null;
+        private HashMap<V, Set<V>> BSets = null;
+        
+        private HashMap<V, Integer> priorityA = null;
+        private HashMap<V, Integer> priorityB = null;
+        
         /**
          * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
          *
          * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
          */
         BucketList(Collection<V> vertices) {
-            head = new Bucket(vertices);
+            head = new Bucket(vertices, priorityComparator); // we do not need a comparator
             bucketMap = new HashMap<>(vertices.size());
             for (V vertex : vertices) {
                 bucketMap.put(vertex, head);
+            }
+        }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param startingVertex the initial vertex.
+         */
+        BucketList(Collection<V> vertices, V startingVertex) {
+            bucketMap = new HashMap<>(vertices.size());
+            
+            // Split off starting vertex into its own bucket
+            vertices.remove(startingVertex);
+            head = new Bucket(startingVertex, priorityComparator);
+            head.insertBefore(new Bucket(vertices, priorityComparator));
+
+            bucketMap.put(startingVertex, head);
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head.next);
+            }
+        }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param priorityComparator a comparator which defines a priority for tiebreaking.
+         * @param startingVertex the initial vertex.
+         */
+        BucketList(Collection<V> vertices, Comparator<V> priorityComparator, V startingVertex) {
+            bucketMap = new HashMap<>(vertices.size());
+            
+            // Split off starting vertex into its own bucket
+            vertices.remove(startingVertex);
+            head = new Bucket(startingVertex, priorityComparator);
+            head.insertBefore(new Bucket(vertices, priorityComparator));
+
+            bucketMap.put(startingVertex, head);
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head.next);
+            }
+        }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param priorityComparator a comparator which defines a priority for tiebreaking.
+         * @param startingVertex the initial vertex.
+         */
+        BucketList(Collection<V> vertices, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB, HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB, HashMap<V, Set<V>> ASets, HashMap<V, Set<V>> BSets, V startingVertex) {
+            this.neighborIndexA = neighborIndexA;
+            this.neighborIndexB = neighborIndexB;
+            this.ASets = ASets;
+            this.BSets = BSets;
+            this.priorityA = priorityA;
+            this.priorityB = priorityB;
+            
+            bucketMap = new HashMap<>(vertices.size());
+            
+            // Split off starting vertex into its own bucket
+            vertices.remove(startingVertex);
+            head = new Bucket(startingVertex, new PriorityComparator(priorityA), new PriorityComparator(priorityB));
+            head.insertBefore(new Bucket(vertices, new PriorityComparator(priorityA), new PriorityComparator(priorityB)));
+
+            bucketMap.put(startingVertex, head);
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head.next);
             }
         }
 
@@ -219,7 +356,14 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
          */
         V poll() {
             if (bucketMap.size() > 0) {
-                V res = head.poll();
+                V res = null;
+                
+                if(neighborIndexA == null) {
+                    res = head.poll();
+                } else {
+                    res = head.poll(neighborIndexA, neighborIndexB, ASets, BSets, priorityA, priorityB);
+                }
+                
                 bucketMap.remove(res);
                 if (head.isEmpty()) {
                     head = head.next;
@@ -251,7 +395,13 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
                     bucketMap.put(vertex, bucket.prev);
                 } else {
                     visitedBuckets.add(bucket);
-                    Bucket newBucket = new Bucket(vertex);
+                    Bucket newBucket;
+                    if (priorityB != null) {
+                        newBucket = new Bucket(vertex, new PriorityComparator(priorityA), new PriorityComparator(priorityB));
+                    }
+                    else{
+                        newBucket = new Bucket(vertex, priorityComparator);
+                    }
                     newBucket.insertBefore(bucket);
                     bucketMap.put(vertex, newBucket);
                     if (head == bucket) {
@@ -285,15 +435,24 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
             /**
              * Set of vertices currently stored in this bucket.
              */
-            private Set<V> vertices;
+            private Queue<V> vertices;
+            /**
+             * Set of vertices currently stored in this bucket (sorted by other order).
+             */
+            private Queue<V> verticesB = null;
 
             /**
              * Creates a new bucket with all {@code vertices} stored in it.
              *
              * @param vertices vertices to store in this bucket.
              */
-            Bucket(Collection<V> vertices) {
-                this.vertices = new HashSet<>(vertices);
+            Bucket(Collection<V> vertices, Comparator<V> c) {
+                if(c == null) {
+                    this.vertices = new PriorityQueue<>();
+                } else {
+                    this.vertices = new PriorityQueue<>(c);
+                }
+                this.vertices.addAll(vertices);
             }
 
             /**
@@ -301,9 +460,43 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param vertex the vertex to store in this bucket.
              */
-            Bucket(V vertex) {
-                this.vertices = new HashSet<>();
+            Bucket(V vertex, Comparator<V> c) {
+                if(c == null) {
+                    this.vertices = new PriorityQueue<>();
+                } else {
+                    this.vertices = new PriorityQueue<>(c);
+                }
                 vertices.add(vertex);
+            }
+            
+            /**
+             * LBFS*-variants
+             */
+            
+            /**
+             * Creates a new bucket with all {@code vertices} stored in it.
+             *
+             * @param vertices vertices to store in this bucket.
+             */
+            Bucket(Collection<V> vertices, Comparator<V> compA, Comparator<V> compB) {
+                this.vertices = new PriorityQueue<>(compA);
+                this.verticesB = new PriorityQueue<>(compB);
+                
+                this.vertices.addAll(vertices);
+                this.verticesB.addAll(vertices);
+            }
+
+            /**
+             * Creates a new Bucket with a single {@code vertex} in it.
+             *
+             * @param vertex the vertex to store in this bucket.
+             */
+            Bucket(V vertex, Comparator<V> compA, Comparator<V> compB) {
+                this.vertices = new PriorityQueue<>(compA);
+                this.verticesB = new PriorityQueue<>(compB);
+                
+                vertices.add(vertex);
+                verticesB.add(vertex);
             }
 
             /**
@@ -313,6 +506,10 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              */
             void removeVertex(V vertex) {
                 vertices.remove(vertex);
+                
+                if(verticesB != null) {
+                    verticesB.remove(vertex);
+                }
             }
 
             /**
@@ -352,6 +549,10 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              */
             void addVertex(V vertex) {
                 vertices.add(vertex);
+                
+                if(verticesB != null) {
+                    verticesB.add(vertex);
+                }
             }
 
             /**
@@ -363,9 +564,39 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
                 if (vertices.isEmpty()) {
                     return null;
                 } else {
-                    V vertex = vertices.iterator().next();
-                    vertices.remove(vertex);
+                    V vertex = vertices.poll();
                     return vertex;
+                }
+            }
+            
+            /**
+             * Retrieves one vertex from this bucket (according to LBFS*).
+             *
+             * @return vertex, that was removed from this bucket, null if the bucket was empty.
+             */
+            V poll(HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB, HashMap<V, Set<V>> ASets, HashMap<V, Set<V>> BSets, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB) {
+                if (vertices.isEmpty()) {
+                    return null;
+                } else {
+                    V alpha = vertices.peek();
+                    V beta = verticesB.peek();
+                    
+                    if(neighborIndexA.get(alpha) > priorityA.get(alpha)) {
+                        vertices.remove(beta);
+                        return verticesB.poll(); // return Beta
+                    } else if(neighborIndexB.get(beta) > priorityB.get(beta)) {
+                        verticesB.remove(beta);
+                        return vertices.poll(); // return Alpha
+                    } else if(BSets.get(beta).isEmpty() || !ASets.get(alpha).isEmpty()) {
+                        vertices.remove(beta);
+                        return verticesB.poll(); // return Beta
+                    } else if(neighborIndexA.get(BSets.get(beta).iterator().next()) == priorityA.get(alpha)) {
+                        vertices.remove(beta);
+                        return verticesB.poll(); // return Beta
+                    } else {
+                        verticesB.remove(beta);
+                        return vertices.poll(); // return Alpha
+                    }
                 }
             }
 
@@ -377,6 +608,24 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
             boolean isEmpty() {
                 return vertices.size() == 0;
             }
+        }
+    }
+    
+    class PriorityComparator implements Comparator<V>
+    {
+        private final HashMap<V, Integer> priority;
+        
+        public PriorityComparator(HashMap<V, Integer> priority) throws IllegalArgumentException {
+            if(priority == null) {
+                throw new IllegalArgumentException("Priority map must not be null");
+            }
+            this.priority = priority;
+        }
+        
+        @Override
+        public int compare(V vertex1, V vertex2)
+        {
+            return (priority.get(vertex1) - priority.get(vertex2));
         }
     }
 }
