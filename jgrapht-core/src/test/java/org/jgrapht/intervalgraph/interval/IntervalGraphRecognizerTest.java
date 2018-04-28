@@ -83,7 +83,7 @@ public class IntervalGraphRecognizerTest {
 
     @Test
     public void testForbiddenSubgraphLekkerkerkerBolandFamily() {
-        for(int n = 7; n < 20; n++) {
+        for(int n = 4; n < 20; n++) {
             testForbiddenSubgraphLekkerkerkerBolandFamily(n);
         }
     }
@@ -114,7 +114,7 @@ public class IntervalGraphRecognizerTest {
     
     @Test
     public void testForbiddenSubgraphLekkerkerkerBolandFamily2() {
-        for(int n = 7; n < 20; n++) {
+        for(int n = 5; n < 20; n++) {
             testForbiddenSubgraphLekkerkerkerBolandFamily(n);
         }
     }
