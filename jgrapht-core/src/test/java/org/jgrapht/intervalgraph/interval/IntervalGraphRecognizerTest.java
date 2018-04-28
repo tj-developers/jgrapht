@@ -9,16 +9,15 @@ import org.jgrapht.graph.SimpleGraph;
 
 import org.jgrapht.graph.builder.GraphBuilder;
 import org.jgrapht.intervalgraph.IntervalGraph;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import java.lang.reflect.*;
-import java.util.*;
-
 public class IntervalGraphRecognizerTest {
 
+    /**
+     * The graph with no vertex or edge is trivially an interval graph
+     */
     @Test
     public void testEmptyGraph() {
         Graph<Integer, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
@@ -26,6 +25,12 @@ public class IntervalGraphRecognizerTest {
         assertTrue(IntervalGraphRecognizer.isIntervalGraph(g));
     }
 
+    /**
+     * First of five cases given by Lekkerkerker and Boland 
+     * which at least one of them appears as an induced subgraph in every non-interval graph
+     * 
+     * A biclaw with AT is a 3-star graph (or claw) with an additional neighbor for every leave
+     */
     @Test
     public void testForbiddenSubgraphBiclawWithAT() {
         GraphBuilder<Integer, DefaultEdge, ? extends SimpleGraph<Integer, DefaultEdge>> builder 
@@ -42,6 +47,10 @@ public class IntervalGraphRecognizerTest {
         assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
     }
 
+    /**
+     * Second of five cases given by Lekkerkerker and Boland 
+     * which at least one of them appears as an induced subgraph in every non-interval graph
+     */
     @Test
     public void testForbiddenSubgraphLekkerkerkerBoland() {
 
@@ -81,6 +90,10 @@ public class IntervalGraphRecognizerTest {
         assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
     }
 
+    /**
+     * Third of five cases given by Lekkerkerker and Boland 
+     * which at least one of them appears as an induced subgraph in every non-interval graph
+     */
     @Test
     public void testForbiddenSubgraphLekkerkerkerBolandFamily() {
         for(int n = 4; n < 20; n++) {
@@ -112,6 +125,10 @@ public class IntervalGraphRecognizerTest {
         assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
     }
     
+    /**
+     * Fourth of five cases given by Lekkerkerker and Boland 
+     * which at least one of them appears as an induced subgraph in every non-interval graph
+     */
     @Test
     public void testForbiddenSubgraphLekkerkerkerBolandFamily2() {
         for(int n = 5; n < 20; n++) {
@@ -130,6 +147,12 @@ public class IntervalGraphRecognizerTest {
         return IntervalGraphRecognizer.isIntervalGraph(builder.build());
     }
 
+    /**
+     * Fifth of five cases given by Lekkerkerker and Boland 
+     * which at least one of them appears as an induced subgraph in every non-interval graph
+     *
+     * A circle graph of length n
+     */
     @Test
     public void testForbiddenSubgraphCn() {
         for(int n = 2; n < 20; n++) {
@@ -148,11 +171,62 @@ public class IntervalGraphRecognizerTest {
         assertTrue(IntervalGraphRecognizer.isIntervalGraph(cg));
     }
     
+    /*
+     * Every complete graph is an interval graph
+     */
     @Test
     public void completeGraphTest()
     {
         for(int i=0; i<20; i++) {
             isCompleteAnIntervalGraph(i);
+        }
+            
+    }
+    
+    public void isUnconnectedAnIntervalGraph(int n) {
+        GraphBuilder<Integer, DefaultEdge, ? extends SimpleGraph<Integer, DefaultEdge>> builder 
+            = new SimpleGraph<>((sourceVertex, targetVertex) -> new DefaultEdge()).createBuilder(DefaultEdge.class);
+
+        for(int i = 0; i < n; i++) {
+            builder.addVertex(i);
+        }
+        
+        //Every complete Graph is an interval graph
+        assertTrue(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+    }
+    
+    /*
+     * Every unconnected Graph is an interval graph
+     */
+    @Test
+    public void unconnectedGraphTest()
+    {
+        for(int i=0; i<20; i++) {
+            isUnconnectedAnIntervalGraph(i);
+        }
+            
+    }
+    
+    public void isLinearAnIntervalGraph(int n) {
+        GraphBuilder<Integer, DefaultEdge, ? extends SimpleGraph<Integer, DefaultEdge>> builder 
+            = new SimpleGraph<>((sourceVertex, targetVertex) -> new DefaultEdge()).createBuilder(DefaultEdge.class);
+
+        for(int i = 0; i < n-1; i++) {
+                builder.addEdge(i, (i + 1));
+        }
+        
+        //Every complete Graph is an interval graph
+        assertTrue(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+    }
+    
+    /*
+     * Every linear graph is an interval graph
+     */
+    @Test
+    public void linearGraphTest()
+    {
+        for(int i=0; i<20; i++) {
+            isLinearAnIntervalGraph(i);
         }
             
     }
