@@ -34,9 +34,9 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
      * @param interval the first element
      * @param highValue the second element
      */
-    public IntervalTreeNodeValue(I interval, T highValue) {
+    public IntervalTreeNodeValue(I interval) {
         this.interval = interval;
-        this.highValue = highValue;
+        this.highValue = interval.getEnd();
     }
 
     /**
@@ -78,7 +78,7 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
             return false;
 
         @SuppressWarnings("unchecked") IntervalTreeNodeValue<I, T> other = (IntervalTreeNodeValue<I, T>) o;
-        return Objects.equals(interval, other.interval) && Objects.equals(highValue, other.highValue);
+        return interval.equals(other.interval);
     }
 
     @Override

@@ -19,7 +19,7 @@ public class RedBlackIntervalTreeStructureTest {
     public void setUp() throws Exception {
         for (int i = 0; i < 20; i++) {
             IntegerInterval interval = new IntegerInterval(i, i+3);
-            tree.insert(i, new IntervalTreeNodeValue<>(interval,0));
+            tree.insert(i, new IntervalTreeNodeValue<>(interval));
             sorted.add(interval);
         }
     }

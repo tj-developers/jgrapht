@@ -44,7 +44,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      */
     @Override
     public void add(Interval<T> interval) {
-        tree.insert(interval.getStart(), new IntervalTreeNodeValue<>(interval, null));
+        tree.insert(interval.getStart(), new IntervalTreeNodeValue<>(interval));
     }
 
     /**
