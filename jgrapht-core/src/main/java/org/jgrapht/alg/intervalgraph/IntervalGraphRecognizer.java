@@ -140,7 +140,7 @@ public final class IntervalGraphRecognizer {
    */
   private static <V> V randomElementOf(Set<V> set) {
     if (set == null) {
-      throw new IllegalArgumentException("List parameter cannot be null.");
+      throw new IllegalArgumentException("Set parameter cannot be null.");
     }
 
     int index = new Random().nextInt(set.size());
