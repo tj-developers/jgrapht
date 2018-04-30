@@ -163,9 +163,9 @@ public final class IntervalGraphRecognizer<V, E>
 
         return isIOrdering(sweepZeta, graph);
     }
-
+    
     /**
-     * Calculates if the given sweep is an I-Ordering (according to the Graph graph)
+     * Calculates if the given sweep is an I-Ordering (according to the Graph graph) in linear time.
      * 
      * @param <E>
      *
@@ -175,30 +175,47 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private static <V, E> boolean isIOrdering(HashMap<V, Integer> sweep, Graph<V, E> graph)
     {
-        //HashMap<V, Integer> last = new HashMap<>(); TODO: is this needed? Improve the algorithm.
+        // Compute inverse sweep map to quickly find vertices at given indices
         HashMap<Integer, V> inverseSweep = new HashMap<>();
 
         for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
             inverseSweep.put(index, vertex);
         }
-
-        for (int i = 0; i < sweep.size() - 2; i++) {
-            for (int j = i + 1; j < sweep.size() - 1; j++) {
-                for (int k = j + 1; k < sweep.size(); k++) {
-                    boolean edgeIJ = graph.containsEdge(inverseSweep.get(i), inverseSweep.get(j));
-                    boolean edgeIK = graph.containsEdge(inverseSweep.get(i), inverseSweep.get(k));
-                    if (edgeIK) {
-                        if (edgeIJ) {
-                        } else {
-                            return false;
-                        }
-                    }
+        
+        // Compute maximal neighbors w.r.t. sweep ordering for every vertex
+        HashMap<V, V> maxNeighbors = new HashMap<>(graph.vertexSet().size());
+        
+        for(V vertex : graph.vertexSet()) {
+            List<V> neighbors = Graphs.neighborListOf(graph, vertex);
+            V maxNeighbor = vertex;
+            
+            for(V neighbor : neighbors) {
+                if(sweep.get(neighbor) > sweep.get(maxNeighbor)) {
+                    maxNeighbor = neighbor;
+                }
+            }
+            
+            maxNeighbors.put(vertex, maxNeighbor);
+        }
+        
+        // Check if every vertex is connected to all vertices between itself and its maximal neighbor
+        for(V vertex : graph.vertexSet()) {
+            int index = sweep.get(vertex);
+            int maxIndex = sweep.get(maxNeighbors.get(vertex));
+            
+            for(int i = index; i < maxIndex; i++) {
+                if(!graph.containsEdge(vertex, inverseSweep.get(i))) {
+                    // Found missing edge
+                    return false;
                 }
             }
         }
+        
+        // No missing edge found
         return true;
     }
+    
 
     /**
      * return the last element of the given map
