@@ -6,6 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class RedBlackComparatorTreeTest {
+
     RedBlackComparatorTree<Integer> tree = new RedBlackComparatorTree<>(Integer::compareTo);
 
     @Before
@@ -27,10 +28,12 @@ public class RedBlackComparatorTreeTest {
     }
 
     @Test
-    public void contains() {
+    public void testContains() {
         assertTrue(tree.contains(0));
         assertTrue(tree.contains(4));
-        assertFalse(tree.contains(73));
+
         assertFalse(tree.contains(5));
+        assertFalse(tree.contains(73));
+        assertFalse(tree.contains(200));
     }
 }
