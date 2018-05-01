@@ -34,10 +34,7 @@ public class RedBlackComparatorTree<V> implements Serializable {
     }
 
     private boolean isRed(RBNode<V> node){
-        if (node == null) {
-            return false;
-        }
-        return node.isRed();
+        return node == null ? false : node.isRed();
     }
 
     /**
@@ -56,7 +53,7 @@ public class RedBlackComparatorTree<V> implements Serializable {
     }
 
     /**
-     * Insertes the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
+     * Inserts the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
      * it overwrites the old value with the new.
      *
      * @param val the value

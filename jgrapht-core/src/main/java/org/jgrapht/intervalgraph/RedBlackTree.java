@@ -65,7 +65,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     }
 
     /**
-     * Insertes the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
+     * Inserts the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
      * it overwrites the old value with the new.
      *
      * @param key the key
