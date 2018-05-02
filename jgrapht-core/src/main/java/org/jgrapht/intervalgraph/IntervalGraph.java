@@ -382,11 +382,7 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     public boolean removeVertex(V v)
     {
         if (containsVertex(v)) {
-            Set<E> touchingEdgesList = edgesOf(v);
-
-            // cannot iterate over list - will cause
-            // ConcurrentModificationException
-            removeAllEdges(new ArrayList<>(touchingEdgesList));
+            removeAllEdgesFromVertex(v);//remove all edges from the given vertex to delete it safely
 
             specifics.removeVertex(v);// remove the vertex itself
 
@@ -504,5 +500,29 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
             }
         }
         return true;
+    }
+
+    /**
+     * @see Graph#removeAllEdges(Collection)
+     */
+    private boolean removeAllEdgesFromVertex(V vertex) {
+        Set<E> touchingEdgesList = edgesOf(vertex);
+
+        // cannot iterate over list - will cause
+        // ConcurrentModificationException
+        ArrayList<E> edges = new ArrayList<>(touchingEdgesList);
+
+        boolean modified = false;
+
+        for (E e : edges) {
+
+            if (containsEdge(e)) {
+                specifics.removeEdgeFromTouchingVertices(e);
+                intrusiveEdgesSpecifics.remove(e);
+                modified = true;
+            }
+        }
+
+        return modified;
     }
 }
