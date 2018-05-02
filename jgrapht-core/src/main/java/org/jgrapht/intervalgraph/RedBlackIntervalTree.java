@@ -18,7 +18,7 @@ import java.util.List;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackTree<T, NodeValue> implements IntervalTreeInterface<T, NodeValue>, Serializable {
+public class RedBlackIntervalTree<T extends Comparable<T>, K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackTree<K, NodeValue> implements IntervalTreeInterface<T, K, NodeValue>, Serializable {
 
     private static final long serialVersionUID = 4353687394654923429L;
 
@@ -40,9 +40,9 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
     }
 
     @Override
-    protected Node<T, NodeValue> rotateRight(Node<T, NodeValue> node) {
+    protected Node<K, NodeValue> rotateRight(Node<K, NodeValue> node) {
         // Perform rotation as usual
-        Node<T, NodeValue> result = super.rotateRight(node);
+        Node<K, NodeValue> result = super.rotateRight(node);
 
         // update hi vals
         result.getVal().setHighValue(node.getVal().getHighValue());
@@ -52,9 +52,9 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
     }
 
     @Override
-    protected Node<T, NodeValue> rotateLeft(Node<T, NodeValue> node) {
+    protected Node<K, NodeValue> rotateLeft(Node<K, NodeValue> node) {
         // Perform rotation as usual
-        Node<T, NodeValue> result = super.rotateLeft(node);
+        Node<K, NodeValue> result = super.rotateLeft(node);
 
         // update hi vals
         result.getVal().setHighValue(node.getVal().getHighValue());
@@ -64,28 +64,28 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
     }
 
     @Override
-    protected Node<T, NodeValue> delete(Node<T, NodeValue> current, T key) {
-        Node<T, NodeValue> result = super.delete(current, key);
+    protected Node<K, NodeValue> delete(Node<K, NodeValue> current, K key) {
+        Node<K, NodeValue> result = super.delete(current, key);
         updateHi(result);
         return result;
     }
 
     @Override
-    protected Node<T, NodeValue> insert(Node<T, NodeValue> current, T key, NodeValue val) {
-        Node<T, NodeValue> result = super.insert(current, key, val);
+    protected Node<K, NodeValue> insert(Node<K, NodeValue> current, K key, NodeValue val) {
+        Node<K, NodeValue> result = super.insert(current, key, val);
         updateHi(result);
         return result;
     }
 
     @Override
-    protected Node<T, NodeValue> balance(Node<T, NodeValue> node) {
-        Node<T, NodeValue> result = super.balance(node);
+    protected Node<K, NodeValue> balance(Node<K, NodeValue> node) {
+        Node<K, NodeValue> result = super.balance(node);
         updateHi(result);
         return result;
     }
 
     // sets the hi attribute of the given node to the max of the subtree or itself
-    private void updateHi(Node<T, NodeValue> node) {
+    private void updateHi(Node<K, NodeValue> node) {
         if (node == null) {
             return;
         }
@@ -112,7 +112,7 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
         }
     }
 
-    private void overlapsWith(Node<T, NodeValue> node, Interval<T> interval, List<Interval<T>> result) {
+    private void overlapsWith(Node<K, NodeValue> node, Interval<T> interval, List<Interval<T>> result) {
         if (node == null) {
             return;
         }
@@ -135,7 +135,7 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
         overlapsWith(node.getLeftChild(), interval, result);
     }
 
-    private void overlapsWithPoint(Node<T, NodeValue> node, T point, List<Interval<T>> result) {
+    private void overlapsWithPoint(Node<K, NodeValue> node, T point, List<Interval<T>> result) {
         if (node == null) {
             return;
         }

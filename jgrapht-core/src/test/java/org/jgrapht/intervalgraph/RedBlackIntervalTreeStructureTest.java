@@ -1,25 +1,26 @@
 package org.jgrapht.intervalgraph;
 
-import org.jgrapht.intervalgraph.interval.IntegerInterval;
 import org.jgrapht.intervalgraph.interval.Interval;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class RedBlackIntervalTreeStructureTest {
 
-    List<IntegerInterval> sorted = new LinkedList<>();
-    RedBlackIntervalTree<Integer, IntervalTreeNodeValue<Interval<Integer>, Integer>> tree = new RedBlackIntervalTree<>();
+    List<Interval<Integer>> sorted = new LinkedList<>();
+    RedBlackIntervalTree<Integer, IntervalTreeNodeKey<Interval<Integer>>, IntervalTreeNodeValue<Interval<Integer>, Integer>> tree = new RedBlackIntervalTree<>();
 
     @Before
     public void setUp() throws Exception {
         for (int i = 0; i < 20; i++) {
-            IntegerInterval interval = new IntegerInterval(i, i+3);
-            tree.insert(i, new IntervalTreeNodeValue<>(interval));
+            Interval<Integer> interval = new Interval<>(i, i + 3);
+            tree.insert(new IntervalTreeNodeKey<>(interval, getComparator()), new IntervalTreeNodeValue<>(interval));
             sorted.add(interval);
         }
     }
@@ -29,12 +30,23 @@ public class RedBlackIntervalTreeStructureTest {
         List<IntervalTreeNodeValue<Interval<Integer>, Integer>> result = tree.inorderValues();
         for (int i1 = 0, resultSize = result.size(); i1 < resultSize; i1++) {
             Interval<Integer> i = result.get(i1).getInterval();
-            assertEquals("fault at " + i1,i, sorted.get(i1));
+            assertEquals("fault at " + i1, i, sorted.get(i1));
         }
 
 
-        tree.delete(5);
-        assertFalse(tree.contains(5));
+        tree.delete(new IntervalTreeNodeKey<>(new Interval<>(5, 8), getComparator()));
+        assertFalse(tree.contains(new IntervalTreeNodeKey<>(new Interval<>(5, 8), getComparator())));
         assertEquals(Integer.valueOf(19 + 3), tree.getRoot().getVal().getHighValue());
+    }
+
+    private Comparator<Interval<Integer>> getComparator() {
+        return (o1, o2) -> {
+            int startCompare = o1.getStart().compareTo(o2.getStart());
+            if (startCompare != 0) {
+                return startCompare;
+            } else {
+                return o1.getEnd().compareTo(o2.getEnd());
+            }
+        };
     }
 }
