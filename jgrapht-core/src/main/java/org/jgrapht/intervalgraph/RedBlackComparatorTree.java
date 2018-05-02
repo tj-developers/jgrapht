@@ -22,9 +22,11 @@ public class RedBlackComparatorTree<V> implements Serializable {
     protected RBNode<V> root;
 
     public final Comparator<V> comparator;
+    public final Comparator<RBNode<V>> nodeComparator;
 
     public RedBlackComparatorTree(Comparator<V> comparator) {
         this.comparator = comparator;
+        this.nodeComparator = (o1, o2) -> comparator.compare(o1.getVal(), o2.getVal());
     }
 
     public RBNode<V> getRoot() {
@@ -104,7 +106,7 @@ public class RedBlackComparatorTree<V> implements Serializable {
     
     public void delete(V val) {
         if (val == null) {
-            throw new IllegalArgumentException("IntervalTreeNodeKey is null");
+            throw new IllegalArgumentException("Key is null");
         }
         if (!contains(val)) {
             return;
@@ -352,7 +354,7 @@ public class RedBlackComparatorTree<V> implements Serializable {
     /**
      * Returns all keys in the symbol table as an <code>Iterable</code>.
      * To iterate over all of the keys in the symbol table named <code>st</code>,
-     * use the foreach notation: <code>for (IntervalTreeNodeKey key : st.keys())</code>.
+     * use the foreach notation: <code>for (Key key : st.keys())</code>.
      *
      * @return all keys in the symbol table as an <code>Iterable</code>
      */

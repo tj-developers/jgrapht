@@ -35,7 +35,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public V get(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("IntervalTreeNodeKey is null");
+            throw new IllegalArgumentException("Key is null");
         }
 
         return searchNode(key).getVal();
@@ -58,7 +58,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public boolean contains(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("IntervalTreeNodeKey is null");
+            throw new IllegalArgumentException("Key is null");
         }
 
         return searchNode(key) != null;
@@ -75,7 +75,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public void insert(K key, V val) {
         if (key == null) {
-            throw new IllegalArgumentException("IntervalTreeNodeKey is null");
+            throw new IllegalArgumentException("Key is null");
         }
 
         root = insert(root, key, val);
@@ -120,7 +120,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public void delete(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("IntervalTreeNodeKey is null");
+            throw new IllegalArgumentException("Key is null");
         }
         if (!contains(key)) {
             return;
@@ -371,7 +371,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     /**
      * Returns all keys in the symbol table as an <code>Iterable</code>.
      * To iterate over all of the keys in the symbol table named <code>st</code>,
-     * use the foreach notation: <code>for (IntervalTreeNodeKey key : st.keys())</code>.
+     * use the foreach notation: <code>for (Key key : st.keys())</code>.
      *
      * @return all keys in the symbol table as an <code>Iterable</code>
      */
