@@ -7,20 +7,22 @@ import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.*;
 import org.jgrapht.intervalgraph.interval.*;
 
-public class IntervalgraphDecomposition<V,E,T extends Comparable<T>>
-    implements TreeDecomposition<V,E,T>
+public class IntervalgraphDecomposition<T extends Comparable<T>>
+    implements TreeDecomposition<T,DefaultEdge>
 {
-    private Graph<Set<V>,DefaultEdge> treeDecomposition = null;
-    private Set<V> currentVertex = null;
+    private Graph<Set<Interval<T>>,DefaultEdge> treeDecomposition = null;
+    private Set<Interval<T>> currentVertex = null;
     private List<IntervalVertex<V,T>> startSort, endSort;
     
     public IntervalgraphDecomposition(Graph<V,E> graph) 
     {
+        throw new UnsupportedOperationException("Not yet implemented");
         //TODO
     }
     
-    public IntervalgraphDecomposition(IntervalGraph<IntervalVertexInterface<V,T>,E>  graph)
+    public IntervalgraphDecomposition(IntervalGraphInterface<T>  graph)
     {
+        throw new UnsupportedOperationException("Not yet implemented");
         //TODO
     }
     

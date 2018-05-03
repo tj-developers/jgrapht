@@ -5,8 +5,8 @@ import java.util.*;
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
 
-public class CordalgraphDecomposition<V,E,T>
-    implements TreeDecomposition<V,E,T>
+public class CordalgraphDecomposition<V,E>
+    implements TreeDecomposition<V,E>
 {
 
     @Override
