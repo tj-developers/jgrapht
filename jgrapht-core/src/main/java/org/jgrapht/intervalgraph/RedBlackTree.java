@@ -291,7 +291,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         if (node.getLeftChild() == null) {
             return node;
         }
-        return max(node.getLeftChild());
+        return min(node.getLeftChild());
     }
 
     /**
