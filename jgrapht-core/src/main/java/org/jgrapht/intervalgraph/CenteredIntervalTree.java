@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.jgrapht.Graph;
 import org.jgrapht.intervalgraph.interval.Interval;
 
-public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGraph<T>{
+public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGraphInterface<T> {
     private T centerPoint;
     private CenteredIntervalTree<T> leftTree; // contains all the intervals *completely* to the left of the center point
     private CenteredIntervalTree<T> rightTree; // contains all the intervals *completely* to the right of the center point
@@ -45,11 +45,9 @@ public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGr
         for (Interval<T> interval: intervals) {
             if (interval.contains(centerPoint)) {
                 intersectingIntervals.add(interval);
-            }
-
-            if (interval.relativeDistance(centerPoint) < 0) { // is completely left to center point
+            } else if (interval.compareToPoint(centerPoint) < 0) { // is completely left to center point
                 leftIntervals.add(interval);
-            } else if (interval.relativeDistance(centerPoint) > 0) { // completely right
+            } else if (interval.compareToPoint(centerPoint) > 0) { // completely right
                 rightIntervals.add(interval);
             }
         }
@@ -66,7 +64,7 @@ public class CenteredIntervalTree<T extends Comparable<T>> implements IntervalGr
         leftTree.initialize(leftIntervals);
 
         rightTree = new CenteredIntervalTree<>();
-        leftTree.initialize(rightIntervals);
+        rightTree.initialize(rightIntervals);
     }
 
     @Override
