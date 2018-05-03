@@ -57,8 +57,6 @@ public final class IntervalGraphRecognizer<V, E>
     /**
      * check if the graph is an interval graph
      *
-     * @param <V> the generic type representing vertices
-     * @param <E> the generic type representing edges
      * @return
      */
     public boolean isIntervalGraph(Graph<V, E> graph)
@@ -176,11 +174,11 @@ public final class IntervalGraphRecognizer<V, E>
     private static <V, E> boolean isIOrdering(HashMap<V, Integer> sweep, Graph<V, E> graph)
     {
         // Compute inverse sweep map to quickly find vertices at given indices
-        HashMap<Integer, V> inverseSweep = new HashMap<>();
+        ArrayList<V> inverseSweep = new ArrayList<>(graph.vertexSet().size());
 
         for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
-            inverseSweep.put(index, vertex);
+            inverseSweep.set(index, vertex);
         }
         
         // Compute maximal neighbors w.r.t. sweep ordering for every vertex
