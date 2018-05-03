@@ -12,6 +12,7 @@ import java.util.List;
  * after any operation on this tree. The highValue equals to the highest endpoint in the subtree
  *
  * @param <T> the type of the interval
+ * @param <K> the type of the key
  * @param <NodeValue> the type of the node value
  *
  * @author Daniel Mock (danielmock)
