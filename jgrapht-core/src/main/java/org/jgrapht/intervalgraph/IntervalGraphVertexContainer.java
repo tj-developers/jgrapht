@@ -17,7 +17,7 @@ import java.util.*;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
+public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
 
     private static final long serialVersionUID = 7768940080894764546L;
 
