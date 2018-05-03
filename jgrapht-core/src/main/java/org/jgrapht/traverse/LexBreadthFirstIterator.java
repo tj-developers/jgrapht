@@ -613,8 +613,17 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     
     class PriorityComparator implements Comparator<V>
     {
+        /**
+         * Contains the priorities of the vertices.
+         */
         private final HashMap<V, Integer> priority;
         
+        /**
+         * Creates a new priority comparator for the vertex set with given priorities.
+         * 
+         * @param priority the (integer-valued) priorities of the vertices.
+         * @throws IllegalArgumentException if the priorities are <tt>null</tt>.
+         */
         public PriorityComparator(HashMap<V, Integer> priority) throws IllegalArgumentException {
             if(priority == null) {
                 throw new IllegalArgumentException("Priority map must not be null");
@@ -623,6 +632,14 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         }
         
         @Override
+        /**
+         * Compares the priorities of the given vertices.
+         * 
+         * @param vertex1 the first vertex to be compared.
+         * @param vertex2 the second vertex to be compared.
+         * 
+         * @return Returns a positive integer (zero/a negative integer) if the priority of <tt>vertex1</tt> is larger (equal to/smaller) than the one of <tt>vertex2</tt>.
+         */
         public int compare(V vertex1, V vertex2)
         {
             return (priority.get(vertex1) - priority.get(vertex2));

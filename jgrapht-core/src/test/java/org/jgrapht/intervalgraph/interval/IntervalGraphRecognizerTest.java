@@ -20,9 +20,10 @@ public class IntervalGraphRecognizerTest {
      */
     @Test
     public void testEmptyGraph() {
-        Graph<Integer, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
+        Graph<Integer, DefaultEdge> emptyGraph = new SimpleGraph<>(DefaultEdge.class);
 
-        assertTrue(IntervalGraphRecognizer.isIntervalGraph(g));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(emptyGraph);
+        assertTrue(recognizer.isIntervalGraph());
     }
 
     /**
@@ -44,7 +45,8 @@ public class IntervalGraphRecognizerTest {
         builder.addEdge(2, 5);
         builder.addEdge(3, 6);
 
-        assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        assertFalse(recognizer.isIntervalGraph());
     }
 
     /**
@@ -71,7 +73,8 @@ public class IntervalGraphRecognizerTest {
 
         builder.addEdge(3, 6);
 
-        assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        assertFalse(recognizer.isIntervalGraph());
     }
 
     public void testForbiddenSubgraphLekkerkerkerBolandFamily(int n) {
@@ -87,7 +90,8 @@ public class IntervalGraphRecognizerTest {
 
         builder.addEdge(n - 1, n);
 
-        assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        assertFalse(recognizer.isIntervalGraph());
     }
 
     /**
@@ -143,8 +147,9 @@ public class IntervalGraphRecognizerTest {
         for(int i = 0; i < n; i++) {
             builder.addEdge(i, (i + 1) % n);
         }
-
-        return IntervalGraphRecognizer.isIntervalGraph(builder.build());
+        
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        return recognizer.isIntervalGraph();
     }
 
     /**

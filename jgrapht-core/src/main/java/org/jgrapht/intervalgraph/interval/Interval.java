@@ -1,5 +1,7 @@
 package org.jgrapht.intervalgraph.interval;
 
+import java.util.Objects;
+
 public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
     private T start;
     private T end;
@@ -66,5 +68,25 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
 
     public boolean isValid() {
         return getStart().compareTo(getEnd()) <= 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Interval[" + start + ", " + end + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Interval<?> interval = (Interval<?>) o;
+        return Objects.equals(start, interval.start) &&
+                Objects.equals(end, interval.end);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(start, end);
     }
 }
