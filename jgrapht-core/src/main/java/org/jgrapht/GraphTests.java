@@ -22,6 +22,7 @@ import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector;
 import org.jgrapht.alg.cycle.ChordalityInspector;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
+import org.jgrapht.alg.intervalgraph.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -506,11 +507,12 @@ public abstract class GraphTests
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
      * @return true if the graph is an interval graph, false otherwise
-     * @see TODO
+     * @see IntervalGraphRecognizer#isIntervalGraph()
      * 
      */
     public static <V, E> boolean isIntervalGraph(Graph<V, E> graph) {
-        throw new UnsupportedOperationException("Not yet implemented!"); //TODO: Implement
+        Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
+        return new IntervalGraphRecognizer<>(graph).isIntervalGraph();
     }
 
     /**
