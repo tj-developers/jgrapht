@@ -126,7 +126,8 @@ public class IntervalGraphRecognizerTest {
         builder.addEdge(n, 2);
         builder.addEdge(n, 4);
         
-        assertFalse(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        assertFalse(recognizer.isIntervalGraph());
     }
     
     /**
@@ -173,7 +174,8 @@ public class IntervalGraphRecognizerTest {
         cgg.generateGraph(cg, new IntegerVertexFactory(), null);
         
         //Every complete Graph is an interval graph
-        assertTrue(IntervalGraphRecognizer.isIntervalGraph(cg));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(cg);
+        assertTrue(recognizer.isIntervalGraph());
     }
     
     /*
@@ -197,7 +199,8 @@ public class IntervalGraphRecognizerTest {
         }
         
         //Every complete Graph is an interval graph
-        assertTrue(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        assertTrue(recognizer.isIntervalGraph());
     }
     
     /*
@@ -221,7 +224,8 @@ public class IntervalGraphRecognizerTest {
         }
         
         //Every complete Graph is an interval graph
-        assertTrue(IntervalGraphRecognizer.isIntervalGraph(builder.build()));
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        assertTrue(recognizer.isIntervalGraph());
     }
     
     /*
