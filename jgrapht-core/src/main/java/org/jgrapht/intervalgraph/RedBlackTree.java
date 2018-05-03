@@ -1,9 +1,7 @@
 package org.jgrapht.intervalgraph;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Implementation of a Red-Black-Tree
@@ -24,6 +22,89 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     public Node<K, V> getRoot() {
         return root;
     }
+
+    public RedBlackTree() {
+    }
+
+
+    /**
+     * Construct a tree with the given keys and values.
+     * keys.get(i) is assigned to values.get(i)
+     * Runs in linear time if list is sorted, otherwise naive insertion is performed
+     * @param keys
+     * @param values
+     */
+    public RedBlackTree(List<K> keys, List<V> values) {
+        ArrayList<K> keyList;
+        ArrayList<V> valueList;
+        int length = keys.size();
+
+        // exceptions
+        if (length != values.size()) {
+            throw new RuntimeException("Key and value list have to have same length");
+        }
+        if (keys.size() == 0) {
+            return;
+        }
+
+        // transform to ArrayList for good performance
+        if (keys instanceof ArrayList) {
+            keyList = (ArrayList<K>) keys;
+        } else {
+            keyList = new ArrayList<>(keys);
+        }
+
+        if (values instanceof ArrayList) {
+            valueList = (ArrayList<V>) values;
+        } else {
+            valueList = new ArrayList<>(values);
+        }
+
+        // check if list is sorted to use efficient insertion
+        boolean isSorted = true;
+        K current = keyList.get(0);
+        for (int i = 1; i < length; i++) {
+            K next = keyList.get(i);
+            if (current.compareTo(next) > 0) {
+                isSorted = false;
+                break;
+            }
+        }
+
+        // use optimized insert if input is sorted, otherwise trivial insertion
+        if (isSorted) {
+            root = sortedListToBST(keyList, valueList, 0, length - 1);
+        } else {
+            for (int i = 0; i < length; i++) {
+                this.insert(keyList.get(i), valueList.get(i));
+            }
+        }
+    }
+
+    private Node<K, V> sortedListToBST(ArrayList<K> keys, ArrayList<V> values, int start, int end) {
+        if (start > end) {
+            return null;
+        }
+
+        int mid = start + (end - start) / 2;
+        Node<K, V> node = new Node<>(keys.get(mid), values.get(mid), false, 0); // colors and size have to be updated
+        Node<K, V> left = sortedListToBST(keys, values, start, mid - 1);
+        Node<K, V> right = sortedListToBST(keys, values, mid + 1, end);
+        node.setLeftChild(left);
+        node.setRightChild(right);
+
+        // color all nodes black and only the leaves red
+        if (left == null && right == null) {
+            node.setRed();
+            node.setSize(0);
+        } else {
+            // update sizes
+            node.setSize(Math.max((left != null) ? left.getSize() : 0, right != null ? right.getSize() : 0) + 1);
+        }
+
+        return node;
+    }
+
 
     /**
      * Returns the value associated with the given key
