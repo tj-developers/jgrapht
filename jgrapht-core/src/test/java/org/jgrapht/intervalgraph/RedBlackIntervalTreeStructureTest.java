@@ -14,7 +14,7 @@ import static org.junit.Assert.assertFalse;
 public class RedBlackIntervalTreeStructureTest {
 
     List<Interval<Integer>> sorted = new LinkedList<>();
-    RedBlackIntervalTree<Integer, IntervalTreeNodeKey<Interval<Integer>>, IntervalTreeNodeValue<Interval<Integer>, Integer>> tree = new RedBlackIntervalTree<>();
+    RedBlackIntervalTree<IntervalTreeNodeKey<Interval<Integer>>, IntervalTreeNodeValue<Interval<Integer>, Integer>, Integer> tree = new RedBlackIntervalTree<>();
 
     @Before
     public void setUp() throws Exception {

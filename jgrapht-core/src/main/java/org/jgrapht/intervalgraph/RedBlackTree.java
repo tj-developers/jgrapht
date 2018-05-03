@@ -23,8 +23,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         return root;
     }
 
-    public RedBlackTree() {
-    }
+    public RedBlackTree() {}
 
 
     /**
@@ -34,9 +33,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
      * @param keys
      * @param values
      */
-    public RedBlackTree(List<K> keys, List<V> values) {
-        ArrayList<K> keyList;
-        ArrayList<V> valueList;
+    public RedBlackTree(ArrayList<K> keys, ArrayList<V> values) {
         int length = keys.size();
 
         // exceptions
@@ -47,36 +44,24 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
             return;
         }
 
-        // transform to ArrayList for good performance
-        if (keys instanceof ArrayList) {
-            keyList = (ArrayList<K>) keys;
-        } else {
-            keyList = new ArrayList<>(keys);
-        }
-
-        if (values instanceof ArrayList) {
-            valueList = (ArrayList<V>) values;
-        } else {
-            valueList = new ArrayList<>(values);
-        }
-
         // check if list is sorted to use efficient insertion
         boolean isSorted = true;
-        K current = keyList.get(0);
+        K current = keys.get(0);
         for (int i = 1; i < length; i++) {
-            K next = keyList.get(i);
+            K next = keys.get(i);
             if (current.compareTo(next) > 0) {
                 isSorted = false;
                 break;
             }
+            current = next;
         }
 
         // use optimized insert if input is sorted, otherwise trivial insertion
         if (isSorted) {
-            root = sortedListToBST(keyList, valueList, 0, length - 1);
+            root = sortedListToBST(keys, values, 0, length - 1);
         } else {
             for (int i = 0; i < length; i++) {
-                this.insert(keyList.get(i), valueList.get(i));
+                this.insert(keys.get(i), values.get(i));
             }
         }
     }

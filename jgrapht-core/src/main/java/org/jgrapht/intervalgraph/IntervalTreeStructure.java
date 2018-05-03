@@ -3,6 +3,8 @@ package org.jgrapht.intervalgraph;
 import org.jgrapht.intervalgraph.interval.Interval;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -19,7 +21,23 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
 
     private static final long serialVersionUID = 2834567756342332325L;
 
-    private IntervalTreeInterface<T, IntervalTreeNodeKey<Interval<T>>, IntervalTreeNodeValue<Interval<T>, T>> tree = new RedBlackIntervalTree<>();
+    private IntervalTreeInterface<T, IntervalTreeNodeKey<Interval<T>>, IntervalTreeNodeValue<Interval<T>, T>> tree;
+
+    public IntervalTreeStructure() {
+        this.tree = new RedBlackIntervalTree<>();
+    }
+
+    public IntervalTreeStructure(ArrayList<Interval<T>> intervals) {
+        ArrayList<IntervalTreeNodeKey<Interval<T>>> keys = new ArrayList<>(intervals.size());
+        ArrayList<IntervalTreeNodeValue<Interval<T>, T>> values = new ArrayList<>(intervals.size());
+
+        for(int i = 0; i < intervals.size(); ++i) {
+            keys.add(i, new IntervalTreeNodeKey<>(intervals.get(i), getComparator()));
+            values.add(i, new IntervalTreeNodeValue<>(intervals.get(i)));
+        }
+
+        this.tree = new RedBlackIntervalTree<>(keys, values);
+    }
 
     /**
      * Returns all intervals that overlap with the given <code>interval</code>

@@ -44,6 +44,24 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T
     }
 
     /**
+     * Constructs a vertex container for an interval graph with all necessary objects.
+     */
+    public IntervalGraphVertexContainer(ArrayList<V> vertices, ArrayList<UndirectedEdgeContainer<V, E>> undirectedEdgeContainers) {
+        this.vertexMap = new LinkedHashMap<>();
+        this.intervalMap = new LinkedHashMap<>();
+
+        ArrayList<Interval<T>> intervals = new ArrayList<>(vertices.size());
+
+        for(int i = 0; i < vertices.size(); ++i) {
+            intervals.add(i, vertices.get(i).getInterval());
+            intervalMap.put(vertices.get(i).getInterval(), vertices.get(i));
+            vertexMap.put(vertices.get(i), undirectedEdgeContainers.get(i));
+        }
+
+        this.intervalStructure = new IntervalTreeStructure<>(intervals);
+    }
+
+    /**
      * Returns the whole vertex set of the graph.
      *
      * @return all vertices of the graph in a set

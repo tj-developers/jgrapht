@@ -3,6 +3,7 @@ package org.jgrapht.intervalgraph;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -84,9 +85,9 @@ public class RedBlackTreeTest {
 
     @Test
     public void testListConstructor() {
-        List<Integer> keyList = new LinkedList<>();
+        ArrayList<Integer> keyList = new ArrayList<>(20);
         for (int i = 0; i < 20; i++) {
-            keyList.add(i);
+            keyList.add(i, i);
         }
 
         RedBlackTree<Integer, Integer> tree = new RedBlackTree<>(keyList, keyList);
