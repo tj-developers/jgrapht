@@ -47,24 +47,20 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * specified edge factory.
      *
      * @param ef the edge factory of the new graph.
-     * @param directed if true the graph will be directed, otherwise undirected
-     * @param allowMultipleEdges whether to allow multiple (parallel) edges or not.
-     * @param allowLoops whether to allow edges that are self-loops or not.
      * @param weighted whether the graph is weighted, i.e. the edges support a weight attribute
      *
      * @throws NullPointerException if the specified edge factory is <code>
      * null</code>.
      */
     protected IntervalGraph(
-            EdgeFactory<V, E> ef, boolean directed, boolean allowMultipleEdges, boolean allowLoops,
-            boolean weighted)
+            EdgeFactory<V, E> ef, boolean weighted)
     {
         Objects.requireNonNull(ef);
 
         this.edgeFactory = ef;
-        this.allowingLoops = allowLoops;
-        this.allowingMultipleEdges = allowMultipleEdges;
-        this.directed = directed;
+        this.allowingLoops = false;
+        this.allowingMultipleEdges = false;
+        this.directed = false;
         this.specifics =
                 Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
         this.weighted = weighted;
@@ -78,17 +74,13 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      *
      * @param vertices initial vertices
      * @param ef the edge factory of the new graph.
-     * @param directed if true the graph will be directed, otherwise undirected
-     * @param allowMultipleEdges whether to allow multiple (parallel) edges or not.
-     * @param allowLoops whether to allow edges that are self-loops or not.
      * @param weighted whether the graph is weighted, i.e. the edges support a weight attribute
      *
      * @throws NullPointerException if the specified edge factory is <code>
      * null</code>.
      */
     protected IntervalGraph(
-            ArrayList<V> vertices, EdgeFactory<V, E> ef, boolean directed, boolean allowMultipleEdges, boolean allowLoops,
-            boolean weighted)
+            ArrayList<V> vertices, EdgeFactory<V, E> ef, boolean weighted)
     {
 
         Objects.requireNonNull(ef);
@@ -105,9 +97,9 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
         }
 
         this.edgeFactory = ef;
-        this.allowingLoops = allowLoops;
-        this.allowingMultipleEdges = allowMultipleEdges;
-        this.directed = directed;
+        this.allowingLoops = false;
+        this.allowingMultipleEdges = false;
+        this.directed = false;
 
         this.weighted = weighted;
         this.intrusiveEdgesSpecifics = Objects.requireNonNull(
