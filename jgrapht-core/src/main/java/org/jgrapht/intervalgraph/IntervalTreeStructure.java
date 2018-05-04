@@ -50,7 +50,6 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      * removes an interval from the tree
      *
      * @param interval the interval
-     * @return
      */
     @Override
     public void remove(Interval<T> interval) {

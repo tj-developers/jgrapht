@@ -42,7 +42,6 @@ public interface IntervalStructureInterface<T extends Comparable<T>> {
      * removes an interval from the tree
      *
      * @param interval the interval
-     * @return
      */
     void remove(Interval<T> interval);
 }

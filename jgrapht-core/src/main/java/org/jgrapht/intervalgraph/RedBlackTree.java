@@ -15,7 +15,8 @@ import java.util.NoSuchElementException;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>, Serializable {
+public class RedBlackTree<K extends Comparable<K>, V>
+        implements BinarySearchTree<K, V>, Serializable {
 
     private static final long serialVersionUID = 1199228564356373435L;
 

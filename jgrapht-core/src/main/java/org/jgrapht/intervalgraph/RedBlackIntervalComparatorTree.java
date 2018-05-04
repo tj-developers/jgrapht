@@ -12,8 +12,7 @@ import java.util.List;
  * @param <T>
  * @param <NodeValue>
  */
-public class RedBlackIntervalComparatorTree<T extends Comparable<T>,
-        NodeValue extends IntervalTreeNodeValue<Interval<T>, T>>
+public class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>>
         extends RedBlackComparatorTree<NodeValue> {
 
     public RedBlackIntervalComparatorTree(Comparator<Interval<T>> comparator) {

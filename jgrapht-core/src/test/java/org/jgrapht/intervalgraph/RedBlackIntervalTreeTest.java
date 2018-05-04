@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class RedBlackIntervalTreeStructureTest {
+public class RedBlackIntervalTreeTest {
 
     List<IntegerInterval> sorted = new LinkedList<>();
     RedBlackIntervalTree<Integer, IntervalTreeNodeValue<Interval<Integer>, Integer>> tree = new RedBlackIntervalTree<>();
@@ -36,4 +36,5 @@ public class RedBlackIntervalTreeStructureTest {
         assertFalse(tree.contains(5));
         assertEquals(Integer.valueOf(19 + 3), tree.getRoot().getVal().getHighValue());
     }
+
 }

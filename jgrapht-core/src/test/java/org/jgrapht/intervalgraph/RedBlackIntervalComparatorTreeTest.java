@@ -12,8 +12,8 @@ import static org.junit.Assert.*;
 
 public class RedBlackIntervalComparatorTreeTest {
 
-    List<IntegerInterval> sorted = new LinkedList<>();
-    RedBlackIntervalComparatorTree<Integer, IntervalTreeNodeValue<Interval<Integer>, Integer>> tree = new RedBlackIntervalComparatorTree<>();
+    private List<IntegerInterval> sorted = new LinkedList<>();
+    private RedBlackIntervalComparatorTree<Integer, IntervalTreeNodeValue<Interval<Integer>, Integer>> tree = new RedBlackIntervalComparatorTree<>();
 
     @Before
     public void setUp() {

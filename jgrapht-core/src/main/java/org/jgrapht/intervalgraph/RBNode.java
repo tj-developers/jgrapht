@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Implementation of red-black tree node
  *
- * @param <V> the value
+ * @param <V> the type of the node
  * @author Christoph Grüne (christophgruene)
  * @author Daniel Mock (danielmock)
  * @since Apr 26, 2018
