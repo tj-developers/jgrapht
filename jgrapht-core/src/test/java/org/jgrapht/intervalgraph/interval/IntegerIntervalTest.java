@@ -6,6 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class IntegerIntervalTest {
+
     IntegerInterval i00 = new IntegerInterval(0,0);
     IntegerInterval i01 = new IntegerInterval(0,1);
     IntegerInterval i56 = new IntegerInterval(5,6);
@@ -25,10 +26,6 @@ public class IntegerIntervalTest {
     }
 
     @Test
-    public void relativeDistance() {
-    }
-
-    @Test
     public void compareTo() {
         assertEquals(i00.compareTo(i01), 0);
         assertEquals(i01.compareTo(i00), 0);
@@ -36,9 +33,13 @@ public class IntegerIntervalTest {
         assertEquals(i00.compareTo(i56), -1);
     }
 
-    @Test
-    public void isValid() {
-        assertTrue(i00.isValid());
-        assertTrue(i01.isValid());
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidInterval1() {
+        new Interval(null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidInterval2() {
+        new IntegerInterval(6, 5);
     }
 }

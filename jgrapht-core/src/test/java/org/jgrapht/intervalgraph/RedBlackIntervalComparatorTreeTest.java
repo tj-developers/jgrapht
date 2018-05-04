@@ -32,7 +32,6 @@ public class RedBlackIntervalComparatorTreeTest {
             assertEquals("fault at " + i1,i, sorted.get(i1));
         }
 
-
         assertTrue(tree.contains(new IntervalTreeNodeValue<>(new IntegerInterval(5,8))));
         tree.delete(new IntervalTreeNodeValue<>(new IntegerInterval(5,8)));
         assertFalse(tree.contains(new IntervalTreeNodeValue<>(new IntegerInterval(5,8))));

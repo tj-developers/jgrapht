@@ -32,7 +32,6 @@ public class RedBlackIntervalTreeStructureTest {
             assertEquals("fault at " + i1,i, sorted.get(i1));
         }
 
-
         tree.delete(5);
         assertFalse(tree.contains(5));
         assertEquals(Integer.valueOf(19 + 3), tree.getRoot().getVal().getHighValue());
