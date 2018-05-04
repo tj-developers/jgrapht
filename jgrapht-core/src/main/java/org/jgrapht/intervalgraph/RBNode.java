@@ -3,8 +3,7 @@ package org.jgrapht.intervalgraph;
 import java.io.Serializable;
 
 /**
- * Implementation of Node
- * This class implements the node for a BST.
+ * Implementation of red-black tree node
  *
  * @param <V> the value
  * @author Christoph Grüne (christophgruene)
@@ -113,6 +112,11 @@ public class RBNode<V> implements Serializable {
         return val;
     }
 
+    /**
+     * Setter for <code>val</code>
+     *
+     * @param val
+     */
     public void setVal(V val) {
         this.val = val;
     }
