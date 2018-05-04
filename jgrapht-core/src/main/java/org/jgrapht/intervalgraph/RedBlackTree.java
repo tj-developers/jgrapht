@@ -22,6 +22,11 @@ public class RedBlackTree<K extends Comparable<K>, V>
 
     protected Node<K, V> root;
 
+    /**
+     * Get the root of the red-black tree
+     *
+     * @return the root of the red-black tree
+     */
     public Node<K, V> getRoot() {
         return root;
     }
@@ -36,14 +41,11 @@ public class RedBlackTree<K extends Comparable<K>, V>
     @Override
     public V get(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("Key is null");
+            throw new IllegalArgumentException("Key cannot be null.");
         }
 
-        return searchNode(key).getVal();
-    }
-
-    private boolean isRed(Node<K, V> node){
-        return node != null && node.isRed();
+        Node<K, V> searchResult = searchNode(key);
+        return searchResult != null ? searchResult.getVal() : null;
     }
 
     /**
@@ -55,11 +57,7 @@ public class RedBlackTree<K extends Comparable<K>, V>
      */
     @Override
     public boolean contains(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException("Key is null");
-        }
-
-        return searchNode(key) != null;
+        return get(key) != null;
     }
 
     /**
@@ -73,7 +71,7 @@ public class RedBlackTree<K extends Comparable<K>, V>
     @Override
     public void insert(K key, V val) {
         if (key == null) {
-            throw new IllegalArgumentException("Key is null");
+            throw new IllegalArgumentException("Key cannot be null.");
         }
 
         root = insert(root, key, val);
@@ -118,7 +116,7 @@ public class RedBlackTree<K extends Comparable<K>, V>
     @Override
     public void delete(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("Key is null");
+            throw new IllegalArgumentException("Key cannot be null.");
         }
         if (!contains(key)) {
             return;
@@ -136,6 +134,10 @@ public class RedBlackTree<K extends Comparable<K>, V>
 
     private boolean isEmpty() {
         return root == null;
+    }
+
+    private boolean isRed(Node<K, V> node){
+        return node != null && node.isRed();
     }
 
     protected Node<K, V> delete(Node<K, V> current, K key) {
@@ -249,7 +251,6 @@ public class RedBlackTree<K extends Comparable<K>, V>
         }
 
         node.setRightChild(deleteMax(node.getRightChild()));
-
         return balance(node);
     }
 
@@ -278,7 +279,6 @@ public class RedBlackTree<K extends Comparable<K>, V>
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
         }
-
         return min(root).getKey();
     }
 
@@ -300,7 +300,6 @@ public class RedBlackTree<K extends Comparable<K>, V>
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
         }
-
         return max(root.getRightChild()).getKey();
     }
 
@@ -308,7 +307,6 @@ public class RedBlackTree<K extends Comparable<K>, V>
         if (node.getRightChild() == null) {
             return node;
         }
-
         return max(node.getRightChild());
     }
 
@@ -450,8 +448,15 @@ public class RedBlackTree<K extends Comparable<K>, V>
         node.getLeftChild().setRed(!isRed(node.getLeftChild()));
     }
 
+    /**
+     * Search tree node associated to the given key
+     *
+     * @param key the key of the tree node
+     * @return the tree node associated to the given key, null if the tree node doesn't exist
+     */
     private Node<K, V> searchNode(K key) {
         Node<K, V> current = root;
+
         while (current != null) {
             if (current.getKey().equals(key)) {
                 return current;

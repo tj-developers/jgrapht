@@ -57,8 +57,11 @@ public class RedBlackTreeTest {
 
     @Test
     public void testDelete() {
+        assertTrue(redBlackTree.contains(15));
         redBlackTree.delete(15);
         redBlackTree.delete(15);
+        assertFalse(redBlackTree.contains(15));
+
         redBlackTree.delete(30);
         redBlackTree.delete(35);
     }
