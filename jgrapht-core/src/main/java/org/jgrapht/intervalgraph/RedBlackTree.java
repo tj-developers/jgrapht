@@ -42,10 +42,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     }
 
     private boolean isRed(Node<K, V> node){
-        if (node == null) {
-            return false;
-        }
-        return node.isRed();
+        return node != null && node.isRed();
     }
 
     /**
@@ -141,31 +138,32 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     }
 
     protected Node<K, V> delete(Node<K, V> current, K key) {
-            if (key.compareTo(current.getKey()) < 0) {
-                if (!isRed(current.getLeftChild()) && !isRed(current.getLeftChild().getLeftChild())) {
-                    current = moveRedLeft(current);
-                }
-                current.setLeftChild(delete(current.getLeftChild(), key));
-            } else {
-                if (isRed(current.getLeftChild())) {
-                    current = rotateRight(current);
-                }
-                if (key.compareTo(current.getKey()) == 0 && current.getRightChild() == null) {
-                    return null;
-                }
-                if (!isRed(current.getRightChild()) && !isRed(current.getRightChild().getLeftChild())) {
-                    current = moveRedRight(current);
-                }
-                if (key.compareTo(current.getKey()) == 0) {
-                    Node<K, V> node = min(current.getRightChild());
-                    current.setKey(node.getKey());
-                    current.setVal(node.getVal());
-                    current.setRightChild(deleteMin(current.getRightChild()));
-                }
-                else current.setRightChild(delete(current.getRightChild(), key));
+        if (key.compareTo(current.getKey()) < 0) {
+            if (!isRed(current.getLeftChild()) && !isRed(current.getLeftChild().getLeftChild())) {
+                current = moveRedLeft(current);
             }
+            current.setLeftChild(delete(current.getLeftChild(), key));
+        } else {
+            if (isRed(current.getLeftChild())) {
+                current = rotateRight(current);
+            }
+            if (key.compareTo(current.getKey()) == 0 && current.getRightChild() == null) {
+                return null;
+            }
+            if (!isRed(current.getRightChild()) && !isRed(current.getRightChild().getLeftChild())) {
+                current = moveRedRight(current);
+            }
+            if (key.compareTo(current.getKey()) == 0) {
+                Node<K, V> node = min(current.getRightChild());
+                current.setKey(node.getKey());
+                current.setVal(node.getVal());
+                current.setRightChild(deleteMin(current.getRightChild()));
+            } else {
+                current.setRightChild(delete(current.getRightChild(), key));
+            }
+        }
 
-            return balance(current);
+        return balance(current);
     }
 
     protected Node<K, V> balance(Node<K, V> node) {
@@ -265,11 +263,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     }
 
     private int height(Node<K, V> node) {
-        if (node == null) {
-            return -1;
-        }
-
-        return 1 + Math.max(height(node.getLeftChild()), height(node.getRightChild()));
+        return node == null ? -1 : 1 + Math.max(height(node.getLeftChild()), height(node.getRightChild()));
     }
 
     /**

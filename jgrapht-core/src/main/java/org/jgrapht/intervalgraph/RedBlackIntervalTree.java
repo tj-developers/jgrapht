@@ -25,16 +25,13 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
     @Override
     public List<Interval<T>> overlapsWith(Interval<T> interval) {
         List<Interval<T>> result = new LinkedList<>();
-
         overlapsWith(this.getRoot(), interval, result);
-
         return result;
     }
 
     @Override
     public List<Interval<T>> overlapsWith(T point) {
         List<Interval<T>> result = new LinkedList<>();
-
         overlapsWithPoint(this.getRoot(), point, result);
         return result;
     }
@@ -102,14 +99,11 @@ public class RedBlackIntervalTree<T extends Comparable<T>, NodeValue extends Int
         node.getVal().setHighValue(result);
     }
 
-
-    // returns the max of two values
     public T max(T t1, T t2) {
-        if (t1.compareTo(t2) > 0) {
-            return t1;
-        } else {
-            return t2;
+        if (t1 == null || t2 == null) {
+            throw new IllegalArgumentException("Parameter cannot be null.");
         }
+        return t1.compareTo(t2) > 0 ? t1 : t2;
     }
 
     private void overlapsWith(Node<T, NodeValue> node, Interval<T> interval, List<Interval<T>> result) {
