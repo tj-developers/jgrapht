@@ -194,16 +194,38 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * @return interval graph representation if one exists, otherwise null
      */
     public static <V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>>
-        IntervalGraph<V, E, VertexType, T> asIntervalGraph(Graph<VertexType, E> graph) {
+            IntervalGraph<V, E, VertexType, T> asIntervalGraph(Graph<VertexType, E> graph) {
+
+
+        /*
+        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecongnizer();
+
+        if(!isIntervalGraph()) {
+            return null;
+        }
+
+        ArrayList<VertexType> oldVertices = intervalGraphRecognizer.getIntervalGraphRepresentation();
         ArrayList<V> vertices = new ArrayList<>();
-        Map<Pair<V, V>, E> edges = new LinkedHashMap<>();
+        Map<Pair<VertexType, VertexType>, E> edges = new LinkedHashMap<>();
+
+        for(V vertex : vertices) {
+            for(Iterator<E> it = graph.outgoingEdgesOf(vertex.getVertex()).iterator(); it.hasNext();) {
+                E edge = it.next();
+                edges.put(Pair.of(vertex.getVertex(), graph.getEdgeTarget(edge)), edge);
+            }
+        }
+
 
         // TODO Intervall-Graph-Test ausführen
         // TODO hier müssen noch die korrekten datenstrukturen vertices und edges brechnet werden!!!
 
+
+
         return new IntervalGraph<>(vertices, edges, (sourceVertex, targetVertex) -> graph.getEdgeFactory().createEdge(sourceVertex.getVertex(), targetVertex.getVertex()),
                 graph.getType().isDirected(), graph.getType().isAllowingMultipleEdges(),
                 graph.getType().isAllowingSelfLoops(), graph.getType().isWeighted());
+                */
+        return null;
     }
 
 
@@ -541,7 +563,6 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
     @Override
     public GraphType getType()
     {
-        //TODO
         if (directed) {
             return new DefaultGraphType.Builder()
                     .directed().weighted(weighted).allowMultipleEdges(allowingMultipleEdges)
@@ -604,10 +625,12 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
         for(V targetVertex: targetVertices) {
             assertVertexExist(targetVertex);
 
-            E e = edgeFactory.createEdge(sourceVertex, targetVertex);
+            if(!sourceVertex.equals(targetVertex)) {
+                E e = edgeFactory.createEdge(sourceVertex, targetVertex);
 
-            if(intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
-                specifics.addEdgeToTouchingVertices(e);
+                if (intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
+                    specifics.addEdgeToTouchingVertices(e);
+                }
             }
         }
         return true;
