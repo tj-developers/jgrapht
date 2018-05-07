@@ -11,7 +11,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class RedBlackIntervalTreeStructureTest {
+public class RedBlackIntervalTreeTest {
 
     List<Interval<Integer>> sorted = new LinkedList<>();
     RedBlackIntervalTree<IntervalTreeNodeKey<Interval<Integer>>, IntervalTreeNodeValue<Interval<Integer>, Integer>, Integer> tree = new RedBlackIntervalTree<>();
@@ -34,6 +34,7 @@ public class RedBlackIntervalTreeStructureTest {
         }
 
 
+
         tree.delete(new IntervalTreeNodeKey<>(new Interval<>(5, 8), getComparator()));
         assertFalse(tree.contains(new IntervalTreeNodeKey<>(new Interval<>(5, 8), getComparator())));
         assertEquals(Integer.valueOf(19 + 3), tree.getRoot().getVal().getHighValue());
@@ -50,3 +51,4 @@ public class RedBlackIntervalTreeStructureTest {
         };
     }
 }
+

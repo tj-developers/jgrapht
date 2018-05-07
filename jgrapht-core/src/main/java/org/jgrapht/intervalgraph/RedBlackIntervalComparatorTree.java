@@ -6,11 +6,19 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackComparatorTree<NodeValue> {
+
+/**
+ * Implementation of red-black comparator tree with support for interval tree
+ *
+ * @param <T>
+ * @param <NodeValue>
+ */
+public class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>>
+        extends RedBlackComparatorTree<NodeValue> {
+
     public RedBlackIntervalComparatorTree(Comparator<Interval<T>> comparator) {
         super((o1, o2) -> comparator.compare(o1.getInterval(), o2.getInterval()));
     }
-
 
     /**
      * Constructs a new instance. The comparator compares the start value of both intervals.
@@ -29,24 +37,18 @@ class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends 
 
     private static final long serialVersionUID = 4353687394654923429L;
 
-    
     public List<Interval<T>> overlapsWith(Interval<T> interval) {
         List<Interval<T>> result = new LinkedList<>();
-
         overlapsWith(this.getRoot(), interval, result);
-
         return result;
     }
 
-    
     public List<Interval<T>> overlapsWith(T point) {
         List<Interval<T>> result = new LinkedList<>();
-
         overlapsWithPoint(this.getRoot(), point, result);
         return result;
     }
 
-    
     protected RBNode<NodeValue> rotateRight(RBNode<NodeValue> node) {
         // Perform rotation as usual
         RBNode<NodeValue> result = super.rotateRight(node);
@@ -58,7 +60,6 @@ class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends 
         return result;
     }
 
-    
     protected RBNode<NodeValue> rotateLeft(RBNode<NodeValue> node) {
         // Perform rotation as usual
         RBNode<NodeValue> result = super.rotateLeft(node);
@@ -77,14 +78,12 @@ class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends 
         return result;
     }
 
-    
     protected RBNode<NodeValue> insert(RBNode<NodeValue> current, NodeValue val) {
         RBNode<NodeValue> result = super.insert(current, val);
         updateHi(result);
         return result;
     }
 
-    
     protected RBNode<NodeValue> balance(RBNode<NodeValue> node) {
         RBNode<NodeValue> result = super.balance(node);
         updateHi(result);
@@ -109,14 +108,11 @@ class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends 
         node.getVal().setHighValue(result);
     }
 
-
-    // returns the max of two values
     public T max(T t1, T t2) {
-        if (t1.compareTo(t2) > 0) {
-            return t1;
-        } else {
-            return t2;
+        if (t1 == null || t2 == null) {
+            throw new IllegalArgumentException("Parameter cannot be null.");
         }
+        return t1.compareTo(t2) > 0 ? t1 : t2;
     }
 
     private void overlapsWith(RBNode<NodeValue> node, Interval<T> interval, List<Interval<T>> result) {

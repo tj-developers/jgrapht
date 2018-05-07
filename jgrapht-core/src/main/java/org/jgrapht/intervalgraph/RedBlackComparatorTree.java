@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Implementation of a Red-Black-Tree
+ * Implementation of red-black comparator tree
  *
  * @param <V> the value
  *
@@ -34,7 +34,7 @@ class RedBlackComparatorTree<V> implements Serializable {
     }
 
     private boolean isRed(RBNode<V> node){
-        return node == null ? false : node.isRed();
+        return node != null && node.isRed();
     }
 
     /**
@@ -43,7 +43,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @return true if tree contains key, false otherwise
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    
     public boolean contains(V val) {
         if (val == null) {
             throw new IllegalArgumentException("Val is null");
@@ -59,7 +58,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @param val the value
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    
     public void insert(V val) {
         if (val == null) {
             throw new IllegalArgumentException("Value is null");
@@ -93,7 +91,7 @@ class RedBlackComparatorTree<V> implements Serializable {
         if (isRed(current.getLeftChild()) && isRed(current.getRightChild())) {
             changeColor(current);
         }
-        current.setSize(size(current.getLeftChild()) + size(current.getRightChild()) + 1);
+        current.setSize(getSize(current.getLeftChild()) + getSize(current.getRightChild()) + 1);
 
         return current;
     }
@@ -103,7 +101,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      *
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    
     public void delete(V val) {
         if (val == null) {
             throw new IllegalArgumentException("Key is null");
@@ -143,7 +140,7 @@ class RedBlackComparatorTree<V> implements Serializable {
                 current = moveRedRight(current);
             }
             if (comparator.compare(val, current.getVal()) == 0) {
-                RBNode<V> node = min(current.getRightChild());
+                RBNode<V> node = getLeftChild(current.getRightChild());
                 current.setVal(node.getVal());
                 current.setRightChild(deleteMin(current.getRightChild()));
             }
@@ -164,7 +161,7 @@ class RedBlackComparatorTree<V> implements Serializable {
             changeColor(node);
         }
 
-        node.setSize(size(node.getLeftChild()) + size(node.getRightChild() ) + 1);
+        node.setSize(getSize(node.getLeftChild()) + getSize(node.getRightChild() ) + 1);
         return node;
     }
 
@@ -173,7 +170,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      *
      * @throws NoSuchElementException if the tree is empty
      */
-    
     public void deleteMin() {
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
@@ -207,7 +203,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      *
      * @throws NoSuchElementException if the tree is empty
      */
-    
     public void deleteMax() {
         if (isEmpty()) {
             throw new NoSuchElementException();
@@ -244,7 +239,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      *
      * @return the height of the BST (a tree with 1 node has height 0)
      */
-    
     public int height() {
         return height(root);
     }
@@ -263,20 +257,16 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @return the smallest key in the tree
      * @throws NoSuchElementException if the tree is empty
      */
-    
     public V min() {
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
         }
 
-        return min(root).getVal();
+        return getLeftChild(root).getVal();
     }
 
-    private RBNode<V> min(RBNode<V> node) {
-        if (node.getLeftChild() == null) {
-            return node;
-        }
-        return min(node.getLeftChild());
+    private RBNode<V> getLeftChild(RBNode<V> node) {
+        return node.getLeftChild() == null ? node : getLeftChild(node.getLeftChild());
     }
 
     /**
@@ -285,21 +275,16 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @return the largest key in the tree
      * @throws NoSuchElementException if the tree is empty
      */
-    
     public V max() {
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
         }
 
-        return max(root.getRightChild()).getVal();
+        return getRightChild(root).getVal();
     }
 
-    private RBNode<V> max(RBNode<V> node) {
-        if (node.getRightChild() == null) {
-            return node;
-        }
-
-        return max(node.getRightChild());
+    private RBNode<V> getRightChild(RBNode<V> node) {
+        return node.getRightChild() == null ? node : getRightChild(node.getRightChild());
     }
 
     /**
@@ -309,7 +294,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @throws NoSuchElementException   if there is no such key
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    
     public V floor(V val) {
         return null;
     }
@@ -321,7 +305,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @throws NoSuchElementException   if there is no such key
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    
     public V ceiling(V val) {
         return null;
     }
@@ -334,7 +317,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @return the key in the tree of rank <code>k</code>
      * @throws IllegalArgumentException if <code>k</code> not in {0, ..., n-1}
      */
-    
     public V select(int k) {
         return null;
     }
@@ -346,7 +328,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @return the number of keys in the tree strictly less than <code>key</code>
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    
     public int rank(V val) {
         return 0;
     }
@@ -358,7 +339,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      *
      * @return all keys in the symbol table as an <code>Iterable</code>
      */
-    
     public Iterable<V> keys() {
         return null;
     }
@@ -374,7 +354,6 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
      *                                  is <code>null</code>
      */
-    
     public Iterable<V> keys(V min, V max) {
         return null;
     }
@@ -389,17 +368,12 @@ class RedBlackComparatorTree<V> implements Serializable {
      * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
      *                                  is <code>null</code>
      */
-    
     public int size(V min, V max) {
         return 0;
     }
 
-    public int size(RBNode<V> node) {
-        if (node == null) {
-            return 0;
-        }
-
-        return getSize(node);
+    public int getSize(RBNode<V> node) {
+        return node == null ? 0 : node.getSize();
     }
 
     /*******************************************************************************************************************
@@ -415,10 +389,6 @@ class RedBlackComparatorTree<V> implements Serializable {
         rightChild.setSize(getSize(node));
         node.setSize(getSize(node.getLeftChild()) + getSize(node.getRightChild()) + 1);
         return rightChild;
-    }
-
-    private int getSize(RBNode<V> node) {
-        return node != null ? node.getSize() : 0;
     }
 
     protected RBNode<V> rotateRight(RBNode<V> node) {
@@ -524,11 +494,4 @@ class RedBlackComparatorTree<V> implements Serializable {
         inorder(current.getRightChild(), result);
     }
 
-    // returns the minimum node in the subtree of input node
-    private RBNode<V> getMin(RBNode<V> node) {
-        while (node.getLeftChild() != null) {
-            node = node.getLeftChild();
-        }
-        return node;
-    }
 }

@@ -3,97 +3,110 @@ package org.jgrapht.intervalgraph.interval;
 import java.util.Objects;
 
 /**
- * The base class for an interval
- * @param <T> The underlying type
+ * Model of an interval in the interval graph
+ *
+ * @param <T> the type of the interval
  */
 public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
-    private T start;
-    private T end;
+
+    protected T start;
+    protected T end;
 
     /**
-     * Creates a new class of the interval class
-     * @param start The start point
-     * @param end The end point
+     * Constructs an interval
+     *
+     * @param start interval start
+     * @param end   interval end
+     * @throws IllegalArgumentException if interval start or end is null, or if interval start is greater than interval end
      */
-    public Interval(T start, T end)  {
+    public Interval(T start, T end) {
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("Interval start or end cannot be null.");
+        }
+        if (start.compareTo(end) > 0) {
+            throw new IllegalArgumentException("Interval start must be smaller than or equal to interval end.");
+        }
+
         this.start = start;
         this.end = end;
-
-        if (start == null || end == null || !isValid())
-            throw new IllegalArgumentException();
     }
 
     /**
-     * Gets the start point
-     * @return The start point
+     * Get the start point of the interval
+     *
+     * @return the start point of the interval
      */
     public T getStart() {
         return start;
     }
 
     /**
-     * Gets the end point
-     * @return The end point
+     * Get the end point of the interval
+     *
+     * @return the end point of the interval
      */
     public T getEnd() {
         return end;
     }
 
     /**
-     * Checks whether or not the other interval intersects this interval
+     * Checks whether the other interval intersects this interval
+     *
      * @param other The other interval
-     * @return true, if the other interval intersects this, otherwise false
+     * @return true if the other interval intersects this, false otherwise
      */
     public boolean isIntersecting(Interval<T> other) {
         return this.contains(other.getStart()) || this.contains(other.getEnd()) || other.contains(this.getStart());
     }
 
     /**
-     * Checks whether or not the point is contained in this interval
-     * @param point The point
-     * @return true, if the point is contained in this, otherwise false
+     * Check if current interval contains the given point
+     *
+     * @param point the point to be tested
+     * @return true if current interval contains the given point, false otherwise
      */
     public boolean contains(T point) {
         if (point == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Point to be tested cannot be null.");
         }
 
-        boolean result = point.compareTo(getStart()) >= 0 && point.compareTo(getEnd()) <= 0;
+        boolean result = point.compareTo(start) >= 0 && point.compareTo(end) <= 0;
         assert result == (compareToPoint(point) == 0);
         return result;
     }
 
     /**
-     * Compares the point to this interval
-     * @param point The point
-     * @return A value &lt; 0 if the interval is left of the point, 0 if the point is contained in the interval,
-     * otherwise a value &gt; 0
+     * Compare current interval with the given point
+     *
+     * @param point the point to be tested
+     * @return 0 if current interval contains the given point, comparison result with the interval start otherwise
      */
     public int compareToPoint(T point) {
         if (point == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Point to be tested cannot be null.");
         }
 
-        int relativeStart = getStart().compareTo(point);
-        int relativeEnd = getEnd().compareTo(point);
+        int relativeStart = start.compareTo(point);
+        int relativeEnd = end.compareTo(point);
 
         if (relativeStart <= 0 && relativeEnd >= 0) {
             return 0;
-        } else  {
+        } else {
             return relativeStart;
         }
     }
 
     /**
      * Compares this interval to the other interval
-     * @param other The other interval
+     *
+     * @param o The other interval
      * @return A value &lt; 0 if the this interval is completely left of the other interval, 0 if the intervals intersect,
      * otherwise a value &gt; 0
      */
     @Override
-    public int compareTo(Interval<T> other) {
-        int isLeft = getEnd().compareTo(other.getStart()); // < 0 if this ends before other starts
-        int isRight = getStart().compareTo(other.getEnd()); // > 0 if this starts before other ends
+    public int compareTo(Interval<T> o) {
+        int isLeft = end.compareTo(o.getStart()); // < 0 if this ends before other starts
+        int isRight = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
 
         if (isLeft >= 0 && isRight <= 0) {
             return 0;
@@ -102,14 +115,6 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
         } else {
             return isRight;
         }
-    }
-
-    /**
-     * Checks whether or not the current interval is valid
-     * @return true, if the end point is at least as big as the start point, otherwise false
-     */
-    public boolean isValid() {
-        return getStart().compareTo(getEnd()) <= 0;
     }
 
     @Override
@@ -128,7 +133,6 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
 
     @Override
     public int hashCode() {
-
         return Objects.hash(start, end);
     }
 }

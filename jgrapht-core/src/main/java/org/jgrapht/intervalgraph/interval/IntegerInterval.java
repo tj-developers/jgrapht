@@ -6,28 +6,32 @@ package org.jgrapht.intervalgraph.interval;
 public class IntegerInterval extends Interval<Integer> {
 
     /**
-     * Constructs a new instance of the class
-     * @param start The start point of the interval
-     * @param end The end point of the interval
+     * Construct an integer interval
+     *
+     * @param start interval start
+     * @param end   interval end
+     * @throws IllegalArgumentException if interval start or end is null, or if interval start is greater than interval end
      */
     public IntegerInterval(int start, int end) {
         super(start, end);
     }
 
     /**
-     * Gets the length of the interval
-     * @return The length of the interval
+     * Get the duration of the interval
+     *
+     * @return the duration of the interval
      */
     public int length() {
-        return getEnd() - getStart();
+        return end - start;
     }
 
     /**
      * Returns a string representation for the interval
+     *
      * @return A string representation for the interval
      */
     @Override
     public String toString() {
-        return "[" + getStart() + ", " + getEnd() + "]";
+        return "IntegerInterval[" + start + ", " + end + "]";
     }
 }
