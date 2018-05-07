@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackComparatorTree<NodeValue> {
+class RedBlackIntervalComparatorTree<T extends Comparable<T>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends RedBlackComparatorTree<NodeValue> {
     public RedBlackIntervalComparatorTree(Comparator<Interval<T>> comparator) {
         super((o1, o2) -> comparator.compare(o1.getInterval(), o2.getInterval()));
     }

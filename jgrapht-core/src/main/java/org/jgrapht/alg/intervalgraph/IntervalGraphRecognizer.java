@@ -10,19 +10,19 @@ import org.jgrapht.intervalgraph.interval.*;
 
 /**
  * A recognizer for interval graphs.
- * <p>
+ *
  * An interval graph is a intersection graph of a set of intervals on the line, i.e. they contain a
  * vertex for each interval and two vertices are connected if the corresponding intervals have a
  * nonempty intersection.
- * <p>
+ *
  * The recognizer uses the algorithm described in
- * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf"> (<i>The LBFS Structure
+ * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf"/> (<i>The LBFS Structure
  * and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
  * multiple lexicographical breadth-first search (LBFS) sweeps.
- * <p>
+ *
  * For this recognizer to work correctly the graph must not be modified during iteration.
- * <p>
+ *
  *
  * @param <V> the graph vertex type.
  * @param <E> the graph edge type.

@@ -16,8 +16,10 @@ import java.util.Set;
  * Implementation of IntervalSpecifics.
  * This class implements necessary methods for IntervalGraph.
  *
- * @param <V> the vertex type
+ * @param <V> the interval vertex type
  * @param <E> the edge type
+ * @param <VertexType> the internal vertex type
+ * @param <T> The underlying type for intervals
  *
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
@@ -45,6 +47,7 @@ public class IntervalSpecifics<V extends IntervalVertexInterface<VertexType, T>,
      * Constructs new interval specifics.
      *
      * @param intervalGraph the graph for which these specifics are for
+     * @param vertices The vertices of the graph
      */
     public IntervalSpecifics(IntervalGraph<V, E, VertexType, T> intervalGraph, ArrayList<V> vertices) {
 
@@ -69,14 +72,20 @@ public class IntervalSpecifics<V extends IntervalVertexInterface<VertexType, T>,
     }
 
     /**
+     * Gets the overlapping vertices for a given vertex
      *
+     * @param vertex The input vertex
+     *
+     * @return A list of vertices that overlap the input vertex
      */
     public List<V> getOverlappingIntervalVertices(V vertex) {
         return intervalGraphVertexContainerInterface.getOverlappingIntervalVertices(vertex);
     }
 
     /**
+     * Removes a vertex
      *
+     * @param v The vertex that should be removed
      */
     public void removeVertex(V v) {
         intervalGraphVertexContainerInterface.remove(v);
