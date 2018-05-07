@@ -45,7 +45,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private List<Interval<Integer>> intervalsSortedByStartingPoint;
     private Map<Interval<Integer>, V> intervalVertexMap;
-    private Map<V, Interval<Integer>> vertexIntervalMap;
+    private Map<V, IntervalVertex<V, Integer>> vertexIntervalMap;
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
@@ -149,7 +149,7 @@ public final class IntervalGraphRecognizer<V, E>
                 intervals[sweepZeta.get(vertex)] = vertexInterval;
 
                 this.intervalVertexMap.put(vertexInterval, vertex);
-                this.vertexIntervalMap.put(vertex, vertexInterval);
+                this.vertexIntervalMap.put(vertex, IntervalVertex.of(vertex, vertexInterval));
             }
 
             // ... and produce a list sorted by the starting points for an efficient construction of
@@ -272,7 +272,7 @@ public final class IntervalGraphRecognizer<V, E>
      *
      * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
      */
-    public Map<V, Interval<Integer>> getVertexIntervalMap()
+    public Map<V, IntervalVertex<V, Integer>> getVertexIntervalMap()
     {
         return this.vertexIntervalMap;
     }
