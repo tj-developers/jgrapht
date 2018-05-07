@@ -62,7 +62,6 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
         return tree.overlapsWith(point);
     }
 
-
     /**
      * adds an interval to the interval tree
      *

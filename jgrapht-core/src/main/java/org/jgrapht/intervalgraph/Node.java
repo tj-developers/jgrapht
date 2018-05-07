@@ -28,7 +28,7 @@ public class Node<K, V> implements Serializable {
     /**
      * node's corresponding left and right children
      */
-    private Node leftChild, rightChild;
+    private Node<K, V> leftChild, rightChild;
     /**
      * the color of the node (important for usage in red black tree)(not necessary for all implementations)
      */
@@ -58,7 +58,7 @@ public class Node<K, V> implements Serializable {
      *
      * @param leftChild the node that should be new left child
      */
-    protected void setLeftChild(Node leftChild) {
+    protected void setLeftChild(Node<K, V> leftChild) {
         this.leftChild = leftChild;
     }
 
@@ -67,7 +67,7 @@ public class Node<K, V> implements Serializable {
      *
      * @param rightChild the node that should be new right child
      */
-    protected void setRightChild(Node rightChild) {
+    protected void setRightChild(Node<K, V> rightChild) {
         this.rightChild = rightChild;
     }
 
@@ -115,7 +115,7 @@ public class Node<K, V> implements Serializable {
     /**
      * Getter for <code>key</code>
      *
-     * @return the key
+     * @return the key of the node
      */
     protected K getKey() {
         return key;

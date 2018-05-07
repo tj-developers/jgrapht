@@ -2,6 +2,7 @@ package org.jgrapht.intervalgraph;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,10 +10,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
-/**
- * Test important properties of red-black tree
- */
 public class RedBlackTreeTest {
 
     private RedBlackTree<Integer, Integer> redBlackTree = new RedBlackTree<>();
@@ -30,6 +30,55 @@ public class RedBlackTreeTest {
         redBlackTree.insert(22, 22);
         redBlackTree.insert(27, 27);
     }
+
+    @Test
+    public void testGet() {
+        assertEquals(8, redBlackTree.get(8).intValue());
+        assertEquals(6, redBlackTree.get(6).intValue());
+        assertNull(redBlackTree.get(30));
+        assertNull(redBlackTree.get(35));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNegative() {
+        redBlackTree.get(null);
+    }
+
+    @Test
+    public void testContains(){
+        assertTrue(redBlackTree.contains(1));
+        assertTrue(redBlackTree.contains(11));
+        assertFalse(redBlackTree.contains(30));
+        assertFalse(redBlackTree.contains(35));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testContainsNegative() {
+        redBlackTree.contains(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInsertNegative() {
+        redBlackTree.insert(null, null);
+    }
+
+    @Test
+    public void testDelete() {
+        assertTrue(redBlackTree.contains(15));
+        redBlackTree.delete(15);
+        redBlackTree.delete(15);
+        assertFalse(redBlackTree.contains(15));
+
+        redBlackTree.delete(30);
+        redBlackTree.delete(35);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDeleteNegative() {
+        redBlackTree.delete(null);
+    }
+
+    // Test important properties of red-black tree
 
     /**
      * The root is black
@@ -65,6 +114,20 @@ public class RedBlackTreeTest {
         }
     }
 
+    @Test
+    public void testListConstructor() {
+        ArrayList<Integer> keyList = new ArrayList<>(20);
+        for (int i = 0; i < 20; i++) {
+            keyList.add(i, i);
+        }
+        RedBlackTree<Integer, Integer> tree = new RedBlackTree<>(keyList, keyList);
+        List<Integer> result = tree.inorderValues();
+        for (int i = 0; i < 20; i++) {
+            assertEquals(i, (int) result.get(i));
+        }
+    }
+
+
     /**
      * Every path from a given node to any of its descendant leaves contains the same number of black nodes
      */
@@ -83,17 +146,4 @@ public class RedBlackTreeTest {
         return node.getRightChild() == null ? currentBlackNumber : countRightChildren(node.getRightChild(), currentBlackNumber);
     }
 
-    @Test
-    public void testListConstructor() {
-        ArrayList<Integer> keyList = new ArrayList<>(20);
-        for (int i = 0; i < 20; i++) {
-            keyList.add(i, i);
-        }
-
-        RedBlackTree<Integer, Integer> tree = new RedBlackTree<>(keyList, keyList);
-        List<Integer> result = tree.inorderValues();
-        for (int i = 0; i < 20; i++) {
-            assertEquals(i, (int) result.get(i));
-        }
-    }
 }
