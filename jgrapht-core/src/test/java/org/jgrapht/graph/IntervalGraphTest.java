@@ -1,12 +1,7 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.graph;
 
 import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.ClassBasedEdgeFactory;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.IntervalGraph;
 import org.jgrapht.util.interval.Interval;
-import org.jgrapht.graph.IntervalVertex;
-import org.jgrapht.graph.IntervalVertexInterface;
 import org.junit.Before;
 import org.junit.Test;
 
