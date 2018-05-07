@@ -66,8 +66,8 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     /**
      * Compares the point to this interval
      * @param point The point
-     * @return A value < 0 if the interval is left of the point, 0 if the point is contained in the interval,
-     * otherwise a value > 0
+     * @return A value &lt; 0 if the interval is left of the point, 0 if the point is contained in the interval,
+     * otherwise a value &gt; 0
      */
     public int compareToPoint(T point) {
         if (point == null) {
@@ -87,8 +87,8 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     /**
      * Compares this interval to the other interval
      * @param other The other interval
-     * @return A value < 0 if the this interval is completely left of the other interval, 0 if the intervals intersect,
-     * otherwise a value > 0
+     * @return A value &lt; 0 if the this interval is completely left of the other interval, 0 if the intervals intersect,
+     * otherwise a value &gt; 0
      */
     @Override
     public int compareTo(Interval<T> other) {

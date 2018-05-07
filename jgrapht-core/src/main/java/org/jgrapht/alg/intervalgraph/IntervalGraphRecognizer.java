@@ -16,7 +16,7 @@ import org.jgrapht.intervalgraph.interval.*;
  * nonempty intersection.
  *
  * The recognizer uses the algorithm described in
- * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf"/> (<i>The LBFS Structure
+ * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a> (<i>The LBFS Structure
  * and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
  * multiple lexicographical breadth-first search (LBFS) sweeps.
