@@ -1,7 +1,6 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.graph.specifics;
 
-import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
-import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
+import org.jgrapht.graph.IntervalVertexInterface;
 
 import java.util.List;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph.interval;
+package org.jgrapht.util.interval;
 
 /**
  * An implementation of integer intervals

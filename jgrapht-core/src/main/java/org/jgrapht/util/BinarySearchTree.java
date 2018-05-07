@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
 import java.util.NoSuchElementException;
 
@@ -13,9 +13,9 @@ import java.util.NoSuchElementException;
  */
 public interface BinarySearchTree<K, V> {
 
-    /*******************************************************************************************************************
-     * Search Operations                                                                                               *
-     ******************************************************************************************************************/
+    /*
+     * Search Operations
+     */
 
     /**
      * Returns the value associated with the given key
@@ -36,9 +36,9 @@ public interface BinarySearchTree<K, V> {
     boolean contains(K key);
 
 
-    /*******************************************************************************************************************
-     * Insertion Operations                                                                                            *
-     ******************************************************************************************************************/
+    /*
+     * Insertion Operations
+     */
 
     /**
      * Inserts the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
@@ -51,9 +51,9 @@ public interface BinarySearchTree<K, V> {
     void insert(K key, V val);
 
 
-    /*******************************************************************************************************************
-     * Deletion Operations                                                                                             *
-     ******************************************************************************************************************/
+    /*
+     * Deletion Operations
+     */
 
     /**
      * Removes the specified key and its associated value from this tree
@@ -76,9 +76,9 @@ public interface BinarySearchTree<K, V> {
     void deleteMax();
 
 
-    /*******************************************************************************************************************
-     * Utility Operations                                                                                              *
-     ******************************************************************************************************************/
+    /*
+     * Utility Operations
+     */
 
     /**
      * Returns the height of the BST.
@@ -87,9 +87,9 @@ public interface BinarySearchTree<K, V> {
     int height();
 
 
-    /*******************************************************************************************************************
-     * Special Search Operations                                                                                       *
-     ******************************************************************************************************************/
+    /*
+     * Special Search Operations
+     */
 
     /**
      * Returns the smallest key in the tree.
@@ -144,9 +144,9 @@ public interface BinarySearchTree<K, V> {
     int rank(K key);
 
 
-    /*******************************************************************************************************************
-     * Range Search Operations                                                                                               *
-     ******************************************************************************************************************/
+    /*
+     * Range Search Operations
+     */
 
     /**
      * Returns all keys in the symbol table as an <code>Iterable</code>.

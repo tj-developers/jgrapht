@@ -1,9 +1,8 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
-import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.util.interval.Interval;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

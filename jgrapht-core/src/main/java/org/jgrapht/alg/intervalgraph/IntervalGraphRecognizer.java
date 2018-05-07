@@ -6,7 +6,9 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 import org.jgrapht.*;
-import org.jgrapht.intervalgraph.interval.*;
+import org.jgrapht.graph.IntervalVertex;
+import org.jgrapht.graph.IntervalVertexInterface;
+import org.jgrapht.util.interval.Interval;
 
 /**
  * A recognizer for interval graphs.

@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
 import java.io.Serializable;
 

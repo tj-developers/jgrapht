@@ -1,11 +1,10 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
+import org.jgrapht.intervalgraph.RedBlackTree;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;

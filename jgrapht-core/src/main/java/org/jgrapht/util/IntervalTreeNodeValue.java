@@ -1,6 +1,6 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
-import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.util.interval.Interval;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -34,7 +34,7 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
      *
      * @param interval the first element
      */
-    public IntervalTreeNodeValue(I interval) {
+    IntervalTreeNodeValue(I interval) {
         this.interval = interval;
         this.highValue = interval.getEnd();
     }
@@ -54,7 +54,7 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
      *
      * @return the second element of the pair
      */
-    public T getHighValue()
+    T getHighValue()
     {
         return highValue;
     }
@@ -63,7 +63,7 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
      * Sets the high value
      * @param highValue The high value
      */
-    public void setHighValue(T highValue) {
+    void setHighValue(T highValue) {
         this.highValue = highValue;
     }
 

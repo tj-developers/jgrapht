@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,7 +24,7 @@ public class IntervalTreeNodeKey<T> implements Comparable<IntervalTreeNodeKey<T>
      * @param key the content of the key
      * @param comparator the comparator defining the order of the key
      */
-    public IntervalTreeNodeKey(T key, Comparator<T> comparator) {
+    IntervalTreeNodeKey(T key, Comparator<T> comparator) {
         this.key = key;
         this.comparator = comparator;
     }

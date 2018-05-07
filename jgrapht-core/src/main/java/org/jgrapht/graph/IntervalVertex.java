@@ -1,4 +1,6 @@
-package org.jgrapht.intervalgraph.interval;
+package org.jgrapht.graph;
+
+import org.jgrapht.util.interval.Interval;
 
 import java.io.Serializable;
 import java.util.Objects;

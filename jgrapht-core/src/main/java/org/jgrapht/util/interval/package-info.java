@@ -1,4 +1,4 @@
 /**
  * Data structures for interval graphs.
  */
-package org.jgrapht.intervalgraph.interval;
+package org.jgrapht.util.interval;

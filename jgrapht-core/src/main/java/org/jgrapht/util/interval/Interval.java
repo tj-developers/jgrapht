@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph.interval;
+package org.jgrapht.util.interval;
 
 import java.util.Objects;
 
@@ -81,7 +81,7 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * @param point the point to be tested
      * @return 0 if current interval contains the given point, comparison result with the interval start otherwise
      */
-    public int compareToPoint(T point) {
+    private int compareToPoint(T point) {
         if (point == null) {
             throw new IllegalArgumentException("Point to be tested cannot be null.");
         }

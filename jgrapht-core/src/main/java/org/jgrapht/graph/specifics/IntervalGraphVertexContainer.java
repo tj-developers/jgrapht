@@ -1,8 +1,9 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.graph.specifics;
 
-import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
-import org.jgrapht.intervalgraph.interval.Interval;
-import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
+import org.jgrapht.util.interval.Interval;
+import org.jgrapht.graph.IntervalVertexInterface;
+import org.jgrapht.util.IntervalStructureInterface;
+import org.jgrapht.util.IntervalTreeStructure;
 
 import java.io.Serializable;
 import java.util.*;
@@ -38,7 +39,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<Vert
     /**
      * Constructs a vertex container for an interval graph with all necessary objects.
      */
-    public IntervalGraphVertexContainer() {
+    IntervalGraphVertexContainer() {
         this.intervalStructure = new IntervalTreeStructure<>();
         this.vertexMap = new LinkedHashMap<>();
         this.intervalMap = new LinkedHashMap<>();
@@ -50,7 +51,7 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<Vert
      * @param vertices The set of vertices
      * @param  undirectedEdgeContainers The set of undirected edge containers
      */
-    public IntervalGraphVertexContainer(ArrayList<V> vertices, ArrayList<UndirectedEdgeContainer<V, E>> undirectedEdgeContainers) {
+    IntervalGraphVertexContainer(ArrayList<V> vertices, ArrayList<UndirectedEdgeContainer<V, E>> undirectedEdgeContainers) {
         this.vertexMap = new LinkedHashMap<>();
         this.intervalMap = new LinkedHashMap<>();
 

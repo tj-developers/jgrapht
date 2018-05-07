@@ -1,6 +1,7 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
-import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.intervalgraph.RedBlackIntervalTree;
+import org.jgrapht.util.interval.Interval;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph.interval;
+package org.jgrapht.util.interval;
 
 import org.jgrapht.*;
 import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;
@@ -8,7 +8,6 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.jgrapht.graph.builder.GraphBuilder;
-import org.jgrapht.intervalgraph.IntervalGraph;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

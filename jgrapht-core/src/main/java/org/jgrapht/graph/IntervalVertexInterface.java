@@ -1,4 +1,6 @@
-package org.jgrapht.intervalgraph.interval;
+package org.jgrapht.graph;
+
+import org.jgrapht.util.interval.Interval;
 
 /**
  * Interface for IntervalVertex

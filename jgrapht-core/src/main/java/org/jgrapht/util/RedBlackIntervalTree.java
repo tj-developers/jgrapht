@@ -1,6 +1,6 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
-import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.util.interval.Interval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,11 +27,11 @@ class RedBlackIntervalTree
 
     private static final long serialVersionUID = 4353687394654923429L;
 
-    public RedBlackIntervalTree() {
+    RedBlackIntervalTree() {
         super();
     }
 
-    public RedBlackIntervalTree(ArrayList<K> keys, ArrayList<NodeValue> values) {
+    RedBlackIntervalTree(ArrayList<K> keys, ArrayList<NodeValue> values) {
         super(keys, values);
     }
 

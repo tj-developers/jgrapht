@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,17 +28,18 @@ class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>
         return root;
     }
 
-    public RedBlackTree() {}
+    RedBlackTree() {}
 
 
     /**
      * Construct a tree with the given keys and values.
      * keys.get(i) is assigned to values.get(i)
      * Runs in linear time if list is sorted, otherwise naive insertion is performed
-     * @param keys
-     * @param values
+     *
+     * @param keys the keys for the future nodes
+     * @param values the values of the future nodes corresponding to the given keys (i-th key belongs to i-th value)
      */
-    public RedBlackTree(ArrayList<K> keys, ArrayList<V> values) {
+    RedBlackTree(ArrayList<K> keys, ArrayList<V> values) {
         int length = keys.size();
 
         // exceptions
@@ -577,7 +578,7 @@ class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>
         inorder(current.getRightChild(), result);
     }
 
-    public List<V> inorderValues(){
+    List<V> inorderValues(){
         List<Node<K, V>> inorder = inorder();
         List<V> result = new ArrayList<>(inorder.size());
         for (Node<K, V> node: inorder) {

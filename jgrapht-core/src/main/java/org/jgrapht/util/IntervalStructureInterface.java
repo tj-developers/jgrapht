@@ -1,6 +1,6 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.util;
 
-import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.util.interval.Interval;
 
 import java.util.List;
 

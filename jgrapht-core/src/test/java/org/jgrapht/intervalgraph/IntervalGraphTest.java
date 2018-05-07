@@ -3,9 +3,10 @@ package org.jgrapht.intervalgraph;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.intervalgraph.interval.Interval;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
-import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
+import org.jgrapht.graph.IntervalGraph;
+import org.jgrapht.util.interval.Interval;
+import org.jgrapht.graph.IntervalVertex;
+import org.jgrapht.graph.IntervalVertexInterface;
 import org.junit.Before;
 import org.junit.Test;
 

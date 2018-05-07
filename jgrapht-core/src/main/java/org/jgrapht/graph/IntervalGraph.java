@@ -1,4 +1,4 @@
-package org.jgrapht.intervalgraph;
+package org.jgrapht.graph;
 
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.Graph;
@@ -6,11 +6,8 @@ import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;
 import org.jgrapht.alg.util.Pair;
-import org.jgrapht.graph.*;
 import org.jgrapht.graph.specifics.IntervalSpecifics;
-import org.jgrapht.intervalgraph.interval.Interval;
-import org.jgrapht.intervalgraph.interval.IntervalVertex;
-import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
+import org.jgrapht.util.interval.Interval;
 import org.jgrapht.util.TypeUtil;
 
 import java.io.Serializable;
@@ -65,7 +62,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
         this.allowingMultipleEdges = false;
         this.directed = false;
         this.specifics =
-                Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+                Objects.requireNonNull(createSpecifics(), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
         this.weighted = weighted;
         this.intrusiveEdgesSpecifics = Objects.requireNonNull(
                 createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
@@ -109,7 +106,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
                 createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
 
         if(isSorted) {
-            this.specifics = Objects.requireNonNull(createSpecifics(directed, vertices), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+            this.specifics = Objects.requireNonNull(createSpecifics(vertices), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
 
             ArrayList<LinkedList<V>> edges = new ArrayList<>(vertices.size());
 
@@ -127,7 +124,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
             }
 
         } else {
-            this.specifics = Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+            this.specifics = Objects.requireNonNull(createSpecifics(), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
 
             for (V vertex : vertices) {
                 this.addVertex(vertex);
@@ -160,7 +157,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
         this.allowingMultipleEdges = allowMultipleEdges;
         this.directed = directed;
         this.specifics =
-                Objects.requireNonNull(createSpecifics(directed, vertices), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+                Objects.requireNonNull(createSpecifics(vertices), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
         this.weighted = weighted;
         this.intrusiveEdgesSpecifics = Objects.requireNonNull(
                 createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
@@ -212,8 +209,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
         Map<Pair<IntervalVertexInterface<VertexType, Integer>, IntervalVertexInterface<VertexType, Integer>>, E> edges = new LinkedHashMap<>();
 
         for(IntervalVertexInterface<VertexType, Integer> vertex : vertices) {
-            for(Iterator<E> it = graph.outgoingEdgesOf(vertex.getVertex()).iterator(); it.hasNext();) {
-                E edge = it.next();
+            for (E edge : graph.outgoingEdgesOf(vertex.getVertex())) {
                 edges.put(Pair.of(vertex, vertexIntervalMap.get(graph.getEdgeTarget(edge))), edge);
             }
         }
@@ -373,7 +369,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
             // NOTE: it's important for this to happen in an object
             // method so that the new inner class instance gets associated with
             // the right outer class instance
-            newGraph.specifics = newGraph.createSpecifics(this.directed);
+            newGraph.specifics = newGraph.createSpecifics();
             newGraph.intrusiveEdgesSpecifics =
                     newGraph.createIntrusiveEdgesSpecifics(this.weighted);
 
@@ -574,11 +570,9 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * Create the specifics for this graph. Subclasses can override this method in order to adjust
      * the specifics and thus the space-time tradeoffs of the graph implementation.
      *
-     * @param directed if true the specifics should adjust the behavior to a directed graph
-     *        otherwise undirected
      * @return the specifics used by this graph
      */
-    protected IntervalSpecifics<V, E, VertexType, T> createSpecifics(boolean directed) {
+    private IntervalSpecifics<V, E, VertexType, T> createSpecifics() {
         return new IntervalSpecifics<>(this);
     }
 
@@ -586,12 +580,10 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * Create the specifics for this graph. Subclasses can override this method in order to adjust
      * the specifics and thus the space-time tradeoffs of the graph implementation.
      *
-     * @param directed if true the specifics should adjust the behavior to a directed graph
-     *        otherwise undirected
      * @param vertices The set of vertices
      * @return the specifics used by this graph
      */
-    protected IntervalSpecifics<V, E, VertexType, T> createSpecifics(boolean directed, ArrayList<V> vertices) {
+    private IntervalSpecifics<V, E, VertexType, T> createSpecifics(ArrayList<V> vertices) {
         return new IntervalSpecifics<>(this, vertices);
     }
 
@@ -601,7 +593,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * @param weighted if true the specifics should support weighted edges
      * @return the specifics used for the edge set of this graph
      */
-    protected IntrusiveEdgesSpecifics<V, E> createIntrusiveEdgesSpecifics(boolean weighted) {
+    private IntrusiveEdgesSpecifics<V, E> createIntrusiveEdgesSpecifics(boolean weighted) {
         if (weighted) {
             return new WeightedIntrusiveEdgesSpecifics<>();
         } else {

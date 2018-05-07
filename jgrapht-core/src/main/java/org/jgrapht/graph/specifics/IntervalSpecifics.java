@@ -1,10 +1,8 @@
 package org.jgrapht.graph.specifics;
 
 import org.jgrapht.graph.EdgeSetFactory;
-import org.jgrapht.intervalgraph.IntervalGraph;
-import org.jgrapht.intervalgraph.IntervalGraphVertexContainerInterface;
-import org.jgrapht.intervalgraph.IntervalGraphVertexContainer;
-import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
+import org.jgrapht.graph.IntervalGraph;
+import org.jgrapht.graph.IntervalVertexInterface;
 import org.jgrapht.util.ArrayUnenforcedSet;
 
 import java.io.Serializable;
@@ -265,7 +263,7 @@ public class IntervalSpecifics<V extends IntervalVertexInterface<VertexType, T>,
      *
      * @return an edge container
      */
-    protected UndirectedEdgeContainer<V, E> getEdgeContainer(V vertex)
+    private UndirectedEdgeContainer<V, E> getEdgeContainer(V vertex)
     {
         UndirectedEdgeContainer<V, E> ec = intervalGraphVertexContainerInterface.get(vertex);
 
