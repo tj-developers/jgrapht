@@ -272,6 +272,4 @@ public class IntervalGraphTest {
         assertEquals(intervalGraph.getEdgeWeight(edge), 1, 0);
         assertEquals(intervalGraph.getEdgeWeight(edge1), 1, 0);
     }
-
-
 }

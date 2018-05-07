@@ -92,16 +92,11 @@ public final class IntervalGraphRecognizer<V, E>
         // sweep
         HashMap<V, Integer> sweepDelta = lexBreadthFirstSearchPlus(graph, sweepGamma);
 
-        // Additionally, calculate the index and the corresponding A set for each vertex
-
         // Step 5 - LBFS+ from the last vertex of the previous sweep
         // Input - the result of previous sweep delta, vertex d
         // Output - the result of current sweep epsilon, further last vertex e visited by current
         // sweep
         HashMap<V, Integer> sweepEpsilon = lexBreadthFirstSearchPlus(graph, sweepDelta);
-        // V vertexE = lastElementOf(sweepEpsilon); TODO: not used?
-
-        // Additionally, calculate the index and the corresponding B set for each vertex
 
         // Step 6 - LBFS* with the resulting sweeps
         // Input - the result of sweep gamma and sweep epsilon
