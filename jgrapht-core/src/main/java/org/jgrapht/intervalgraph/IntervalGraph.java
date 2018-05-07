@@ -187,36 +187,37 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      */
     public static <V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>>
             IntervalGraph<V, E, VertexType, T> asIntervalGraph(Graph<VertexType, E> graph) {
+/*
+        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecongnizer(Graph<VertexType, E);
 
-
-        /*
-        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecongnizer();
-
-        if(!isIntervalGraph()) {
+        if(!intervalGraphRecognizer.isIntervalGraph()) {
             return null;
         }
 
-        ArrayList<VertexType> oldVertices = intervalGraphRecognizer.getIntervalGraphRepresentation();
-        ArrayList<V> vertices = new ArrayList<>();
-        Map<Pair<VertexType, VertexType>, E> edges = new LinkedHashMap<>();
+        ArrayList<Interval<T>> sortedIntervalList = intervalGraphRecognizer.getIntervalsSortedByStartingPoint();
+        Map<Interval<Integer>, VertexType> intervalVertexMap = intervalGraphRecognizer.getIntervalVertexMap();
+        Map<VertexType, V> vertexIntervalMap = intervalGraphRecognizer.getVertexIntervalMap();
+
+        ArrayList<V> vertices = new ArrayList<>(sortedIntervalList.size());
+
+        for(int i = 0; i < sortedIntervalList.size(); ++i) {
+            vertices.add(i, vertexIntervalMap.get(intervalVertexMap.get(sortedIntervalList.get(i))));
+        }
+
+        Map<Pair<V, V>, E> edges = new LinkedHashMap<>();
 
         for(V vertex : vertices) {
             for(Iterator<E> it = graph.outgoingEdgesOf(vertex.getVertex()).iterator(); it.hasNext();) {
                 E edge = it.next();
-                edges.put(Pair.of(vertex.getVertex(), graph.getEdgeTarget(edge)), edge);
+                edges.put(Pair.of(vertex, vertexIntervalMap.get(graph.getEdgeTarget(edge))), edge);
             }
         }
-
-
-        // TODO Intervall-Graph-Test ausführen
-        // TODO hier müssen noch die korrekten datenstrukturen vertices und edges brechnet werden!!!
-
 
 
         return new IntervalGraph<>(vertices, edges, (sourceVertex, targetVertex) -> graph.getEdgeFactory().createEdge(sourceVertex.getVertex(), targetVertex.getVertex()),
                 graph.getType().isDirected(), graph.getType().isAllowingMultipleEdges(),
                 graph.getType().isAllowingSelfLoops(), graph.getType().isWeighted());
-                */
+        */
         return null;
     }
 
