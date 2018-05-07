@@ -23,10 +23,17 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
 
     private IntervalTreeInterface<T, IntervalTreeNodeKey<Interval<T>>, IntervalTreeNodeValue<Interval<T>, T>> tree;
 
+    /**
+     * Initializes a new instance of the class
+     */
     public IntervalTreeStructure() {
         this.tree = new RedBlackIntervalTree<>();
     }
 
+    /**
+     * Initializes a new instance of the class
+     * @param intervals The set of contained intervals
+     */
     public IntervalTreeStructure(ArrayList<Interval<T>> intervals) {
         ArrayList<IntervalTreeNodeKey<Interval<T>>> keys = new ArrayList<>(intervals.size());
         ArrayList<IntervalTreeNodeValue<Interval<T>, T>> values = new ArrayList<>(intervals.size());
@@ -70,7 +77,6 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      * removes an interval from the tree
      *
      * @param interval the interval
-     * @return
      */
     @Override
     public void remove(Interval<T> interval) {

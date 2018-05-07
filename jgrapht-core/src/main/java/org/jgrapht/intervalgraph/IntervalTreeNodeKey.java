@@ -130,4 +130,9 @@ public class IntervalTreeNodeKey<T> implements Comparable<IntervalTreeNodeKey<T>
         @SuppressWarnings("unchecked") IntervalTreeNodeKey<T> other = (IntervalTreeNodeKey<T>) obj;
         return Objects.equals(key, other.key) && Objects.equals(comparator, other.comparator);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, comparator);
+    }
 }

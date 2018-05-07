@@ -28,6 +28,8 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexI
      * returns a list of all vertices with overlapping interval w.r.t <code>v</code>
      *
      * @param v the vertex with interval
+     *
+     * @return A list of overlapping intervals
      */
     List<V> getOverlappingIntervalVertices(V v);
 
@@ -44,6 +46,8 @@ public interface IntervalGraphVertexContainerInterface<V extends IntervalVertexI
      *
      * @param vertex the vertex
      * @param ec     the edge container
+     *
+     * @return An undirected edge container
      */
     UndirectedEdgeContainer<V, E> put(V vertex, UndirectedEdgeContainer<V, E> ec);
 

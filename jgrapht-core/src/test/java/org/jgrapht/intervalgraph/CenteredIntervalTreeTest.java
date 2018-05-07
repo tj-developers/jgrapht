@@ -17,10 +17,10 @@ public class CenteredIntervalTreeTest {
     @Test
     public void testCompareToPoint() {
         IntegerInterval interval = new IntegerInterval(0, 1);
-        assertEquals(-1, interval.compareToPoint(-1));
+        assertEquals(1, interval.compareToPoint(-1));
         assertEquals(0, interval.compareToPoint(0));
         assertEquals(0, interval.compareToPoint(1));
-        assertEquals(1, interval.compareToPoint(2));
+        assertEquals(-1, interval.compareToPoint(2));
     }
 
     @Test

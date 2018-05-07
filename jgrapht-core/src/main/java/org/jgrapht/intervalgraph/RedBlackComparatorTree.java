@@ -15,7 +15,7 @@ import java.util.NoSuchElementException;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class RedBlackComparatorTree<V> implements Serializable {
+class RedBlackComparatorTree<V> implements Serializable {
 
     private static final long serialVersionUID = 1199228564356373435L;
 

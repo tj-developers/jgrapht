@@ -111,7 +111,15 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     /**
      * Creates new lexicographical breadth-first iterator with a static priority list for {@code graph}.
      *
+     * This is used for the LBFS* variant top detect interval graphs
+     *
      * @param graph the graph to be iterated.
+     * @param priorityA The A priority list
+     * @param priorityB The B priority list
+     * @param neighborIndexA The A neighboring list
+     * @param neighborIndexB The B neighboring list
+     * @param ASets The A sets
+     * @param BSets The B sets
      */
     public LexBreadthFirstIterator(Graph<V, E> graph,
                                    HashMap<V, Integer> priorityA,

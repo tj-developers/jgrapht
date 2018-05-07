@@ -20,7 +20,7 @@ import java.util.List;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class RedBlackIntervalTree<K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>, T extends Comparable<T>> extends RedBlackTree<K, NodeValue> implements IntervalTreeInterface<T, K, NodeValue>, Serializable {
+class RedBlackIntervalTree<K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>, T extends Comparable<T>> extends RedBlackTree<K, NodeValue> implements IntervalTreeInterface<T, K, NodeValue>, Serializable {
 
     private static final long serialVersionUID = 4353687394654923429L;
 

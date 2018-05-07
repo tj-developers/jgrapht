@@ -5,17 +5,23 @@ import org.jgrapht.traverse.*;
 
 import java.util.*;
 
-public class LexBreadthFirstSearch<V, E>
+/** A class that is used to perform the BFS algorithms used to detect interval graphs.
+ * @param <V> The vertex type
+ * @param <E> The edge type
+ */
+class LexBreadthFirstSearch<V, E>
 {
     
     /**
      * Performs a lexicographical BFS starting at {@code startingVertex}.
      *
+     * @param <V> The vertex type
+     * @param <E> The edge type
      * @param graph the graph we want to perform LBFS on
      * @param startingVertex the starting vertex of the LBFS
      * @return an array of vertices representing the order in which the vertices were found
      */
-    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex)
+    static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex)
     {
        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
        LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph, startingVertex);
@@ -31,12 +37,13 @@ public class LexBreadthFirstSearch<V, E>
      * Performs LBFS+ starting at {@code startingVertex} using the previous ordering {@code prevOrdering}.
      *
      * @param graph the graph we want to perform LBFS on
-     * @param startingVertex the starting vertex of the LBFS
      * @param priority the priority of vertices for tiebreaking
+     * @param <V> The vertex type
+     * @param <E> The edge type
      * @return an array of vertices representing the order in which the vertices were found
      */
     
-    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
+    static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
     {
        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
        LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, priority);
@@ -54,10 +61,12 @@ public class LexBreadthFirstSearch<V, E>
      * @param graph the graph we want to perform LBFS on
      * @param priorityA the first priority of vertices for tiebreaking
      * @param priorityB the second priority of vertices for tiebreaking
+     * @param <V> The vertex type
+     * @param <E> The edge type
      * @return an array of vertices representing the order in which the vertices were found
      */
     
-    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
+    static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
     {
        HashMap<V, Integer> neighborIndexA = new HashMap<>(); 
        HashMap<V, Integer> neighborIndexB = new HashMap<>();

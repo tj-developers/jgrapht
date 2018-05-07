@@ -5,6 +5,7 @@ import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.intervalgraph.interval.Interval;
 import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,13 +17,13 @@ import static org.junit.Assert.*;
  */
 public class IntervalGraphTest {
 
-    private IntervalGraph<IntervalVertex, DefaultEdge> intervalGraph;
+    private IntervalGraph<IntervalVertexInterface<Integer, Integer>, DefaultEdge, Integer, Integer> intervalGraph;
 
     @Before
     public void setUp() {
-        EdgeFactory<IntervalVertex, DefaultEdge> edgeFactory = new ClassBasedEdgeFactory<>(DefaultEdge.class);
+        EdgeFactory<IntervalVertexInterface<Integer, Integer>, DefaultEdge> edgeFactory = new ClassBasedEdgeFactory<>(DefaultEdge.class);
         intervalGraph = new IntervalGraph<>(
-                edgeFactory, false, false, false, false
+                edgeFactory, false
         );
     }
 
@@ -217,7 +218,7 @@ public class IntervalGraphTest {
         IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(1, interval2);
         intervalGraph.addVertex(vertex2);
 
-        assertEquals(intervalGraph.edgeSet().size(), 2);
+        assertEquals(1, intervalGraph.edgeSet().size());
 
     }
 
@@ -272,6 +273,4 @@ public class IntervalGraphTest {
         assertEquals(intervalGraph.getEdgeWeight(edge), 1, 0);
         assertEquals(intervalGraph.getEdgeWeight(edge1), 1, 0);
     }
-
-
 }
