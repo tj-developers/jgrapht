@@ -2,6 +2,7 @@ package org.jgrapht.alg.intervalgraph;
 
 import static org.jgrapht.alg.intervalgraph.LexBreadthFirstSearch.*;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import org.jgrapht.*;
@@ -123,7 +124,7 @@ public final class IntervalGraphRecognizer<V, E>
                 neighborIndex.put(vertex, maxNeighbor);
             }
 
-            Interval<Integer>[] intervals = (Interval<Integer>[])new Object[graph.vertexSet().size()];
+            Interval<Integer>[] intervals = (Interval<Integer>[])Array.newInstance(Interval.class, graph.vertexSet().size());
             this.intervalsSortedByStartingPoint =
                 new ArrayList<>(graph.vertexSet().size());
 

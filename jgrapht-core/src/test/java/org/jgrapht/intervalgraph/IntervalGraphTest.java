@@ -218,7 +218,7 @@ public class IntervalGraphTest {
         IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(1, interval2);
         intervalGraph.addVertex(vertex2);
 
-        assertEquals(intervalGraph.edgeSet().size(), 2);
+        assertEquals(1, intervalGraph.edgeSet().size());
 
     }
 
