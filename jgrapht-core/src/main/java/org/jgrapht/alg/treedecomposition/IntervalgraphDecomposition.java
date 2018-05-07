@@ -7,13 +7,13 @@ import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.*;
 import org.jgrapht.intervalgraph.interval.*;
 
-public class IntervalgraphDecomposition<V,T extends Comparable<T>>
+public class IntervalgraphDecomposition<T extends Comparable<T>>
 {
-    private Graph<Set<IntervalVertex<V,T>>, DefaultEdge> treeDecomposition = null;
-    private Set<IntervalVertex<V,T>> currentVertex = null;
-    private List<IntervalVertex<V,T>> startSort, endSort;
+    private Graph<Set<Interval<T>>, DefaultEdge> treeDecomposition = null;
+    private Set<Interval<T>> currentVertex, root = null;
+    private List<Interval<T>> startSort, endSort;
     
-    public IntervalgraphDecomposition(Graph<V,Object> graph) 
+    public <V,E> IntervalgraphDecomposition(Graph<V,E> graph) 
     {
         throw new UnsupportedOperationException("Not yet implemented");
         //TODO
@@ -25,7 +25,7 @@ public class IntervalgraphDecomposition<V,T extends Comparable<T>>
         //TODO
     }
     
-    public IntervalgraphDecomposition(List<IntervalVertex<V,T>> intervals)
+    public IntervalgraphDecomposition(List<Interval<T>> intervals)
     {
         startSort = new ArrayList<>(intervals);
         endSort = new ArrayList<>(intervals);
@@ -41,9 +41,9 @@ public class IntervalgraphDecomposition<V,T extends Comparable<T>>
         initTreeDecomposition();
         
         int endIndex=0;
-        for(IntervalVertex<V,T> iv: startSort) {
-            while(endSort.get(endIndex).getInterval().getEnd().compareTo(
-                    iv.getInterval().getStart()) < 0) 
+        for(Interval<T> iv: startSort) {
+            while(endSort.get(endIndex).getEnd().compareTo(
+                    iv.getStart()) < 0) 
             {
                 addForget(endSort.get(endIndex));
                 endIndex++;
@@ -54,24 +54,24 @@ public class IntervalgraphDecomposition<V,T extends Comparable<T>>
     
     private void initTreeDecomposition() 
     {
-        treeDecomposition = new DefaultUndirectedGraph<Set<IntervalVertex<V,T>>,DefaultEdge>(DefaultEdge.class);
-        Set<IntervalVertex<V,T>> root = new HashSet<IntervalVertex<V,T>>(0);
+        treeDecomposition = new DefaultDirectedGraph<Set<Interval<T>>,DefaultEdge>(DefaultEdge.class);
+        root = new HashSet<Interval<T>>(0);
         treeDecomposition.addVertex(root);
         currentVertex = root;
     }
     
-    private void addIntroduce(IntervalVertex<V,T> vertex) 
+    private void addIntroduce(Interval<T> vertex) 
     {
-        Set<IntervalVertex<V,T>> nextVertex = new HashSet<IntervalVertex<V,T>>(currentVertex);
+        Set<Interval<T>> nextVertex = new HashSet<Interval<T>>(currentVertex);
         nextVertex.add(vertex);
         treeDecomposition.addVertex(nextVertex);
         treeDecomposition.addEdge(currentVertex, nextVertex);
         currentVertex = nextVertex;
     }
     
-    private void addForget(IntervalVertex<V,T> vertex)
+    private void addForget(Interval<T> vertex)
     {
-        Set<IntervalVertex<V,T>> nextVertex = new HashSet<IntervalVertex<V,T>>(currentVertex);
+        Set<Interval<T>> nextVertex = new HashSet<Interval<T>>(currentVertex);
         nextVertex.remove(vertex);
         treeDecomposition.addVertex(nextVertex);
         treeDecomposition.addEdge(currentVertex, nextVertex);
@@ -79,15 +79,21 @@ public class IntervalgraphDecomposition<V,T extends Comparable<T>>
     }
 
     
-    public Graph<Set<IntervalVertex<V,T>>,DefaultEdge> getTreeDecomposition()
+    public Graph<Set<Interval<T>>,DefaultEdge> getTreeDecomposition()
     {
-        computeTreeDecomposition();
+        if(treeDecomposition == null) computeTreeDecomposition();
         return treeDecomposition;
+    }
+    
+    public Set<Interval<T>> getRoot()
+    {
+        if(root == null) computeTreeDecomposition();
+        return root;
     }
     
     
     
-    private class IntervalVertexComparator implements Comparator<IntervalVertex<V,T>> {
+    private class IntervalVertexComparator implements Comparator<Interval<T>> {
 
         private boolean start = true;;
         
@@ -96,13 +102,12 @@ public class IntervalgraphDecomposition<V,T extends Comparable<T>>
         }
         
         @Override
-        public int compare(IntervalVertex<V, T> o1, IntervalVertex<V, T> o2)
+        public int compare(Interval<T> o1, Interval<T> o2)
         {
             if(start)
-                return o1.getInterval().getStart().compareTo(o2.getInterval().getStart());
+                return o1.getStart().compareTo(o2.getStart());
             else
-                return o1.getInterval().getEnd().compareTo(o2.getInterval().getEnd());
+                return o1.getEnd().compareTo(o2.getEnd());
         }
-
     }
 }
