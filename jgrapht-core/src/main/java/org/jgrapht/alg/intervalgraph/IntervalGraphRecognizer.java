@@ -63,7 +63,7 @@ public final class IntervalGraphRecognizer<V, E>
      *
      * @return
      */
-    public boolean isIntervalGraph(Graph<V, E> graph)
+    private boolean isIntervalGraph(Graph<V, E> graph)
     {
 
         // An empty graph is an interval graph.
@@ -146,7 +146,7 @@ public final class IntervalGraphRecognizer<V, E>
                 Interval<Integer> vertexInterval =
                     new Interval<>(sweepZeta.get(vertex), neighborIndex.get(vertex));
 
-                intervals[sweepZeta.get(vertex)] = vertexInterval);
+                intervals[sweepZeta.get(vertex)] = vertexInterval;
 
                 this.intervalVertexMap.put(vertexInterval, vertex);
                 this.vertexIntervalMap.put(vertex, vertexInterval);
