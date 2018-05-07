@@ -4,8 +4,11 @@ import org.jgrapht.EdgeFactory;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.specifics.IntervalSpecifics;
+import org.jgrapht.intervalgraph.interval.Interval;
+import org.jgrapht.intervalgraph.interval.IntervalVertex;
 import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.jgrapht.util.TypeUtil;
 
@@ -21,7 +24,7 @@ import java.util.*;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class IntervalGraph<V extends IntervalVertexInterface, E> extends AbstractGraph<V, E> implements Graph<V, E>, Cloneable, Serializable {
+public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>> extends AbstractGraph<V, E> implements Graph<V, E>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 7835287075273098344L;
 
@@ -31,7 +34,7 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     private EdgeFactory<V, E> edgeFactory;
     private transient Set<V> unmodifiableVertexSet = null;
 
-    private IntervalSpecifics<V, E> specifics;
+    private IntervalSpecifics<V, E, VertexType, T> specifics;
     private IntrusiveEdgesSpecifics<V, E> intrusiveEdgesSpecifics;
 
     private boolean directed;
@@ -44,24 +47,20 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
      * specified edge factory.
      *
      * @param ef the edge factory of the new graph.
-     * @param directed if true the graph will be directed, otherwise undirected
-     * @param allowMultipleEdges whether to allow multiple (parallel) edges or not.
-     * @param allowLoops whether to allow edges that are self-loops or not.
      * @param weighted whether the graph is weighted, i.e. the edges support a weight attribute
      *
      * @throws NullPointerException if the specified edge factory is <code>
      * null</code>.
      */
     protected IntervalGraph(
-            EdgeFactory<V, E> ef, boolean directed, boolean allowMultipleEdges, boolean allowLoops,
-            boolean weighted)
+            EdgeFactory<V, E> ef, boolean weighted)
     {
         Objects.requireNonNull(ef);
 
         this.edgeFactory = ef;
-        this.allowingLoops = allowLoops;
-        this.allowingMultipleEdges = allowMultipleEdges;
-        this.directed = directed;
+        this.allowingLoops = false;
+        this.allowingMultipleEdges = false;
+        this.directed = false;
         this.specifics =
                 Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
         this.weighted = weighted;
@@ -75,6 +74,71 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
      *
      * @param vertices initial vertices
      * @param ef the edge factory of the new graph.
+     * @param weighted whether the graph is weighted, i.e. the edges support a weight attribute
+     *
+     * @throws NullPointerException if the specified edge factory is <code>
+     * null</code>.
+     */
+    protected IntervalGraph(
+            ArrayList<V> vertices, EdgeFactory<V, E> ef, boolean weighted)
+    {
+
+        Objects.requireNonNull(ef);
+
+        boolean isSorted = true;
+        V current = vertices.get(0);
+        for (int i = 1; i < vertices.size(); i++) {
+            V next = vertices.get(i);
+            if (current.getInterval().compareTo(next.getInterval()) > 0) {
+                isSorted = false;
+                break;
+            }
+            current = next;
+        }
+
+        this.edgeFactory = ef;
+        this.allowingLoops = false;
+        this.allowingMultipleEdges = false;
+        this.directed = false;
+
+        this.weighted = weighted;
+        this.intrusiveEdgesSpecifics = Objects.requireNonNull(
+                createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+
+        if(isSorted) {
+            this.specifics = Objects.requireNonNull(createSpecifics(directed, vertices), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+
+            ArrayList<LinkedList<V>> edges = new ArrayList<>(vertices.size());
+
+            for(int i = 0; i < vertices.size(); ++i) {
+                edges.add(i, new LinkedList<>());
+                for(int j = 0; j < i; ++j) {
+                    if(vertices.get(j).getInterval().getEnd().compareTo(vertices.get(i).getInterval().getStart()) >= 0) {
+                        edges.get(j).add(vertices.get(i));
+                    }
+                }
+            }
+
+            for(int i = 0; i < vertices.size(); ++i) {
+                addIntervalEdges(vertices.get(i), edges.get(i));
+            }
+
+        } else {
+            this.specifics = Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+
+            for (V vertex : vertices) {
+                this.addVertex(vertex);
+            }
+        }
+    }
+
+    /**
+     * Construct a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
+     * specified edge factory.
+     *
+     * @param vertices initial vertices
+     * @param edges initial edges
+     * @param ef the edge factory of the new graph.
      * @param directed if true the graph will be directed, otherwise undirected
      * @param allowMultipleEdges whether to allow multiple (parallel) edges or not.
      * @param allowLoops whether to allow edges that are self-loops or not.
@@ -83,10 +147,9 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
      * @throws NullPointerException if the specified edge factory is <code>
      * null</code>.
      */
-    protected IntervalGraph(
-            List<V> vertices, EdgeFactory<V, E> ef, boolean directed, boolean allowMultipleEdges, boolean allowLoops,
-            boolean weighted)
-    {
+    private IntervalGraph(ArrayList<V> vertices, Map<Pair<V, V>, E> edges, EdgeFactory<V, E> ef,
+                          boolean directed, boolean allowMultipleEdges, boolean allowLoops, boolean weighted) {
+
         Objects.requireNonNull(ef);
 
         this.edgeFactory = ef;
@@ -94,14 +157,68 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
         this.allowingMultipleEdges = allowMultipleEdges;
         this.directed = directed;
         this.specifics =
-                Objects.requireNonNull(createSpecifics(directed), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
+                Objects.requireNonNull(createSpecifics(directed, vertices), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
         this.weighted = weighted;
         this.intrusiveEdgesSpecifics = Objects.requireNonNull(
                 createIntrusiveEdgesSpecifics(weighted), GRAPH_SPECIFICS_MUST_NOT_BE_NULL);
 
-        for(V vertex : vertices) {
-            this.addVertex(vertex);
+        for(Pair<V, V> v : edges.keySet()) {
+            addExistingIntervalEdges(v.getFirst(), v.getSecond(), edges.get(v));
         }
+    }
+
+    private boolean addExistingIntervalEdges(V sourceVertex, V targetVertex, E edge) {
+
+        assertVertexExist(sourceVertex);
+        assertVertexExist(targetVertex);
+
+        if(intrusiveEdgesSpecifics.add(edge, sourceVertex, targetVertex)) {
+            specifics.addEdgeToTouchingVertices(edge);
+        }
+
+        return true;
+    }
+
+    /**
+     * returns interval graph representation if one exists, otherwise null
+     *
+     * @param graph the graph to check
+     * @return interval graph representation if one exists, otherwise null
+     */
+    public static <V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>>
+            IntervalGraph<V, E, VertexType, T> asIntervalGraph(Graph<VertexType, E> graph) {
+/*
+        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecongnizer(Graph<VertexType, E);
+
+        if(!intervalGraphRecognizer.isIntervalGraph()) {
+            return null;
+        }
+
+        ArrayList<Interval<T>> sortedIntervalList = intervalGraphRecognizer.getIntervalsSortedByStartingPoint();
+        Map<Interval<Integer>, VertexType> intervalVertexMap = intervalGraphRecognizer.getIntervalVertexMap();
+        Map<VertexType, V> vertexIntervalMap = intervalGraphRecognizer.getVertexIntervalMap();
+
+        ArrayList<V> vertices = new ArrayList<>(sortedIntervalList.size());
+
+        for(int i = 0; i < sortedIntervalList.size(); ++i) {
+            vertices.add(i, vertexIntervalMap.get(intervalVertexMap.get(sortedIntervalList.get(i))));
+        }
+
+        Map<Pair<V, V>, E> edges = new LinkedHashMap<>();
+
+        for(V vertex : vertices) {
+            for(Iterator<E> it = graph.outgoingEdgesOf(vertex.getVertex()).iterator(); it.hasNext();) {
+                E edge = it.next();
+                edges.put(Pair.of(vertex, vertexIntervalMap.get(graph.getEdgeTarget(edge))), edge);
+            }
+        }
+
+
+        return new IntervalGraph<>(vertices, edges, (sourceVertex, targetVertex) -> graph.getEdgeFactory().createEdge(sourceVertex.getVertex(), targetVertex.getVertex()),
+                graph.getType().isDirected(), graph.getType().isAllowingMultipleEdges(),
+                graph.getType().isAllowingSelfLoops(), graph.getType().isWeighted());
+        */
+        return null;
     }
 
 
@@ -245,7 +362,7 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     public Object clone()
     {
         try {
-            IntervalGraph<V, E> newGraph = TypeUtil.uncheckedCast(super.clone());
+            IntervalGraph<V, E, VertexType, T> newGraph = TypeUtil.uncheckedCast(super.clone());
 
             newGraph.edgeFactory = this.edgeFactory;
             newGraph.unmodifiableVertexSet = null;
@@ -439,7 +556,6 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     @Override
     public GraphType getType()
     {
-        //TODO
         if (directed) {
             return new DefaultGraphType.Builder()
                     .directed().weighted(weighted).allowMultipleEdges(allowingMultipleEdges)
@@ -459,9 +575,20 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
      *        otherwise undirected
      * @return the specifics used by this graph
      */
-    protected IntervalSpecifics<V, E> createSpecifics(boolean directed)
-    {
+    protected IntervalSpecifics<V, E, VertexType, T> createSpecifics(boolean directed) {
         return new IntervalSpecifics<>(this);
+    }
+
+    /**
+     * Create the specifics for this graph. Subclasses can override this method in order to adjust
+     * the specifics and thus the space-time tradeoffs of the graph implementation.
+     *
+     * @param directed if true the specifics should adjust the behavior to a directed graph
+     *        otherwise undirected
+     * @return the specifics used by this graph
+     */
+    protected IntervalSpecifics<V, E, VertexType, T> createSpecifics(boolean directed, ArrayList<V> vertices) {
+        return new IntervalSpecifics<>(this, vertices);
     }
 
     /**
@@ -470,8 +597,7 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
      * @param weighted if true the specifics should support weighted edges
      * @return the specifics used for the edge set of this graph
      */
-    protected IntrusiveEdgesSpecifics<V, E> createIntrusiveEdgesSpecifics(boolean weighted)
-    {
+    protected IntrusiveEdgesSpecifics<V, E> createIntrusiveEdgesSpecifics(boolean weighted) {
         if (weighted) {
             return new WeightedIntrusiveEdgesSpecifics<>();
         } else {
@@ -480,8 +606,7 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
     }
 
     /**
-     * Adds edges between <code>sourceVertex</code> and every vertex from <code>vertices</code>
-     * This method should only be called from IntervalSpecifics, because interval graphs have by intervals defined edges.
+     * Adds edges between <code>sourceVertex</code> and every vertex from <code>vertices</code>.
      *
      * @param sourceVertex source vertex of all edges
      * @param targetVertices target vertices of edges
@@ -493,10 +618,12 @@ public class IntervalGraph<V extends IntervalVertexInterface, E> extends Abstrac
         for(V targetVertex: targetVertices) {
             assertVertexExist(targetVertex);
 
-            E e = edgeFactory.createEdge(sourceVertex, targetVertex);
+            if(!sourceVertex.equals(targetVertex)) {
+                E e = edgeFactory.createEdge(sourceVertex, targetVertex);
 
-            if(intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
-                specifics.addEdgeToTouchingVertices(e);
+                if (intrusiveEdgesSpecifics.add(e, sourceVertex, targetVertex)) {
+                    specifics.addEdgeToTouchingVertices(e);
+                }
             }
         }
         return true;

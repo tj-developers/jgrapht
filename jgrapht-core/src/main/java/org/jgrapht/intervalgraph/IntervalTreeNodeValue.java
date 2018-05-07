@@ -32,7 +32,6 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
      * Create a new pair
      *
      * @param interval the first element
-     * @param highValue the second element
      */
     public IntervalTreeNodeValue(I interval) {
         this.interval = interval;

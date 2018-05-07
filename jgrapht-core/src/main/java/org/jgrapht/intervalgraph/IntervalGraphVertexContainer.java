@@ -17,7 +17,7 @@ import java.util.*;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T>, E, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
+public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>> implements IntervalGraphVertexContainerInterface<V, E>, Serializable {
 
     private static final long serialVersionUID = 7768940080894764546L;
 
@@ -41,6 +41,24 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<V, T
         this.intervalStructure = new IntervalTreeStructure<>();
         this.vertexMap = new LinkedHashMap<>();
         this.intervalMap = new LinkedHashMap<>();
+    }
+
+    /**
+     * Constructs a vertex container for an interval graph with all necessary objects.
+     */
+    public IntervalGraphVertexContainer(ArrayList<V> vertices, ArrayList<UndirectedEdgeContainer<V, E>> undirectedEdgeContainers) {
+        this.vertexMap = new LinkedHashMap<>();
+        this.intervalMap = new LinkedHashMap<>();
+
+        ArrayList<Interval<T>> intervals = new ArrayList<>(vertices.size());
+
+        for(int i = 0; i < vertices.size(); ++i) {
+            intervals.add(i, vertices.get(i).getInterval());
+            intervalMap.put(vertices.get(i).getInterval(), vertices.get(i));
+            vertexMap.put(vertices.get(i), undirectedEdgeContainers.get(i));
+        }
+
+        this.intervalStructure = new IntervalTreeStructure<>(intervals);
     }
 
     /**

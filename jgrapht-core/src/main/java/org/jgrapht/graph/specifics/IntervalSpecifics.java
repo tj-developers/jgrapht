@@ -8,6 +8,7 @@ import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.jgrapht.util.ArrayUnenforcedSet;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,11 +22,11 @@ import java.util.Set;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class IntervalSpecifics<V extends IntervalVertexInterface, E> implements Specifics<V, E>, Serializable {
+public class IntervalSpecifics<V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>> implements Specifics<V, E>, Serializable {
 
     private static final long serialVersionUID = 1112673663745687843L;
 
-    private IntervalGraph<V, E> intervalGraph;
+    private IntervalGraph<V, E, VertexType, T> intervalGraph;
     private IntervalGraphVertexContainerInterface<V, E> intervalGraphVertexContainerInterface;
     private EdgeSetFactory<V, E> edgeSetFactory;
 
@@ -34,10 +35,28 @@ public class IntervalSpecifics<V extends IntervalVertexInterface, E> implements 
      *
      * @param intervalGraph the graph for which these specifics are for
      */
-    public IntervalSpecifics(IntervalGraph<V, E> intervalGraph) {
+    public IntervalSpecifics(IntervalGraph<V, E, VertexType, T> intervalGraph) {
         this.intervalGraph = intervalGraph;
         this.intervalGraphVertexContainerInterface = new IntervalGraphVertexContainer<>();
         this.edgeSetFactory = new ArrayUnenforcedSetEdgeSetFactory<>();
+    }
+
+    /**
+     * Constructs new interval specifics.
+     *
+     * @param intervalGraph the graph for which these specifics are for
+     */
+    public IntervalSpecifics(IntervalGraph<V, E, VertexType, T> intervalGraph, ArrayList<V> vertices) {
+
+        this.intervalGraph = intervalGraph;
+        this.edgeSetFactory = new ArrayUnenforcedSetEdgeSetFactory<>();
+
+        ArrayList<UndirectedEdgeContainer<V, E>> undirectedEdgeContainers = new ArrayList<>(vertices.size());
+        for(int i = 0; i < vertices.size(); ++i) {
+            undirectedEdgeContainers.add(i, new UndirectedEdgeContainer<>(edgeSetFactory, vertices.get(i)));
+        }
+
+        this.intervalGraphVertexContainerInterface = new IntervalGraphVertexContainer<>(vertices, undirectedEdgeContainers);
     }
 
     /**

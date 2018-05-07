@@ -151,7 +151,7 @@ public interface BinarySearchTree<K, V> {
     /**
      * Returns all keys in the symbol table as an <code>Iterable</code>.
      * To iterate over all of the keys in the symbol table named <code>st</code>,
-     * use the foreach notation: <code>for (Key key : st.keys())</code>.
+     * use the foreach notation: <code>for (IntervalTreeNodeKey key : st.keys())</code>.
      *
      * @return all keys in the symbol table as an <code>Iterable</code>
      */
