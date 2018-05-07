@@ -9,7 +9,8 @@ import java.util.Objects;
  * Implementation of IntervalTreeNodeValue
  * This is a container class to store the necessary data for the (augmented) interval tree in the nodes of the tree.
  *
- * @param <T> the type of the interval
+ * @param <I> the type of the interval
+ * @param <T> The underlying type for the intervals
  *
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
@@ -58,6 +59,10 @@ public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T
         return highValue;
     }
 
+    /**
+     * Sets the high value
+     * @param highValue The high value
+     */
     public void setHighValue(T highValue) {
         this.highValue = highValue;
     }

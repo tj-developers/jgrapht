@@ -21,6 +21,8 @@ import java.util.*;
  *
  * @param <V> the vertex type
  * @param <E> the edge type
+ * @param <VertexType> the internal vertex type
+ * @param <T> The underlying type for intervals
  *
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
@@ -184,6 +186,10 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * returns interval graph representation if one exists, otherwise null
      *
      * @param graph the graph to check
+     * @param <V> the vertex type
+     * @param <E> the edge type
+     * @param <VertexType> the internal vertex type
+     * @param <T> The underlying type for intervals
      * @return interval graph representation if one exists, otherwise null
      */
     public static <E, VertexType>
@@ -584,6 +590,7 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      *
      * @param directed if true the specifics should adjust the behavior to a directed graph
      *        otherwise undirected
+     * @param vertices The set of vertices
      * @return the specifics used by this graph
      */
     protected IntervalSpecifics<V, E, VertexType, T> createSpecifics(boolean directed, ArrayList<V> vertices) {

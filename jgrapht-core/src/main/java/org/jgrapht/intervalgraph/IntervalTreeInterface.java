@@ -10,7 +10,9 @@ import java.util.List;
  * included points in O(log n + k), where n is the number of intervals and k the output size,
  * i.e. the number of output intervals.
  *
- * @param <T> the type of the interval
+ * @param <T> The type of the interval
+ * @param <K> The key for the search tree
+ * @param <NodeValue> The node value type
  *
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018

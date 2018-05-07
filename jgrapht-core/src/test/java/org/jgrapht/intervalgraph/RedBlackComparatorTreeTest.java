@@ -22,8 +22,14 @@ public class RedBlackComparatorTreeTest {
 
     @Test
     public void isOrdered() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 5; i++) {
             assertEquals(i, (int) tree.inorderValues().get(i));
+        }
+        for (int i = 6; i < 73; i++) {
+            assertEquals(i, (int) tree.inorderValues().get(i - 1));
+        }
+        for (int i = 74; i < 100; i++) {
+            assertEquals(i, (int) tree.inorderValues().get(i - 2));
         }
     }
 

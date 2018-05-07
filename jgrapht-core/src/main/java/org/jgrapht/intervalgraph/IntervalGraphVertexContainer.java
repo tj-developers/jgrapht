@@ -12,6 +12,7 @@ import java.util.*;
  *
  * @param <V> the vertex type
  * @param <E> the edge type
+ * @param <VertexType> the internal vertex type
  * @param <T> the type of the interval
  *
  * @author Christoph Grüne (christophgruene)
@@ -45,6 +46,9 @@ public class IntervalGraphVertexContainer<V extends IntervalVertexInterface<Vert
 
     /**
      * Constructs a vertex container for an interval graph with all necessary objects.
+     *
+     * @param vertices The set of vertices
+     * @param  undirectedEdgeContainers The set of undirected edge containers
      */
     public IntervalGraphVertexContainer(ArrayList<V> vertices, ArrayList<UndirectedEdgeContainer<V, E>> undirectedEdgeContainers) {
         this.vertexMap = new LinkedHashMap<>();

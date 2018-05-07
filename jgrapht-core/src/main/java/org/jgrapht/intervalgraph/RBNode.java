@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author Daniel Mock (danielmock)
  * @since Apr 26, 2018
  */
-public class RBNode<V> implements Serializable {
+class RBNode<V> implements Serializable {
 
     private static final long serialVersionUID = 5674337686253743843L;
 
