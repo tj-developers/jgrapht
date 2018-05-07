@@ -7,14 +7,13 @@ import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.*;
 import org.jgrapht.intervalgraph.interval.*;
 
-public class IntervalgraphDecomposition<T extends Comparable<T>>
-    implements TreeDecomposition<T,DefaultEdge>
+public class IntervalgraphDecomposition<V,T extends Comparable<T>>
 {
-    private Graph<Set<Interval<T>>,DefaultEdge> treeDecomposition = null;
-    private Set<Interval<T>> currentVertex = null;
+    private Graph<Set<IntervalVertex<V,T>>, DefaultEdge> treeDecomposition = null;
+    private Set<IntervalVertex<V,T>> currentVertex = null;
     private List<IntervalVertex<V,T>> startSort, endSort;
     
-    public IntervalgraphDecomposition(Graph<V,E> graph) 
+    public IntervalgraphDecomposition(Graph<V,Object> graph) 
     {
         throw new UnsupportedOperationException("Not yet implemented");
         //TODO
@@ -46,41 +45,41 @@ public class IntervalgraphDecomposition<T extends Comparable<T>>
             while(endSort.get(endIndex).getInterval().getEnd().compareTo(
                     iv.getInterval().getStart()) < 0) 
             {
-                addForget(endSort.get(endIndex).getVertex());
+                addForget(endSort.get(endIndex));
                 endIndex++;
             }
-            addIntroduce(iv.getVertex());
+            addIntroduce(iv);
         }
     }
     
     private void initTreeDecomposition() 
     {
-        treeDecomposition = new DefaultUndirectedGraph<Set<V>,DefaultEdge>(DefaultEdge.class);
-        Set<V> root = new HashSet<V>(0);
+        treeDecomposition = new DefaultUndirectedGraph<Set<IntervalVertex<V,T>>,DefaultEdge>(DefaultEdge.class);
+        Set<IntervalVertex<V,T>> root = new HashSet<IntervalVertex<V,T>>(0);
         treeDecomposition.addVertex(root);
         currentVertex = root;
     }
     
-    private void addIntroduce(V vertex) 
+    private void addIntroduce(IntervalVertex<V,T> vertex) 
     {
-        Set<V> nextVertex = new HashSet<V>(currentVertex);
+        Set<IntervalVertex<V,T>> nextVertex = new HashSet<IntervalVertex<V,T>>(currentVertex);
         nextVertex.add(vertex);
         treeDecomposition.addVertex(nextVertex);
         treeDecomposition.addEdge(currentVertex, nextVertex);
         currentVertex = nextVertex;
     }
     
-    private void addForget(V vertex)
+    private void addForget(IntervalVertex<V,T> vertex)
     {
-        Set<V> nextVertex = new HashSet<V>(currentVertex);
+        Set<IntervalVertex<V,T>> nextVertex = new HashSet<IntervalVertex<V,T>>(currentVertex);
         nextVertex.remove(vertex);
         treeDecomposition.addVertex(nextVertex);
         treeDecomposition.addEdge(currentVertex, nextVertex);
         currentVertex = nextVertex;
     }
 
-    @Override
-    public Graph<Set<V>,DefaultEdge> getTreeDecomposition()
+    
+    public Graph<Set<IntervalVertex<V,T>>,DefaultEdge> getTreeDecomposition()
     {
         computeTreeDecomposition();
         return treeDecomposition;
