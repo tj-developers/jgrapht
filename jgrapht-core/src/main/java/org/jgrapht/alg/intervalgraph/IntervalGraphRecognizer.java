@@ -42,7 +42,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint;
     private Map<Interval<Integer>, V> intervalToVertexMap;
-    private Map<V, IntervalVertex<V, Integer>> vertexToIntervalMap;
+    private Map<V, IntervalVertexInterface<V, Integer>> vertexToIntervalMap;
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
@@ -269,7 +269,7 @@ public final class IntervalGraphRecognizer<V, E>
      *
      * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
      */
-    public Map<V, IntervalVertex<V, Integer>> getVertexToIntervalMap()
+    public Map<V, IntervalVertexInterface<V, Integer>> getVertexToIntervalMap()
     {
         return this.vertexToIntervalMap;
     }

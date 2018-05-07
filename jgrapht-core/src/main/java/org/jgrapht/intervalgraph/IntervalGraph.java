@@ -4,6 +4,7 @@ import org.jgrapht.EdgeFactory;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.specifics.IntervalSpecifics;
@@ -185,28 +186,28 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * @param graph the graph to check
      * @return interval graph representation if one exists, otherwise null
      */
-    public static <V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>>
-            IntervalGraph<V, E, VertexType, T> asIntervalGraph(Graph<VertexType, E> graph) {
-/*
-        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecongnizer(Graph<VertexType, E);
+    public static <E, VertexType>
+            IntervalGraph<IntervalVertexInterface<VertexType, Integer>, E, VertexType, Integer> asIntervalGraph(Graph<VertexType, E> graph) {
+
+        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecognizer<>(graph);
 
         if(!intervalGraphRecognizer.isIntervalGraph()) {
             return null;
         }
 
-        ArrayList<Interval<T>> sortedIntervalList = intervalGraphRecognizer.getIntervalsSortedByStartingPoint();
-        Map<Interval<Integer>, VertexType> intervalVertexMap = intervalGraphRecognizer.getIntervalVertexMap();
-        Map<VertexType, V> vertexIntervalMap = intervalGraphRecognizer.getVertexIntervalMap();
+        ArrayList<Interval<Integer>> sortedIntervalList = intervalGraphRecognizer.getIntervalsSortedByStartingPoint();
+        Map<Interval<Integer>, VertexType> intervalVertexMap = intervalGraphRecognizer.getIntervalToVertexMap();
+        Map<VertexType, IntervalVertexInterface<VertexType, Integer>> vertexIntervalMap = intervalGraphRecognizer.getVertexToIntervalMap();
 
-        ArrayList<V> vertices = new ArrayList<>(sortedIntervalList.size());
+        ArrayList<IntervalVertexInterface<VertexType, Integer>> vertices = new ArrayList<>(sortedIntervalList.size());
 
         for(int i = 0; i < sortedIntervalList.size(); ++i) {
             vertices.add(i, vertexIntervalMap.get(intervalVertexMap.get(sortedIntervalList.get(i))));
         }
 
-        Map<Pair<V, V>, E> edges = new LinkedHashMap<>();
+        Map<Pair<IntervalVertexInterface<VertexType, Integer>, IntervalVertexInterface<VertexType, Integer>>, E> edges = new LinkedHashMap<>();
 
-        for(V vertex : vertices) {
+        for(IntervalVertexInterface<VertexType, Integer> vertex : vertices) {
             for(Iterator<E> it = graph.outgoingEdgesOf(vertex.getVertex()).iterator(); it.hasNext();) {
                 E edge = it.next();
                 edges.put(Pair.of(vertex, vertexIntervalMap.get(graph.getEdgeTarget(edge))), edge);
@@ -217,8 +218,6 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
         return new IntervalGraph<>(vertices, edges, (sourceVertex, targetVertex) -> graph.getEdgeFactory().createEdge(sourceVertex.getVertex(), targetVertex.getVertex()),
                 graph.getType().isDirected(), graph.getType().isAllowingMultipleEdges(),
                 graph.getType().isAllowingSelfLoops(), graph.getType().isWeighted());
-        */
-        return null;
     }
 
 
