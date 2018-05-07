@@ -5,6 +5,8 @@ import static org.jgrapht.alg.intervalgraph.LexBreadthFirstSearch.*;
 import java.util.*;
 
 import org.jgrapht.*;
+import org.jgrapht.graph.ClassBasedEdgeFactory;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.intervalgraph.*;
 import org.jgrapht.intervalgraph.interval.*;
 
@@ -41,14 +43,15 @@ public final class IntervalGraphRecognizer<V, E>
      * Stores the computed interval graph representation (or <tt>null</tt> if no such representation
      * exists) of the graph.
      */
-    private Graph<V, E> intervalRepresentation; // TODO: change to work with an actual interval
-                                                // graph after merge
+    private List<Interval<Integer>> intervalsSortedByStartingPoint;
+    private Map<Interval<Integer>, V> intervalVertexMap;
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
      * 
      * @param graph the graph to be tested.
      */
+    @SuppressWarnings({"unchecked"})
     public IntervalGraphRecognizer(Graph<V, E> graph)
     {
         this.isIntervalGraph = isIntervalGraph(graph);
@@ -113,7 +116,6 @@ public final class IntervalGraphRecognizer<V, E>
 
         if (isIOrdering(sweepZeta, graph)) {
 
-            // Compute interval representation -- TODO: complete after merge
             HashMap<V, Integer> neighborIndex = new HashMap<>();
             for (V vertex : graph.vertexSet()) {
                 int maxNeighbor = 0;
@@ -128,32 +130,33 @@ public final class IntervalGraphRecognizer<V, E>
                 neighborIndex.put(vertex, maxNeighbor);
             }
 
-            HashMap<Integer, Interval<Integer>> intervals = new HashMap<>(graph.vertexSet().size());
-            ArrayList<Interval<Integer>> sortedIntervals =
+            Interval<Integer>[] intervals = (Interval<Integer>[])new Object[graph.vertexSet().size()];
+            this.intervalsSortedByStartingPoint =
                 new ArrayList<>(graph.vertexSet().size());
+
+            // Initialize the vertex map. Because we know the number of vertices we can make sure the hashmap does not
+            // need to rehash by setting the capacity to the number of vertices divided by the default load factor
+            // of 0.75.
+            this.intervalVertexMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
 
             // Compute intervals and store them associated by their starting point ...
             for (V vertex : graph.vertexSet()) {
                 Interval<Integer> vertexInterval =
                     new Interval<>(sweepZeta.get(vertex), neighborIndex.get(vertex));
 
-                intervals.put(sweepZeta.get(vertex), vertexInterval);
+                intervals[sweepZeta.get(vertex)] = vertexInterval)
+
+                this.intervalVertexMap.put(vertexInterval, vertex);
             }
 
             // ... and produce a list sorted by the starting points for an efficient construction of
             // the graph
             for (int i = 0; i < graph.vertexSet().size(); i++) {
-                sortedIntervals.add(intervals.get(i));
+                this.intervalsSortedByStartingPoint.add(intervals[i]);
             }
-
-            // TODO: build the actual interval graph
-            this.intervalRepresentation = null;
 
             return true;
         } else {
-            // set values negatively
-            this.intervalRepresentation = null;
-
             return false;
         }
     }
@@ -242,13 +245,22 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
-     * Returns an interval graph representation of the graph.
+     * Returns the list of all intervals sorted by starting point, or null, if the graph was not an interval graph.
      *
-     * @return an interval graph representation of the graph or <tt>null</tt> if the graph is not an
-     *         interval graph.
+     * @return The list of all intervals sorted by starting point, or null, if the graph was not an interval graph.
      */
-    public Graph<V, E> getIntervalGraphRepresentation()
+    public List<Interval<Integer>> getIntervalsSortedByStartingPoint()
     {
-        return intervalRepresentation;
+        return this.intervalsSortedByStartingPoint;
+    }
+
+    /**
+     * Returns a mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
+     *
+     * @return A mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
+     */
+    public Map<Interval<Integer>, V> getIntervalVertexMap()
+    {
+        return this.intervalVertexMap;
     }
 }
