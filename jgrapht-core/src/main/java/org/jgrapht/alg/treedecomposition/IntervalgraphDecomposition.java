@@ -50,19 +50,22 @@ public class IntervalgraphDecomposition<T extends Comparable<T>>
             }
             addIntroduce(iv);
         }
+        while(endIndex < endSort.size()-1) {
+            addForget(endSort.get(endIndex++));
+        }
     }
     
     private void initTreeDecomposition() 
     {
         treeDecomposition = new DefaultDirectedGraph<Set<Interval<T>>,DefaultEdge>(DefaultEdge.class);
-        root = new HashSet<Interval<T>>(0);
+        root = new TreeSet<Interval<T>>();
         treeDecomposition.addVertex(root);
         currentVertex = root;
     }
     
     private void addIntroduce(Interval<T> vertex) 
     {
-        Set<Interval<T>> nextVertex = new HashSet<Interval<T>>(currentVertex);
+        Set<Interval<T>> nextVertex = new TreeSet<Interval<T>>(currentVertex);
         nextVertex.add(vertex);
         treeDecomposition.addVertex(nextVertex);
         treeDecomposition.addEdge(currentVertex, nextVertex);
@@ -71,7 +74,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>>
     
     private void addForget(Interval<T> vertex)
     {
-        Set<Interval<T>> nextVertex = new HashSet<Interval<T>>(currentVertex);
+        Set<Interval<T>> nextVertex = new TreeSet<Interval<T>>(currentVertex);
         nextVertex.remove(vertex);
         treeDecomposition.addVertex(nextVertex);
         treeDecomposition.addEdge(currentVertex, nextVertex);
