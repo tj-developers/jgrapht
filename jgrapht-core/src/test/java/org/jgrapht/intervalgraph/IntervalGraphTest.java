@@ -5,6 +5,7 @@ import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.intervalgraph.interval.Interval;
 import org.jgrapht.intervalgraph.interval.IntervalVertex;
+import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,13 +17,13 @@ import static org.junit.Assert.*;
  */
 public class IntervalGraphTest {
 
-    private IntervalGraph<IntervalVertex, DefaultEdge> intervalGraph;
+    private IntervalGraph<IntervalVertexInterface<Integer, Integer>, DefaultEdge, Integer, Integer> intervalGraph;
 
     @Before
     public void setUp() {
-        EdgeFactory<IntervalVertex, DefaultEdge> edgeFactory = new ClassBasedEdgeFactory<>(DefaultEdge.class);
+        EdgeFactory<IntervalVertexInterface<Integer, Integer>, DefaultEdge> edgeFactory = new ClassBasedEdgeFactory<>(DefaultEdge.class);
         intervalGraph = new IntervalGraph<>(
-                edgeFactory, false, false, false, false
+                edgeFactory, false
         );
     }
 
