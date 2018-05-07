@@ -45,6 +45,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private List<Interval<Integer>> intervalsSortedByStartingPoint;
     private Map<Interval<Integer>, V> intervalVertexMap;
+    private Map<V, Interval<Integer>> vertexIntervalMap;
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
@@ -138,15 +139,17 @@ public final class IntervalGraphRecognizer<V, E>
             // need to rehash by setting the capacity to the number of vertices divided by the default load factor
             // of 0.75.
             this.intervalVertexMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
+            this.vertexIntervalMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
 
             // Compute intervals and store them associated by their starting point ...
             for (V vertex : graph.vertexSet()) {
                 Interval<Integer> vertexInterval =
                     new Interval<>(sweepZeta.get(vertex), neighborIndex.get(vertex));
 
-                intervals[sweepZeta.get(vertex)] = vertexInterval)
+                intervals[sweepZeta.get(vertex)] = vertexInterval);
 
                 this.intervalVertexMap.put(vertexInterval, vertex);
+                this.vertexIntervalMap.put(vertex, vertexInterval);
             }
 
             // ... and produce a list sorted by the starting points for an efficient construction of
@@ -262,5 +265,15 @@ public final class IntervalGraphRecognizer<V, E>
     public Map<Interval<Integer>, V> getIntervalVertexMap()
     {
         return this.intervalVertexMap;
+    }
+
+    /**
+     * Returns a mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
+     *
+     * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
+     */
+    public Map<V, Interval<Integer>> getVertexIntervalMap()
+    {
+        return this.vertexIntervalMap;
     }
 }
