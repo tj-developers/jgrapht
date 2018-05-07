@@ -186,10 +186,8 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
      * returns interval graph representation if one exists, otherwise null
      *
      * @param graph the graph to check
-     * @param <V> the vertex type
      * @param <E> the edge type
      * @param <VertexType> the internal vertex type
-     * @param <T> The underlying type for intervals
      * @return interval graph representation if one exists, otherwise null
      */
     public static <E, VertexType>
