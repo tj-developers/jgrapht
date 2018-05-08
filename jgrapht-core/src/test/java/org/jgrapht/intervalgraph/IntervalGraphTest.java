@@ -3,6 +3,7 @@ package org.jgrapht.intervalgraph;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.intervalgraph.interval.Interval;
 import org.jgrapht.intervalgraph.interval.IntervalVertex;
 import org.jgrapht.intervalgraph.interval.IntervalVertexInterface;
@@ -20,15 +21,16 @@ import static org.junit.Assert.*;
 public class IntervalGraphTest {
 
     private IntervalGraph<IntervalVertexInterface<Integer, Integer>, DefaultEdge, Integer, Integer> intervalGraph;
-    private IntervalGraph<IntervalVertexInterface<Integer, Integer>, DefaultEdge, Integer, Integer> weightedIntervalGraph;
+    private IntervalGraph<IntervalVertexInterface<Integer, Integer>, DefaultWeightedEdge, Integer, Integer> weightedIntervalGraph;
 
     @Before
     public void setUp() {
-        EdgeFactory<IntervalVertexInterface<Integer, Integer>, DefaultEdge> edgeFactory = new ClassBasedEdgeFactory<>(DefaultEdge.class);
+        EdgeFactory<IntervalVertexInterface<Integer, Integer>, DefaultEdge> edgeFactory1 = new ClassBasedEdgeFactory<>(DefaultEdge.class);
+        EdgeFactory<IntervalVertexInterface<Integer, Integer>, DefaultWeightedEdge> edgeFactory2 = new ClassBasedEdgeFactory<>(DefaultWeightedEdge.class);
 
-        intervalGraph = new IntervalGraph<>(edgeFactory, false);
+        intervalGraph = new IntervalGraph<>(edgeFactory1, false);
 
-        weightedIntervalGraph = new IntervalGraph<>(edgeFactory, true);
+        weightedIntervalGraph = new IntervalGraph<>(edgeFactory2, true);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -140,7 +142,7 @@ public class IntervalGraphTest {
         assertTrue(edgeSet.isEmpty());
 
         Set<DefaultEdge> weightedEdgeSet =  weightedIntervalGraph.getAllEdges(vertex1, vertex2);
-        assertTrue(edgeSet.contains(weightedIntervalGraph.getEdge(vertex1, vertex2)));
+        assertTrue(weightedEdgeSet.contains(weightedIntervalGraph.getEdge(vertex1, vertex2)));
         assertEquals(weightedEdgeSet.size(), 1);
 
         weightedEdgeSet = weightedIntervalGraph.getAllEdges(vertex1, vertex4);
@@ -467,14 +469,14 @@ public class IntervalGraphTest {
         IntervalVertex<Integer, Integer> vertex3 = IntervalVertex.of(3, interval3);
         weightedIntervalGraph.addVertex(vertex3);
 
-        DefaultEdge edge1 = weightedIntervalGraph.getEdge(vertex1, vertex2);
-        DefaultEdge edge2 = weightedIntervalGraph.getEdge(vertex1, vertex3);
+        DefaultWeightedEdge edge1 = weightedIntervalGraph.getEdge(vertex1, vertex2);
+        DefaultWeightedEdge edge2 = weightedIntervalGraph.getEdge(vertex1, vertex3);
 
-        intervalGraph.setEdgeWeight(edge1, 3);
-        intervalGraph.setEdgeWeight(edge2, 93);
+        weightedIntervalGraph.setEdgeWeight(edge1, 3.0);
+        weightedIntervalGraph.setEdgeWeight(edge2, 93.0);
 
-        assertEquals(intervalGraph.getEdgeWeight(edge1), 3);
-        assertEquals(intervalGraph.getEdgeWeight(edge2), 93);
+        assertEquals(3.0, weightedIntervalGraph.getEdgeWeight(edge1), 0.001);
+        assertEquals(93.0, weightedIntervalGraph.getEdgeWeight(edge2),0.001);
 
     }
 
