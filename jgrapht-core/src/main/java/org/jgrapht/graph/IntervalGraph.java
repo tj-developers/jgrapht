@@ -210,10 +210,11 @@ public class IntervalGraph<V extends IntervalVertexInterface<VertexType, T>, E, 
 
         for(IntervalVertexInterface<VertexType, Integer> vertex : vertices) {
             for (E edge : graph.outgoingEdgesOf(vertex.getVertex())) {
-                edges.put(Pair.of(vertex, vertexIntervalMap.get(graph.getEdgeTarget(edge))), edge);
+                if (!vertex.getVertex().equals(graph.getEdgeTarget(edge))) {
+                    edges.put(Pair.of(vertex, vertexIntervalMap.get(graph.getEdgeTarget(edge))), edge);
+                }
             }
         }
-
 
         return new IntervalGraph<>(vertices, edges, (sourceVertex, targetVertex) -> graph.getEdgeFactory().createEdge(sourceVertex.getVertex(), targetVertex.getVertex()),
                 graph.getType().isDirected(), graph.getType().isAllowingMultipleEdges(),
