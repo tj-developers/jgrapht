@@ -2,11 +2,13 @@ package org.jgrapht.graph;
 
 import org.jgrapht.EdgeFactory;
 
+import org.jgrapht.Graph;
 import org.jgrapht.util.interval.Interval;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -527,6 +529,58 @@ public class IntervalGraphTest {
         assertTrue(graph.containsEdge(edge1));
         assertTrue(graph.containsEdge(edge2));
         assertEquals(2, graph.edgeSet().size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void asIntervalGraphForDirectedGraph() {
+        Graph<Integer, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+        directedGraph.addVertex(1);
+        directedGraph.addVertex(2);
+        directedGraph.addVertex(3);
+        directedGraph.addVertex(4);
+        directedGraph.addEdge(1,2);
+        directedGraph.addEdge(2,3);
+
+        assertNull(IntervalGraph.asIntervalGraph(directedGraph));
+    }
+
+    @Test
+    public void asIntervalGraph() {
+        Graph<Integer, DefaultEdge> graph = new DefaultUndirectedGraph<>(DefaultEdge.class);
+        graph.addVertex(1);
+        graph.addVertex(2);
+        graph.addVertex(3);
+        graph.addVertex(4);
+        graph.addEdge(1,2);
+        graph.addEdge(2,3);
+
+        IntervalGraph<IntervalVertexInterface<Integer, Integer>, DefaultEdge, Integer, Integer> intervalGraph =
+                IntervalGraph.asIntervalGraph(graph);
+
+        assertEquals(4, intervalGraph.vertexSet().size());
+        assertEquals(2, intervalGraph.edgeSet().size());
+        Set<IntervalVertexInterface<Integer, Integer>> vertexSet = intervalGraph.vertexSet();
+
+        List<Integer> verticesList = new ArrayList<>();
+        IntervalVertexInterface<Integer, Integer>[] vertices = new IntervalVertex[4];
+
+        for (IntervalVertexInterface<Integer, Integer> vertex: vertexSet) {
+            verticesList.add(vertex.getVertex());
+            vertices[vertex.getVertex() - 1] = vertex;
+        }
+
+        assertTrue(verticesList.contains(1));
+        assertTrue(verticesList.contains(2));
+        assertTrue(verticesList.contains(3));
+        assertTrue(verticesList.contains(4));
+        assertEquals(4, verticesList.size());
+
+        DefaultEdge edge1 = intervalGraph.getEdge(vertices[1], vertices[0]);
+        DefaultEdge edge2 = intervalGraph.getEdge(vertices[1], vertices[2]);
+
+        assertTrue(intervalGraph.containsEdge(edge1));
+        assertTrue(intervalGraph.containsEdge(edge2));
+        assertEquals(2, intervalGraph.edgeSet().size());
     }
 
 }
