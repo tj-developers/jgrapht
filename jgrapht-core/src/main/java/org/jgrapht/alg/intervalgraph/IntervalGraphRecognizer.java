@@ -2,6 +2,7 @@ package org.jgrapht.alg.intervalgraph;
 
 import static org.jgrapht.alg.intervalgraph.LexBreadthFirstSearch.*;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import org.jgrapht.*;
@@ -9,19 +10,19 @@ import org.jgrapht.intervalgraph.interval.*;
 
 /**
  * A recognizer for interval graphs.
- * <p>
+ *
  * An interval graph is a intersection graph of a set of intervals on the line, i.e. they contain a
  * vertex for each interval and two vertices are connected if the corresponding intervals have a
  * nonempty intersection.
- * <p>
+ *
  * The recognizer uses the algorithm described in
- * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf"> (<i>The LBFS Structure
+ * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a> (<i>The LBFS Structure
  * and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
  * multiple lexicographical breadth-first search (LBFS) sweeps.
- * <p>
+ *
  * For this recognizer to work correctly the graph must not be modified during iteration.
- * <p>
+ *
  *
  * @param <V> the graph vertex type.
  * @param <E> the graph edge type.
@@ -42,7 +43,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint;
     private Map<Interval<Integer>, V> intervalToVertexMap;
-    private Map<V, IntervalVertex<V, Integer>> vertexToIntervalMap;
+    private Map<V, IntervalVertexInterface<V, Integer>> vertexToIntervalMap;
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
@@ -92,16 +93,11 @@ public final class IntervalGraphRecognizer<V, E>
         // sweep
         HashMap<V, Integer> sweepDelta = lexBreadthFirstSearchPlus(graph, sweepGamma);
 
-        // Additionally, calculate the index and the corresponding A set for each vertex
-
         // Step 5 - LBFS+ from the last vertex of the previous sweep
         // Input - the result of previous sweep delta, vertex d
         // Output - the result of current sweep epsilon, further last vertex e visited by current
         // sweep
         HashMap<V, Integer> sweepEpsilon = lexBreadthFirstSearchPlus(graph, sweepDelta);
-        // V vertexE = lastElementOf(sweepEpsilon); TODO: not used?
-
-        // Additionally, calculate the index and the corresponding B set for each vertex
 
         // Step 6 - LBFS* with the resulting sweeps
         // Input - the result of sweep gamma and sweep epsilon
@@ -128,7 +124,7 @@ public final class IntervalGraphRecognizer<V, E>
                 neighborIndex.put(vertex, maxNeighbor);
             }
 
-            Interval<Integer>[] intervals = (Interval<Integer>[])new Object[graph.vertexSet().size()];
+            Interval<Integer>[] intervals = (Interval<Integer>[])Array.newInstance(Interval.class, graph.vertexSet().size());
             this.intervalsSortedByStartingPoint =
                 new ArrayList<>(graph.vertexSet().size());
 
@@ -269,7 +265,7 @@ public final class IntervalGraphRecognizer<V, E>
      *
      * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
      */
-    public Map<V, IntervalVertex<V, Integer>> getVertexToIntervalMap()
+    public Map<V, IntervalVertexInterface<V, Integer>> getVertexToIntervalMap()
     {
         return this.vertexToIntervalMap;
     }

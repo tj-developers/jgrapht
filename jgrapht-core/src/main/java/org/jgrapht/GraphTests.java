@@ -22,6 +22,7 @@ import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector;
 import org.jgrapht.alg.cycle.ChordalityInspector;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
+import org.jgrapht.alg.intervalgraph.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -494,6 +495,24 @@ public abstract class GraphTests
     public static <V, E> boolean isChordal(Graph<V, E> graph){
         Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
         return new ChordalityInspector<>(graph).isChordal();
+    }
+    
+    /**
+     * Tests whether a graph is an interval graph. <a href="https://en.wikipedia.org/wiki/Interval_graph">
+     * Interval graphs</a> are a familiy of graphs, which can be represented as intersections of intervals.
+     * The vertices are intervals on the number line and two vertices are connected if and only if the intervals of
+     * these vertices intersect each other.
+     * 
+     * @param graph the input graph
+     * @param <V> the graph vertex type
+     * @param <E> the graph edge type
+     * @return true if the graph is an interval graph, false otherwise
+     * @see IntervalGraphRecognizer#isIntervalGraph()
+     * 
+     */
+    public static <V, E> boolean isIntervalGraph(Graph<V, E> graph) {
+        Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
+        return new IntervalGraphRecognizer<>(graph).isIntervalGraph();
     }
 
     /**

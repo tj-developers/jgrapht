@@ -20,7 +20,10 @@ import java.util.List;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public class RedBlackIntervalTree<K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>, T extends Comparable<T>> extends RedBlackTree<K, NodeValue> implements IntervalTreeInterface<T, K, NodeValue>, Serializable {
+class RedBlackIntervalTree
+        <K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>,T extends Comparable<T>>
+        extends RedBlackTree<K, NodeValue>
+        implements IntervalTreeInterface<T, K, NodeValue>, Serializable {
 
     private static final long serialVersionUID = 4353687394654923429L;
 
@@ -35,16 +38,13 @@ public class RedBlackIntervalTree<K extends Comparable<K>, NodeValue extends Int
     @Override
     public List<Interval<T>> overlapsWith(Interval<T> interval) {
         List<Interval<T>> result = new LinkedList<>();
-
         overlapsWith(this.getRoot(), interval, result);
-
         return result;
     }
 
     @Override
     public List<Interval<T>> overlapsWith(T point) {
         List<Interval<T>> result = new LinkedList<>();
-
         overlapsWithPoint(this.getRoot(), point, result);
         return result;
     }
@@ -112,14 +112,11 @@ public class RedBlackIntervalTree<K extends Comparable<K>, NodeValue extends Int
         node.getVal().setHighValue(result);
     }
 
-
-    // returns the max of two values
     public T max(T t1, T t2) {
-        if (t1.compareTo(t2) > 0) {
-            return t1;
-        } else {
-            return t2;
+        if (t1 == null || t2 == null) {
+            throw new IllegalArgumentException("Parameter cannot be null.");
         }
+        return t1.compareTo(t2) > 0 ? t1 : t2;
     }
 
     private void overlapsWith(Node<K, NodeValue> node, Interval<T> interval, List<Interval<T>> result) {

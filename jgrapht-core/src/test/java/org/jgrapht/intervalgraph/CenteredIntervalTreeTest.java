@@ -12,15 +12,15 @@ import static org.junit.Assert.*;
 
 public class CenteredIntervalTreeTest {
 
-    List<Interval<Integer>> list;
+    private List<Interval<Integer>> list = new LinkedList<>();
 
     @Test
     public void testCompareToPoint() {
         IntegerInterval interval = new IntegerInterval(0, 1);
-        assertEquals(-1, interval.compareToPoint(-1));
+        assertEquals(1, interval.compareToPoint(-1));
         assertEquals(0, interval.compareToPoint(0));
         assertEquals(0, interval.compareToPoint(1));
-        assertEquals(1, interval.compareToPoint(2));
+        assertEquals(-1, interval.compareToPoint(2));
     }
 
     @Test
@@ -60,10 +60,5 @@ public class CenteredIntervalTreeTest {
         assertEquals(2, tree.intersections(5).size());
         assertEquals(1, tree.intersections(6).size());
         assertEquals(0, tree.intersections(7).size());
-    }
-
-    @Before
-    public void setUp() {
-        list = new LinkedList<>();
     }
 }

@@ -13,12 +13,17 @@ import java.util.*;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 18, 2018
  */
-public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>, Serializable {
+class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>, Serializable {
 
     private static final long serialVersionUID = 1199228564356373435L;
 
     protected Node<K, V> root;
 
+    /**
+     * Get the root of the red-black tree
+     *
+     * @return the root of the red-black tree
+     */
     public Node<K, V> getRoot() {
         return root;
     }
@@ -101,17 +106,11 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public V get(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("Key is null");
+            throw new IllegalArgumentException("Key cannot be null.");
         }
 
-        return searchNode(key).getVal();
-    }
-
-    private boolean isRed(Node<K, V> node){
-        if (node == null) {
-            return false;
-        }
-        return node.isRed();
+        Node<K, V> searchResult = searchNode(key);
+        return searchResult != null ? searchResult.getVal() : null;
     }
 
     /**
@@ -123,11 +122,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
      */
     @Override
     public boolean contains(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException("Key is null");
-        }
-
-        return searchNode(key) != null;
+        return get(key) != null;
     }
 
     /**
@@ -141,7 +136,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public void insert(K key, V val) {
         if (key == null) {
-            throw new IllegalArgumentException("Key is null");
+            throw new IllegalArgumentException("Key cannot be null.");
         }
 
         root = insert(root, key, val);
@@ -186,7 +181,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     @Override
     public void delete(K key) {
         if (key == null) {
-            throw new IllegalArgumentException("Key is null");
+            throw new IllegalArgumentException("Key cannot be null.");
         }
         if (!contains(key)) {
             return;
@@ -206,32 +201,37 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         return root == null;
     }
 
-    protected Node<K, V> delete(Node<K, V> current, K key) {
-            if (key.compareTo(current.getKey()) < 0) {
-                if (!isRed(current.getLeftChild()) && !isRed(current.getLeftChild().getLeftChild())) {
-                    current = moveRedLeft(current);
-                }
-                current.setLeftChild(delete(current.getLeftChild(), key));
-            } else {
-                if (isRed(current.getLeftChild())) {
-                    current = rotateRight(current);
-                }
-                if (key.compareTo(current.getKey()) == 0 && current.getRightChild() == null) {
-                    return null;
-                }
-                if (!isRed(current.getRightChild()) && !isRed(current.getRightChild().getLeftChild())) {
-                    current = moveRedRight(current);
-                }
-                if (key.compareTo(current.getKey()) == 0) {
-                    Node<K, V> node = min(current.getRightChild());
-                    current.setKey(node.getKey());
-                    current.setVal(node.getVal());
-                    current.setRightChild(deleteMin(current.getRightChild()));
-                }
-                else current.setRightChild(delete(current.getRightChild(), key));
-            }
+    private boolean isRed(Node<K, V> node){
+        return node != null && node.isRed();
+    }
 
-            return balance(current);
+    protected Node<K, V> delete(Node<K, V> current, K key) {
+        if (key.compareTo(current.getKey()) < 0) {
+            if (!isRed(current.getLeftChild()) && !isRed(current.getLeftChild().getLeftChild())) {
+                current = moveRedLeft(current);
+            }
+            current.setLeftChild(delete(current.getLeftChild(), key));
+        } else {
+            if (isRed(current.getLeftChild())) {
+                current = rotateRight(current);
+            }
+            if (key.compareTo(current.getKey()) == 0 && current.getRightChild() == null) {
+                return null;
+            }
+            if (!isRed(current.getRightChild()) && !isRed(current.getRightChild().getLeftChild())) {
+                current = moveRedRight(current);
+            }
+            if (key.compareTo(current.getKey()) == 0) {
+                Node<K, V> node = min(current.getRightChild());
+                current.setKey(node.getKey());
+                current.setVal(node.getVal());
+                current.setRightChild(deleteMin(current.getRightChild()));
+            } else {
+                current.setRightChild(delete(current.getRightChild(), key));
+            }
+        }
+
+        return balance(current);
     }
 
     protected Node<K, V> balance(Node<K, V> node) {
@@ -316,7 +316,6 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         }
 
         node.setRightChild(deleteMax(node.getRightChild()));
-
         return balance(node);
     }
 
@@ -331,11 +330,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
     }
 
     private int height(Node<K, V> node) {
-        if (node == null) {
-            return -1;
-        }
-
-        return 1 + Math.max(height(node.getLeftChild()), height(node.getRightChild()));
+        return node == null ? -1 : 1 + Math.max(height(node.getLeftChild()), height(node.getRightChild()));
     }
 
     /**
@@ -349,7 +344,6 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
         }
-
         return min(root).getKey();
     }
 
@@ -371,7 +365,6 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         if (isEmpty()) {
             throw new NoSuchElementException("empty tree");
         }
-
         return max(root.getRightChild()).getKey();
     }
 
@@ -379,7 +372,6 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         if (node.getRightChild() == null) {
             return node;
         }
-
         return max(node.getRightChild());
     }
 
@@ -521,8 +513,15 @@ public class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTre
         node.getLeftChild().setRed(!isRed(node.getLeftChild()));
     }
 
+    /**
+     * Search tree node associated to the given key
+     *
+     * @param key the key of the tree node
+     * @return the tree node associated to the given key, null if the tree node doesn't exist
+     */
     private Node<K, V> searchNode(K key) {
         Node<K, V> current = root;
+
         while (current != null) {
             if (current.getKey().equals(key)) {
                 return current;
