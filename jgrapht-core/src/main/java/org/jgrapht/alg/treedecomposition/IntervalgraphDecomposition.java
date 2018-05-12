@@ -32,8 +32,8 @@ public class IntervalgraphDecomposition<T extends Comparable<T>>
     {
         startSort = new ArrayList<>(intervals);
         endSort = new ArrayList<>(intervals);
-        startSort.sort(new IntervalVertexComparator(true));
-        endSort.sort(new IntervalVertexComparator(false));
+        startSort.sort(Interval.<T>getStartingComparator());
+        endSort.sort(Interval.<T>getEndingComparator());
     }
     
     private void computeTreeDecomposition() 
@@ -129,25 +129,5 @@ public class IntervalgraphDecomposition<T extends Comparable<T>>
     {
         if(roots == null) computeTreeDecomposition();
         return roots;
-    }
-    
-    
-    
-    private class IntervalVertexComparator implements Comparator<Interval<T>> {
-
-        private boolean start = true;;
-        
-        public IntervalVertexComparator(boolean startKey) {
-            start = startKey;
-        }
-        
-        @Override
-        public int compare(Interval<T> o1, Interval<T> o2)
-        {
-            if(start)
-                return o1.getStart().compareTo(o2.getStart());
-            else
-                return o1.getEnd().compareTo(o2.getEnd());
-        }
     }
 }

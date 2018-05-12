@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import org.jgrapht.*;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
+import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;
 import org.jgrapht.alg.treedecomposition.*;
 import org.jgrapht.event.*;
 import org.jgrapht.graph.*;
@@ -105,7 +106,7 @@ public class IntervalgraphDecompositionTest
     @Test
     public void testIntervalgraphDecompositionForIntervalGraphs()
     {
-        IntervalGraphInterface<Integer> ig = new CenteredIntervalTree<>();
+        //IntervalGraphInterface<Integer> ig = new CenteredIntervalTree<>();
         //TODO: change ig
         //IntervalgraphDecomposition<Integer,DefaultEdge,Integer> decompositionAlg = new IntervalgraphDecomposition<>(ig);
         assertTrue(false);
@@ -116,6 +117,7 @@ public class IntervalgraphDecompositionTest
     {
         List<Interval<Integer>> list = new ArrayList<Interval<Integer>>();
         //unconnected
+        list.add(new Interval<Integer>(-4,-3));
         list.add(new Interval<Integer>(-2,-1));
         //just path
         for(int i = 0; i<10; i++)
