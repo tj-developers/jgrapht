@@ -8,7 +8,10 @@ import java.util.Objects;
  *
  * @param <T> the type of the interval
  */
-public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
+public class Interval<T extends Comparable<T>>
+    implements
+    Comparable<Interval<T>>
+{
 
     protected T start;
     protected T end;
@@ -17,15 +20,18 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * Constructs an interval
      *
      * @param start interval start
-     * @param end   interval end
-     * @throws IllegalArgumentException if interval start or end is null, or if interval start is greater than interval end
+     * @param end interval end
+     * @throws IllegalArgumentException if interval start or end is null, or if interval start is
+     *         greater than interval end
      */
-    public Interval(T start, T end) {
+    public Interval(T start, T end)
+    {
         if (start == null || end == null) {
             throw new IllegalArgumentException("Interval start or end cannot be null.");
         }
         if (start.compareTo(end) > 0) {
-            throw new IllegalArgumentException("Interval start must be smaller than or equal to interval end.");
+            throw new IllegalArgumentException(
+                "Interval start must be smaller than or equal to interval end.");
         }
 
         this.start = start;
@@ -37,7 +43,8 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      *
      * @return the start point of the interval
      */
-    public T getStart() {
+    public T getStart()
+    {
         return start;
     }
 
@@ -46,7 +53,8 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      *
      * @return the end point of the interval
      */
-    public T getEnd() {
+    public T getEnd()
+    {
         return end;
     }
 
@@ -56,8 +64,10 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * @param other The other interval
      * @return true if the other interval intersects this, false otherwise
      */
-    public boolean isIntersecting(Interval<T> other) {
-        return this.contains(other.getStart()) || this.contains(other.getEnd()) || other.contains(this.getStart());
+    public boolean isIntersecting(Interval<T> other)
+    {
+        return this.contains(other.getStart()) || this.contains(other.getEnd())
+            || other.contains(this.getStart());
     }
 
     /**
@@ -66,7 +76,8 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * @param point the point to be tested
      * @return true if current interval contains the given point, false otherwise
      */
-    public boolean contains(T point) {
+    public boolean contains(T point)
+    {
         if (point == null) {
             throw new IllegalArgumentException("Point to be tested cannot be null.");
         }
@@ -80,9 +91,11 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * Compare current interval with the given point
      *
      * @param point the point to be tested
-     * @return 0 if current interval contains the given point, comparison result with the interval start otherwise
+     * @return 0 if current interval contains the given point, comparison result with the interval
+     *         start otherwise
      */
-    public int compareToPoint(T point) {
+    public int compareToPoint(T point)
+    {
         if (point == null) {
             throw new IllegalArgumentException("Point to be tested cannot be null.");
         }
@@ -101,11 +114,12 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * Compares this interval to the other interval
      *
      * @param o The other interval
-     * @return A value &lt; 0 if the this interval is completely left of the other interval, 0 if the intervals intersect,
-     * otherwise a value &gt; 0
+     * @return A value &lt; 0 if the this interval is completely left of the other interval, 0 if
+     *         the intervals intersect, otherwise a value &gt; 0
      */
     @Override
-    public int compareTo(Interval<T> o) {
+    public int compareTo(Interval<T> o)
+    {
         int isLeft = end.compareTo(o.getStart()); // < 0 if this ends before other starts
         int isRight = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
 
@@ -119,57 +133,87 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Interval[" + start + ", " + end + "]";
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Interval<?> interval = (Interval<?>) o;
-        return Objects.equals(start, interval.start) &&
-                Objects.equals(end, interval.end);
+        return Objects.equals(start, interval.start) && Objects.equals(end, interval.end);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(start, end);
     }
-    
-    
+
     /**
      * getter for a Comparator, which only compares the starting points
+     * 
+     * @param <T> the value of the interval
      * @return a starting point comparator
      */
-    public static <T extends Comparable<T>> StartingComparator<T> getStartingComparator() {
-    	return new StartingComparator<T>();
+    public static <T extends Comparable<T>> StartingComparator<T> getStartingComparator()
+    {
+        return new StartingComparator<T>();
     }
-    
+
     /**
      * getter for a Comparator, which only compares the ending points
+     * 
+     * @param <T> the value of the interval
      * @return a ending point comparator
      */
-    public static <T extends Comparable<T>> EndingComparator<T> getEndingComparator() {
-    	return new EndingComparator<T>();
+    public static <T extends Comparable<T>> EndingComparator<T> getEndingComparator()
+    {
+        return new EndingComparator<T>();
     }
-    
-    private static class StartingComparator<T extends Comparable<T>> implements Comparator<Interval<T>>{
 
-		@Override
-		public int compare(Interval<T> o1, Interval<T> o2) {
-			return o1.getStart().compareTo(o2.getStart());
-		}
-		
-	}
-    
-    private static class EndingComparator<T extends Comparable<T>> implements Comparator<Interval<T>>{
+    /**
+     * private class for comparing the starting points of the interval
+     * 
+     * @author Ira Justus Fesefeldt (PhoenixIra)
+     *
+     * @param <T> the value of the interval
+     */
+    private static class StartingComparator<T extends Comparable<T>>
+        implements
+        Comparator<Interval<T>>
+    {
 
-		@Override
-		public int compare(Interval<T> o1, Interval<T> o2) {
-			return o1.getEnd().compareTo(o2.getEnd());
-		}
+        @Override
+        public int compare(Interval<T> o1, Interval<T> o2)
+        {
+            return o1.getStart().compareTo(o2.getStart());
+        }
 
-		
-	}
+    }
+
+    /**
+     * private class for comparing the ending points of the interval
+     * 
+     * @author Ira Justus Fesefeldt (PhoenixIra)
+     *
+     * @param <T> the value of the interval
+     */
+    private static class EndingComparator<T extends Comparable<T>>
+        implements
+        Comparator<Interval<T>>
+    {
+
+        @Override
+        public int compare(Interval<T> o1, Interval<T> o2)
+        {
+            return o1.getEnd().compareTo(o2.getEnd());
+        }
+
+    }
 }

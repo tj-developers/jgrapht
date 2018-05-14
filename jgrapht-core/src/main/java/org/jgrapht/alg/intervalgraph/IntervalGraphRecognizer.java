@@ -15,9 +15,9 @@ import org.jgrapht.intervalgraph.interval.*;
  * vertex for each interval and two vertices are connected if the corresponding intervals have a
  * nonempty intersection.
  *
- * The recognizer uses the algorithm described in
- * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a> (<i>The LBFS Structure
- * and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
+ * The recognizer uses the algorithm described in <a href=
+ * "https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a>
+ * (<i>The LBFS Structure and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
  * multiple lexicographical breadth-first search (LBFS) sweeps.
  *
@@ -41,7 +41,8 @@ public final class IntervalGraphRecognizer<V, E>
      * Stores the computed interval graph representation (or <tt>null</tt> if no such representation
      * exists) of the graph.
      */
-    private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint, intervalsSortedByEndingPoint;
+    private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint,
+        intervalsSortedByEndingPoint;
     private Map<Interval<Integer>, V> intervalToVertexMap;
     private Map<V, IntervalVertexInterface<V, Integer>> vertexToIntervalMap;
 
@@ -50,7 +51,7 @@ public final class IntervalGraphRecognizer<V, E>
      * 
      * @param graph the graph to be tested.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     public IntervalGraphRecognizer(Graph<V, E> graph)
     {
         this.isIntervalGraph = isIntervalGraph(graph);
@@ -102,8 +103,7 @@ public final class IntervalGraphRecognizer<V, E>
         // Step 6 - LBFS* with the resulting sweeps
         // Input - the result of sweep gamma and sweep epsilon
         // Output - the result of current sweep zeta
-        HashMap<V, Integer> sweepZeta =
-            lexBreadthFirstSearchStar(graph, sweepDelta, sweepEpsilon);
+        HashMap<V, Integer> sweepZeta = lexBreadthFirstSearchStar(graph, sweepDelta, sweepEpsilon);
 
         // if sweepZeta is umbrella-free, then the graph is interval.
         // otherwise, the graph is not interval
@@ -124,15 +124,19 @@ public final class IntervalGraphRecognizer<V, E>
                 neighborIndex.put(vertex, maxNeighbor);
             }
 
-            Interval<Integer>[] intervals = (Interval<Integer>[])Array.newInstance(Interval.class, graph.vertexSet().size());
-            this.intervalsSortedByStartingPoint =
-                new ArrayList<>(graph.vertexSet().size());
+            Interval<Integer>[] intervals =
+                (Interval<Integer>[]) Array.newInstance(Interval.class, graph.vertexSet().size());
+            this.intervalsSortedByStartingPoint = new ArrayList<>(graph.vertexSet().size());
 
-            // Initialize the vertex map. Because we know the number of vertices we can make sure the hashmap does not
-            // need to rehash by setting the capacity to the number of vertices divided by the default load factor
+            // Initialize the vertex map. Because we know the number of vertices we can make sure
+            // the hashmap does not
+            // need to rehash by setting the capacity to the number of vertices divided by the
+            // default load factor
             // of 0.75.
-            this.intervalToVertexMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
-            this.vertexToIntervalMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
+            this.intervalToVertexMap =
+                new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
+            this.vertexToIntervalMap =
+                new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
 
             // Compute intervals and store them associated by their starting point ...
             for (V vertex : graph.vertexSet()) {
@@ -156,7 +160,7 @@ public final class IntervalGraphRecognizer<V, E>
             return false;
         }
     }
-    
+
     /**
      * Calculates if the given sweep is an I-Ordering (according to the Graph graph) in linear time.
      * 
@@ -166,11 +170,11 @@ public final class IntervalGraphRecognizer<V, E>
      * @param graph the graph we want to check if its an I-Order
      * @return true, if sweep is an I-Order according to graph
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     private static <V, E> boolean isIOrdering(HashMap<V, Integer> sweep, Graph<V, E> graph)
     {
         // Compute inverse sweep map to quickly find vertices at given indices
-        V[] inverseSweep = (V[])new Object[graph.vertexSet().size()];
+        V[] inverseSweep = (V[]) new Object[graph.vertexSet().size()];
 
         for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
@@ -179,12 +183,12 @@ public final class IntervalGraphRecognizer<V, E>
         // Compute maximal neighbors w.r.t. sweep ordering for every vertex
         HashMap<V, V> maxNeighbors = new HashMap<>(graph.vertexSet().size());
 
-        for(V vertex : graph.vertexSet()) {
+        for (V vertex : graph.vertexSet()) {
             List<V> neighbors = Graphs.neighborListOf(graph, vertex);
             V maxNeighbor = vertex;
 
-            for(V neighbor : neighbors) {
-                if(sweep.get(neighbor) > sweep.get(maxNeighbor)) {
+            for (V neighbor : neighbors) {
+                if (sweep.get(neighbor) > sweep.get(maxNeighbor)) {
                     maxNeighbor = neighbor;
                 }
             }
@@ -192,13 +196,14 @@ public final class IntervalGraphRecognizer<V, E>
             maxNeighbors.put(vertex, maxNeighbor);
         }
 
-        // Check if every vertex is connected to all vertices between itself and its maximal neighbor
-        for(V vertex : graph.vertexSet()) {
+        // Check if every vertex is connected to all vertices between itself and its maximal
+        // neighbor
+        for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
             int maxIndex = sweep.get(maxNeighbors.get(vertex));
 
-            for(int i = index; i < maxIndex; i++) {
-                if(vertex != inverseSweep[i] && !graph.containsEdge(vertex, inverseSweep[i])) {
+            for (int i = index; i < maxIndex; i++) {
+                if (vertex != inverseSweep[i] && !graph.containsEdge(vertex, inverseSweep[i])) {
                     // Found missing edge
                     return false;
                 }
@@ -241,40 +246,46 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
-     * Returns the list of all intervals sorted by starting point, or null, if the graph was not an interval graph.
+     * Returns the list of all intervals sorted by starting point, or null, if the graph was not an
+     * interval graph.
      *
-     * @return The list of all intervals sorted by starting point, or null, if the graph was not an interval graph.
+     * @return The list of all intervals sorted by starting point, or null, if the graph was not an
+     *         interval graph.
      */
     public ArrayList<Interval<Integer>> getIntervalsSortedByStartingPoint()
     {
         return this.intervalsSortedByStartingPoint;
     }
-    
+
     /**
      * Implementation of radix Sort for integers on Intervals after the ending point
      * 
      * @param list list of intervals to sort
      * @return a new sorted list of the intervals sorted after the ending point
      */
-    private ArrayList<Interval<Integer>> radixSortInteger(List<Interval<Integer>> list){
-    	ArrayList<Interval<Integer>> positiveList = new ArrayList<Interval<Integer>>(list.size());
-    	ArrayList<Interval<Integer>> negativeList = new ArrayList<Interval<Integer>>(list.size());
-    	for(Interval<Integer> interval : list) {
-    		if(interval.getEnd() < 0) negativeList.add(interval);
-    		else positiveList.add(interval);
-    	}
-    	
-    	positiveList = radixSortNatural(positiveList);
-    	negativeList = radixSortNatural(negativeList);
-    	ArrayList<Interval<Integer>> negativeListReverse = new ArrayList<Interval<Integer>>(negativeList.size());
-    	
-    	for(int i = 0; i < negativeList.size(); i++) {
-    		negativeListReverse.add(negativeList.get(i));
-    	}
-    	negativeListReverse.addAll(positiveList);
-    	return negativeListReverse;
+    private ArrayList<Interval<Integer>> radixSortInteger(List<Interval<Integer>> list)
+    {
+        ArrayList<Interval<Integer>> positiveList = new ArrayList<Interval<Integer>>(list.size());
+        ArrayList<Interval<Integer>> negativeList = new ArrayList<Interval<Integer>>(list.size());
+        for (Interval<Integer> interval : list) {
+            if (interval.getEnd() < 0)
+                negativeList.add(interval);
+            else
+                positiveList.add(interval);
+        }
+
+        positiveList = radixSortNatural(positiveList);
+        negativeList = radixSortNatural(negativeList);
+        ArrayList<Interval<Integer>> negativeListReverse =
+            new ArrayList<Interval<Integer>>(negativeList.size());
+
+        for (int i = 0; i < negativeList.size(); i++) {
+            negativeListReverse.add(negativeList.get(i));
+        }
+        negativeListReverse.addAll(positiveList);
+        return negativeListReverse;
     }
-    
+
     /**
      * Implementation of radix Sort for natural numbers on Intervals after the ending point
      * 
@@ -283,68 +294,71 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> radixSortNatural(List<Interval<Integer>> list)
     {
-    	ArrayList<Interval<Integer>> intervals = new ArrayList<Interval<Integer>>(list);
-    	ArrayList<Interval<Integer>> intervalsTmp = new ArrayList<Interval<Integer>>(intervals.size());
-    	
-    	//init
-    	for(int i = 0; i<intervals.size(); i++)
-    		intervalsTmp.add(null);
-    	
-    	Interval<Integer> max = Collections.max(intervals,Interval.<Integer>getEndingComparator());
-    	Integer power = 1;
-    	//every digit
-    	while(max.getEnd()/(power) > 0)
-    	{
-    		int[] buckets = new int[10];
-    		
-    		//count all numbers with digit at position exponent
-    		for(int i = 0; i < intervals.size(); i++) 
-    		{
-    			int digit = Math.abs( (intervals.get(i).getEnd() / power ) % 10);
-    			buckets[digit]++;
-    		}
-    		
-    		//compute position of digits
-    		for(int i = 1; i < 10; i++)
-    		{
-    			buckets[i] += buckets[i-1];
-    		}
-    		
-    		//sort after digit in intervalsTmp
-    		for(int i = intervals.size()-1; i >= 0; i--)
-    		{
-    			int digit = Math.abs( ( intervals.get(i).getEnd() / power ) % 10 );
-    			int position = buckets[digit]-1;
-    			buckets[digit] = position;
-    			intervalsTmp.set(position,intervals.get(i));
-    		}
-    		
-    		//swap both
-    		ArrayList<Interval<Integer>> tmp = intervals;
-    		intervals = intervalsTmp;
-    		intervalsTmp = tmp;
-    		
-    		power*=10;
-    	}
-    	return intervals;
-    }
-    
-    /**
-     * Returns the list of all intervals sorted by ending point, or null, if the graph was not an interval graph.
-     *
-     * @return The list of all intervals sorted by ending point, or null, if the graph was not an interval graph.
-     */
-    public ArrayList<Interval<Integer>> getIntervalsSortedByEndingPoint()
-    {
-    	if(this.intervalsSortedByEndingPoint == null) 
-    		this.intervalsSortedByEndingPoint = radixSortInteger(this.intervalsSortedByStartingPoint);
-    	return this.intervalsSortedByEndingPoint;
+        ArrayList<Interval<Integer>> intervals = new ArrayList<Interval<Integer>>(list);
+        ArrayList<Interval<Integer>> intervalsTmp =
+            new ArrayList<Interval<Integer>>(intervals.size());
+
+        // init
+        for (int i = 0; i < intervals.size(); i++)
+            intervalsTmp.add(null);
+
+        Interval<Integer> max =
+            Collections.max(intervals, Interval.<Integer> getEndingComparator());
+        Integer power = 1;
+        // every digit
+        while (max.getEnd() / (power) > 0) {
+            int[] buckets = new int[10];
+
+            // count all numbers with digit at position exponent
+            for (int i = 0; i < intervals.size(); i++) {
+                int digit = Math.abs((intervals.get(i).getEnd() / power) % 10);
+                buckets[digit]++;
+            }
+
+            // compute position of digits
+            for (int i = 1; i < 10; i++) {
+                buckets[i] += buckets[i - 1];
+            }
+
+            // sort after digit in intervalsTmp
+            for (int i = intervals.size() - 1; i >= 0; i--) {
+                int digit = Math.abs((intervals.get(i).getEnd() / power) % 10);
+                int position = buckets[digit] - 1;
+                buckets[digit] = position;
+                intervalsTmp.set(position, intervals.get(i));
+            }
+
+            // swap both
+            ArrayList<Interval<Integer>> tmp = intervals;
+            intervals = intervalsTmp;
+            intervalsTmp = tmp;
+
+            power *= 10;
+        }
+        return intervals;
     }
 
     /**
-     * Returns a mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
+     * Returns the list of all intervals sorted by ending point, or null, if the graph was not an
+     * interval graph.
      *
-     * @return A mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
+     * @return The list of all intervals sorted by ending point, or null, if the graph was not an
+     *         interval graph.
+     */
+    public ArrayList<Interval<Integer>> getIntervalsSortedByEndingPoint()
+    {
+        if (this.intervalsSortedByEndingPoint == null)
+            this.intervalsSortedByEndingPoint =
+                radixSortInteger(this.intervalsSortedByStartingPoint);
+        return this.intervalsSortedByEndingPoint;
+    }
+
+    /**
+     * Returns a mapping of the constructed intervals to the vertices of the original graph, or
+     * null, if the graph was not an interval graph.
+     *
+     * @return A mapping of the constructed intervals to the vertices of the original graph, or
+     *         null, if the graph was not an interval graph.
      */
     public Map<Interval<Integer>, V> getIntervalToVertexMap()
     {
@@ -352,9 +366,11 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
-     * Returns a mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
+     * Returns a mapping of the vertices of the original graph to the constructed intervals, or
+     * null, if the graph was not an interval graph.
      *
-     * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
+     * @return A mapping of the vertices of the original graph to the constructed intervals, or
+     *         null, if the graph was not an interval graph.
      */
     public Map<V, IntervalVertexInterface<V, Integer>> getVertexToIntervalMap()
     {
