@@ -301,7 +301,6 @@ public final class IntervalGraphRecognizer<V, E>
     		for(int i = 0; i < intervals.size(); i++) 
     		{
     			int digit = Math.abs( (intervals.get(i).getEnd() / power ) % 10);
-    			System.out.println(digit);
     			buckets[digit]++;
     		}
     		
@@ -317,7 +316,6 @@ public final class IntervalGraphRecognizer<V, E>
     			int digit = Math.abs( ( intervals.get(i).getEnd() / power ) % 10 );
     			int position = buckets[digit]-1;
     			buckets[digit] = position;
-    			System.out.println(position +":"+ i+":"+intervals.size()+":"+intervalsTmp.size());
     			intervalsTmp.set(position,intervals.get(i));
     		}
     		
