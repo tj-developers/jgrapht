@@ -6,10 +6,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import org.jgrapht.*;
-import org.jgrapht.alg.connectivity.ConnectivityInspector;
-import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;
 import org.jgrapht.alg.treedecomposition.*;
-import org.jgrapht.event.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.*;
 import org.jgrapht.intervalgraph.interval.*;
@@ -18,10 +15,18 @@ import org.junit.*;
 public class IntervalgraphDecompositionTest
 {
 
-    private <V,E,W> void isNiceDecomposition(Graph<V,E> decomposition, Map<V,Set<W>> map, V root){
-        if(map.get(root).size() != 0) assertFalse(root+" is no valid root", true);
+    private <V,E,W> void testNiceDecomposition(Graph<V,E> decomposition, Map<V,Set<W>> map, Set<V> root){
+        
         Queue<V> queue = new LinkedList<V>();
-        queue.add(root);
+        
+        //test and add all roots
+        for(V v: root) {
+            assertTrue(v+" is no valid root"
+                + "\n in decomposition "+decomposition
+                + "\n and map"+map, map.get(v).size() == 0);
+            queue.add(v);
+        }
+        
         while(!queue.isEmpty())
         {
             V current = queue.poll();
@@ -53,12 +58,14 @@ public class IntervalgraphDecompositionTest
                 && union.size() == map.get(second).size()) 
                     continue; //join node!
             }
-            assertFalse("Vertex Set "+current+" is not a valid node for a nice decomposition\n in tree "+decomposition+"\n with map "+map, true); //no valid node!
+            assertFalse("Vertex Set "+current+" is not a valid node for a nice decomposition"
+                + "\nin decomposition "+decomposition
+                + "\nwith map "+map, true); //no valid node!
         }
         assertTrue(true);
     }
     
-    private <V,E,W,F> void isDecomposition(Graph<W,F> oldGraph, Graph<V,E> decomposition, Map<V,Set<W>> map){
+    private <V,E,W,F> void testDecomposition(Graph<W,F> oldGraph, Graph<V,E> decomposition, Map<V,Set<W>> map){
     	Set<F> edgeSet = oldGraph.edgeSet();
     	Set<V> vertexSet = decomposition.vertexSet();
     	//Every edge is represented
@@ -72,7 +79,9 @@ public class IntervalgraphDecompositionTest
     				continue; 
     			}
     		}
-    		if(!hasVertex) assertFalse("Edge "+e+" is not found\n in graph "+decomposition+"\n with map "+map, true);
+    		assertTrue("Edge "+e+" is not found"
+    		    + "\nin graph "+decomposition
+    		    + "\nwith map "+map, hasVertex);
     	}
     	//every vertex has non-empty connected set of vertex sets
     	Set<W> oldVertexSet = oldGraph.vertexSet();
@@ -92,26 +101,69 @@ public class IntervalgraphDecompositionTest
     	}
     }
     
+    /**
+     * Interval Graph representation of the graph to test:
+     * _ ___________ ___________
+     *    ____________ ___________
+     *     _____________ ___________
+     *     ...
+     */
     @Test
     public void testIntervalgraphDecompositionForRegularGraphs()
     {
+        //graph
         Graph<Integer,DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);
-        //TODO: change g
-        //IntervalgraphDecomposition<Integer,IntervalVertex<Integer,Integer>> decompositionAlg = new IntervalgraphDecomposition<>(g);
-        //Graph<Set<Integer>,DefaultEdge> decomp = decompositionAlg.getTreeDecomposition();
-        //TODO: test here
-        assertTrue(false);
+        g.addVertex(-1);
+        for(int i = 0; i<10; i++)
+        	g.addVertex(i);
+        
+        for(int i = 0; i<10; i++) {
+        	for(int j = i+1; j<10; j++) {
+        		if((i%2)==0  && (j%2)==0)
+        			g.addEdge(i, j);
+        		
+        		if((i%2)==1 && (j%2)==0 && i<j)
+        			g.addEdge(i, j);
+        		
+        		if((i%2)==1 && (j%2)==1)
+        			g.addEdge(i, j);
+        	}
+        }
+        
+        //compute decomposition
+        IntervalgraphDecomposition<Integer,Integer> decomp = IntervalgraphDecomposition.<Integer,DefaultEdge>create(g);
+        assertNotNull("graph was detected as not an interval graph", decomp);
+        
+        //test for nice decomposition
+        testNiceDecomposition(decomp.getDecomposition(), decomp.getMap(), decomp.getRoot());
+        testDecomposition(g, decomp.getDecomposition(), decomp.getMap());
     }
 
     @Test
     public void testIntervalgraphDecompositionForIntervalGraphs()
     {
-        //IntervalGraphInterface<Integer> ig = new CenteredIntervalTree<>();
-        //TODO: change ig
-        //IntervalgraphDecomposition<Integer,DefaultEdge,Integer> decompositionAlg = new IntervalgraphDecomposition<>(ig);
-        assertTrue(false);
+        //TODO
+    }
+    
+    @Test
+    public void testIntervalgraphDecompositionForSortedIntervalLists() 
+    {
+        //TODO
     }
 
+    /**
+     * Test for the create method of lists of intervals
+     * Representation:
+     * 
+     * __ __ __
+     *        __
+     *         __
+     *           ...
+     *             __
+     *             ___
+     *             ____
+     *             ...
+     */
     @Test
     public void testIntervalgraphDecompositionForIntervalLists()
     {
@@ -129,12 +181,11 @@ public class IntervalgraphDecompositionTest
         {
             list.add(new Interval<Integer>(10,10+i));
         }
-        IntervalgraphDecomposition<Integer> decompalg = new IntervalgraphDecomposition<>(list);
-        Graph<Integer,DefaultEdge> decomp = decompalg.getTreeDecomposition();
+        IntervalgraphDecomposition<Integer,Interval<Integer>> decompalg = IntervalgraphDecomposition.<Integer>create(list);
+        Graph<Integer,DefaultEdge> decomp = decompalg.getDecomposition();
         Map<Integer,Set<Interval<Integer>>> map = decompalg.getMap();
         Set<Integer> roots = decompalg.getRoot();
-        for(Integer root : roots)
-        	isNiceDecomposition(decomp,map,root);
+        testNiceDecomposition(decomp,map,roots);
         
     }
 
