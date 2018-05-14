@@ -250,7 +250,13 @@ public final class IntervalGraphRecognizer<V, E>
         return this.intervalsSortedByStartingPoint;
     }
     
-    private static ArrayList<Interval<Integer>> radixSortInteger(List<Interval<Integer>> list){
+    /**
+     * Implementation of radix Sort for integers on Intervals after the ending point
+     * 
+     * @param list list of intervals to sort
+     * @return a new sorted list of the intervals sorted after the ending point
+     */
+    private ArrayList<Interval<Integer>> radixSortInteger(List<Interval<Integer>> list){
     	ArrayList<Interval<Integer>> positiveList = new ArrayList<Interval<Integer>>(list.size());
     	ArrayList<Interval<Integer>> negativeList = new ArrayList<Interval<Integer>>(list.size());
     	for(Interval<Integer> interval : list) {
@@ -269,7 +275,13 @@ public final class IntervalGraphRecognizer<V, E>
     	return negativeListReverse;
     }
     
-    private static ArrayList<Interval<Integer>> radixSortNatural(List<Interval<Integer>> list)
+    /**
+     * Implementation of radix Sort for natural numbers on Intervals after the ending point
+     * 
+     * @param list list of intervals to sort
+     * @return a new sorted list of the intervals sorted after the ending point
+     */
+    private ArrayList<Interval<Integer>> radixSortNatural(List<Interval<Integer>> list)
     {
     	ArrayList<Interval<Integer>> intervals = new ArrayList<Interval<Integer>>(list);
     	ArrayList<Interval<Integer>> intervalsTmp = new ArrayList<Interval<Integer>>(intervals.size());
