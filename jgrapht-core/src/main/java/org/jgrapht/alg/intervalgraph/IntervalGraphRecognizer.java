@@ -273,14 +273,8 @@ public final class IntervalGraphRecognizer<V, E>
 
         positiveList = radixSortNatural(positiveList);
         negativeList = radixSortNatural(negativeList);
-        ArrayList<Interval<Integer>> negativeListReverse =
-            new ArrayList<Interval<Integer>>(negativeList.size());
-
-        for (int i = 0; i < negativeList.size(); i++) {
-            negativeListReverse.add(negativeList.get(i));
-        }
-        negativeListReverse.addAll(positiveList);
-        return negativeListReverse;
+        negativeList.addAll(positiveList);
+        return negativeList;
     }
 
     /**
