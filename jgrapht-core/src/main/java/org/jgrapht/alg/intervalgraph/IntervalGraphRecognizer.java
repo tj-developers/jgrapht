@@ -67,6 +67,7 @@ public final class IntervalGraphRecognizer<V, E>
 
         // An empty graph is an interval graph.
         if (graph.vertexSet().isEmpty()) {
+            this.intervalsSortedByStartingPoint = new ArrayList<>();
             return true;
         }
 
@@ -262,6 +263,9 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> radixSortInteger(List<Interval<Integer>> list)
     {
+        if(list.size() == 0)
+            return new ArrayList<Interval<Integer>>();
+        
         ArrayList<Interval<Integer>> positiveList = new ArrayList<Interval<Integer>>(list.size());
         ArrayList<Interval<Integer>> negativeList = new ArrayList<Interval<Integer>>(list.size());
         for (Interval<Integer> interval : list) {
@@ -285,6 +289,9 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> radixSortNatural(List<Interval<Integer>> list)
     {
+        if(list.size() == 0)
+            return new ArrayList<Interval<Integer>>();
+        
         ArrayList<Interval<Integer>> intervals = new ArrayList<Interval<Integer>>(list);
         ArrayList<Interval<Integer>> intervalsTmp =
             new ArrayList<Interval<Integer>>(intervals.size());
@@ -332,12 +339,17 @@ public final class IntervalGraphRecognizer<V, E>
     /**
      * Returns the list of all intervals sorted by ending point, or null, if the graph was not an
      * interval graph.
+     * The List will be created with radix sort from getIntervalsSortedByStartingPoint as soon as
+     * this method is called. 
      *
      * @return The list of all intervals sorted by ending point, or null, if the graph was not an
      *         interval graph.
      */
     public ArrayList<Interval<Integer>> getIntervalsSortedByEndingPoint()
     {
+        //
+        if (this.intervalsSortedByStartingPoint == null)
+            return null;
         if (this.intervalsSortedByEndingPoint == null)
             this.intervalsSortedByEndingPoint =
                 radixSortInteger(this.intervalsSortedByStartingPoint);
