@@ -417,9 +417,17 @@ public class IntervalGraphTest {
         intervalGraph.addVertex(vertex4);
 
         assertEquals(2, intervalGraph.degreeOf(vertex2));
+        assertEquals(2, intervalGraph.inDegreeOf(vertex2));
+        assertEquals(2, intervalGraph.outDegreeOf(vertex2));
         assertEquals(1, intervalGraph.degreeOf(vertex1));
+        assertEquals(1, intervalGraph.inDegreeOf(vertex1));
+        assertEquals(1, intervalGraph.outDegreeOf(vertex1));
         assertEquals(1, intervalGraph.degreeOf(vertex3));
+        assertEquals(1, intervalGraph.inDegreeOf(vertex3));
+        assertEquals(1, intervalGraph.outDegreeOf(vertex3));
         assertEquals(0, intervalGraph.degreeOf(vertex4));
+        assertEquals(0, intervalGraph.inDegreeOf(vertex4));
+        assertEquals(0, intervalGraph.outDegreeOf(vertex4));
     }
 
     @Test
@@ -446,7 +454,31 @@ public class IntervalGraphTest {
         assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex1, vertex3)));
         assertEquals(2, edgesOfVertex1.size());
 
+        edgesOfVertex1 = intervalGraph.incomingEdgesOf(vertex1);
+        assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex1, vertex2)));
+        assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex2, vertex1)));
+        assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex1, vertex3)));
+        assertEquals(2, edgesOfVertex1.size());
+
+        edgesOfVertex1 = intervalGraph.outgoingEdgesOf(vertex1);
+        assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex1, vertex2)));
+        assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex2, vertex1)));
+        assertTrue(edgesOfVertex1.contains(intervalGraph.getEdge(vertex1, vertex3)));
+        assertEquals(2, edgesOfVertex1.size());
+
         Set<DefaultEdge> edgesOfVertex2 = intervalGraph.edgesOf(vertex2);
+        assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex1, vertex2)));
+        assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex2, vertex1)));
+        assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex2, vertex3)));
+        assertEquals(2, edgesOfVertex1.size());
+
+        edgesOfVertex2 = intervalGraph.incomingEdgesOf(vertex2);
+        assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex1, vertex2)));
+        assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex2, vertex1)));
+        assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex2, vertex3)));
+        assertEquals(2, edgesOfVertex1.size());
+
+        edgesOfVertex2 = intervalGraph.outgoingEdgesOf(vertex2);
         assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex1, vertex2)));
         assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex2, vertex1)));
         assertTrue(edgesOfVertex2.contains(intervalGraph.getEdge(vertex2, vertex3)));
@@ -458,8 +490,27 @@ public class IntervalGraphTest {
         assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex1, vertex3)));
         assertEquals(2, edgesOfVertex1.size());
 
+        edgesOfVertex3 = intervalGraph.incomingEdgesOf(vertex3);
+        assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex2, vertex3)));
+        assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex3, vertex2)));
+        assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex1, vertex3)));
+        assertEquals(2, edgesOfVertex1.size());
+
+        edgesOfVertex3 = intervalGraph.outgoingEdgesOf(vertex3);
+        assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex2, vertex3)));
+        assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex3, vertex2)));
+        assertTrue(edgesOfVertex3.contains(intervalGraph.getEdge(vertex1, vertex3)));
+        assertEquals(2, edgesOfVertex1.size());
+
         Set<DefaultEdge> edgesOfVertex4 = intervalGraph.edgesOf(vertex4);
         assertTrue(edgesOfVertex4.isEmpty());
+
+        edgesOfVertex4 = intervalGraph.incomingEdgesOf(vertex4);
+        assertTrue(edgesOfVertex4.isEmpty());
+
+        edgesOfVertex4 = intervalGraph.outgoingEdgesOf(vertex4);
+        assertTrue(edgesOfVertex4.isEmpty());
+
     }
 
     @Test
