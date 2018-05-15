@@ -8,24 +8,21 @@ import java.util.Map.Entry;
 import org.jgrapht.*;
 import org.jgrapht.alg.treedecomposition.*;
 import org.jgrapht.graph.*;
-import org.jgrapht.intervalgraph.*;
 import org.jgrapht.intervalgraph.interval.*;
 import org.junit.*;
 
 public class IntervalgraphDecompositionTest
 {
 
-    private <V,E,W> void testNiceDecomposition(Graph<V,E> decomposition, Map<V,Set<W>> map, Set<V> root){
+    private <V,E,W> void testNiceDecomposition(Graph<V,E> decomposition, Map<V,Set<W>> map, V root){
         
         Queue<V> queue = new LinkedList<V>();
         
-        //test and add all roots
-        for(V v: root) {
-            assertTrue(v+" is no valid root"
+        //test and add root
+        assertTrue(root+" is no valid root"
                 + "\n in decomposition "+decomposition
-                + "\n and map"+map, map.get(v).size() == 0);
-            queue.add(v);
-        }
+                + "\n and map"+map, map.get(root).size() == 0);
+       queue.add(root);
         
         while(!queue.isEmpty())
         {
@@ -184,8 +181,8 @@ public class IntervalgraphDecompositionTest
         IntervalgraphDecomposition<Integer,Interval<Integer>> decompalg = IntervalgraphDecomposition.<Integer>create(list);
         Graph<Integer,DefaultEdge> decomp = decompalg.getDecomposition();
         Map<Integer,Set<Interval<Integer>>> map = decompalg.getMap();
-        Set<Integer> roots = decompalg.getRoot();
-        testNiceDecomposition(decomp,map,roots);
+        Integer root = decompalg.getRoot();
+        testNiceDecomposition(decomp,map,root);
         
     }
 

@@ -129,10 +129,8 @@ public final class IntervalGraphRecognizer<V, E>
             this.intervalsSortedByStartingPoint = new ArrayList<>(graph.vertexSet().size());
 
             // Initialize the vertex map. Because we know the number of vertices we can make sure
-            // the hashmap does not
-            // need to rehash by setting the capacity to the number of vertices divided by the
-            // default load factor
-            // of 0.75.
+            // the hashmap does not need to rehash by setting the capacity to the number of vertices
+            // divided by the default load factor of 0.75.
             this.intervalToVertexMap =
                 new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
             this.vertexToIntervalMap =
@@ -196,8 +194,7 @@ public final class IntervalGraphRecognizer<V, E>
             maxNeighbors.put(vertex, maxNeighbor);
         }
 
-        // Check if every vertex is connected to all vertices between itself and its maximal
-        // neighbor
+        // Check if every vertex is connected to all vertices between itself and its maximal neighbor
         for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
             int maxIndex = sweep.get(maxNeighbors.get(vertex));

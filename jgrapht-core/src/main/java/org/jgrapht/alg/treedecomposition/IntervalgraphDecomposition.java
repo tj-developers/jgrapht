@@ -26,8 +26,8 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
     // map from decomposition nodes to the interval sets
     private Map<Integer, Set<V>> decompositionIntervalMap = null;
 
-    // the roots of the forest
-    private Set<Integer> roots = null;
+    // the root of the tree
+    private Integer root = null;
 
     // input to the algorithm, list of sorted intervals
     private List<Interval<T>> startSort, endSort;
@@ -215,28 +215,40 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
         // creating objects
         decomposition = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
         decompositionIntervalMap = new HashMap<Integer, Set<V>>();
-        roots = new HashSet<Integer>();
 
         // create root
         currentVertex = 0;
-        roots.add(currentVertex);
+        root = 0;
         currentSet = new HashSet<>();
         decompositionIntervalMap.put(currentVertex, currentSet);
         decomposition.addVertex(currentVertex);
     }
 
     /**
-     * Method for adding a new root
+     * Method for adding a new root as a joint node
      */
     private void addNewRoot()
     {
         Set<V> nextVertex = new HashSet<>();
         currentSet = nextVertex;
+        
+        // new root
         decomposition.addVertex(currentVertex + 1);
-        roots.add(currentVertex + 1);
         decompositionIntervalMap.put(currentVertex + 1, nextVertex);
+        
+        // set current Vertex
+        currentVertex++;
+        
+        // new current root
+        decomposition.addVertex(currentVertex + 1);
+        decompositionIntervalMap.put(currentVertex + 1, nextVertex);
+        
+        // make joint edges
+        decomposition.addEdge(currentVertex, currentVertex+1);
+        decomposition.addEdge(currentVertex, root);
+        root = currentVertex;
 
-        // new integer for next vertex
+        // set current Vertex
         currentVertex++;
     }
 
@@ -254,7 +266,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
         decomposition.addEdge(currentVertex, currentVertex + 1);
         decompositionIntervalMap.put(currentVertex + 1, nextVertex);
 
-        // new integer for next vertex
+        // set current Vertex
         currentVertex++;
     }
 
@@ -272,7 +284,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
         decomposition.addEdge(currentVertex, currentVertex + 1);
         decompositionIntervalMap.put(currentVertex + 1, nextVertex);
 
-        // new integer for next vertex
+        // set current Vertex
         currentVertex++;
     }
 
@@ -306,11 +318,11 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      * 
      * @return a set of roots
      */
-    public Set<Integer> getRoot()
+    public Integer getRoot()
     {
-        if (roots == null)
+        if (root == null)
             computeNiceDecomposition();
-        return roots;
+        return root;
     }
 
     /**
