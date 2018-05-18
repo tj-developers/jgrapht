@@ -92,7 +92,11 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     }
 
     private void addColorsToColorQueue(Queue<Integer> colorQueue, Integer lastColor, Integer i1, Integer i2, Integer iStar) {
-
+        for(Integer i = i1; i <= i2; ++i) {
+            if(!i.equals(iStar)) {
+                colorQueue.add(lastColor + i);
+            }
+        }
     }
 
     private void saveNewColoring() {
