@@ -10,6 +10,8 @@ import java.util.Iterator;
  */
 public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismInspector<V, E> {
 
+
+
     /**
      *
      *
@@ -27,6 +29,8 @@ public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismIns
      */
     @Override
     public boolean isomorphismExists() {
+
+
         return false;
     }
 }
