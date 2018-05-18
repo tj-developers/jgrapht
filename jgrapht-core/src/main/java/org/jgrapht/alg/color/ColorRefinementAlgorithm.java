@@ -2,11 +2,13 @@ package org.jgrapht.alg.color;
 
 import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
-import org.jgrapht.intervalgraph.interval.Interval;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V> {
+public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V>, Serializable {
+
+    private static final long serialVersionUID = -987646758624545630L;
 
     /**
      * The input graph
@@ -73,18 +75,20 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     }
 
     private Integer getNumberOfNeighborsOfColor(V vertex, Integer color) {
+        // TODO
         return 0;
     }
 
     private List<Set<V>> getOrderedPartition(Map<V, Integer> coloring, Map<V, Integer> numberOfNeighborsForColor) {
         List<Set<V>> partition = new ArrayList<>();
-
+        // TODO
         return partition;
     }
 
     private void getColorClassesOfColor(Integer i1, Integer i2, List<Set<V>> orderedPartition) {
         i1 = 1;
         i2 = 1;
+        // TODO
     }
 
     private Integer maximumPartitionSize(Integer i1, Integer i2, List<Set<V>> orderedPartition) {
@@ -100,6 +104,6 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     }
 
     private void saveNewColoring() {
-
+        // TODO
     }
 }
