@@ -1,4 +1,4 @@
-package org.jgrapht.util.interval;
+package org.jgrapht.alg.intervalgraph;
 
 import org.jgrapht.*;
 import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;

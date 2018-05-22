@@ -37,7 +37,9 @@ public final class IntervalGraphRecognizer<V, E>
     /**
      * Stores whether or not the graph is an interval graph.
      */
-    private boolean isIntervalGraph;
+    private Boolean isIntervalGraph;
+
+    private Graph<V, E> graph;
 
     /**
      * Stores the computed interval graph representation (or <tt>null</tt> if no such representation
@@ -55,7 +57,7 @@ public final class IntervalGraphRecognizer<V, E>
     @SuppressWarnings({"unchecked"})
     public IntervalGraphRecognizer(Graph<V, E> graph)
     {
-        this.isIntervalGraph = isIntervalGraph(graph);
+        this.graph = graph;
     }
 
     /**
@@ -63,12 +65,13 @@ public final class IntervalGraphRecognizer<V, E>
      *
      * @return
      */
-    private boolean isIntervalGraph(Graph<V, E> graph)
+    private void computeIsIntervalGraph()
     {
 
         // An empty graph is an interval graph.
         if (graph.vertexSet().isEmpty()) {
-            return true;
+            this.isIntervalGraph = true;
+            return;
         }
 
         // Step 1 - LBFS from an arbitrary vertex
@@ -153,9 +156,9 @@ public final class IntervalGraphRecognizer<V, E>
                 this.intervalsSortedByStartingPoint.add(intervals[i]);
             }
 
-            return true;
+            this.isIntervalGraph = true;
         } else {
-            return false;
+            this.isIntervalGraph = false;
         }
     }
     
@@ -218,8 +221,7 @@ public final class IntervalGraphRecognizer<V, E>
      * @param <V> the generic type representing vertices
      * @return
      */
-    private static <V> V randomElementOf(Set<V> set)
-    {
+    private static <V> V randomElementOf(Set<V> set) {
         if (set == null) {
             throw new IllegalArgumentException("Set parameter cannot be null.");
         }
@@ -233,12 +235,22 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
+     * Makes sure the algorithm has been run and all fields are populated with their proper value.
+     */
+    private void ensureComputationComplete() {
+        if (this.isIntervalGraph == null){
+            computeIsIntervalGraph();
+        }
+    }
+
+    /**
      * Returns whether or not the graph is an interval graph.
      *
      * @return <tt>true</tt> if the graph is an interval graph, otherwise false.
      */
     public boolean isIntervalGraph()
     {
+        ensureComputationComplete();
         return isIntervalGraph;
     }
 
@@ -249,6 +261,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public ArrayList<Interval<Integer>> getIntervalsSortedByStartingPoint()
     {
+        ensureComputationComplete();
         return this.intervalsSortedByStartingPoint;
     }
 
@@ -259,6 +272,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public Map<Interval<Integer>, V> getIntervalToVertexMap()
     {
+        ensureComputationComplete();
         return this.intervalToVertexMap;
     }
 
@@ -269,6 +283,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public Map<V, IntervalVertexInterface<V, Integer>> getVertexToIntervalMap()
     {
+        ensureComputationComplete();
         return this.vertexToIntervalMap;
     }
 }
