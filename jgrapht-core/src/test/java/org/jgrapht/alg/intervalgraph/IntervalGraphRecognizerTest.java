@@ -23,6 +23,9 @@ public class IntervalGraphRecognizerTest {
 
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(emptyGraph);
         assertTrue(recognizer.isIntervalGraph());
+        assertEquals(0, recognizer.getVertexToIntervalMap().size());
+        assertEquals(0, recognizer.getIntervalToVertexMap().size());
+        assertEquals(0, recognizer.getIntervalsSortedByStartingPoint().size());
     }
 
     /**

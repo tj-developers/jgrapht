@@ -17,9 +17,9 @@ import org.jgrapht.util.interval.Interval;
  * vertex for each interval and two vertices are connected if the corresponding intervals have a
  * nonempty intersection.
  *
- * The recognizer uses the algorithm described in
- * <a href="https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a> (<i>The LBFS Structure
- * and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
+ * The recognizer uses the algorithm described in <a href=
+ * "https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a>
+ * (<i>The LBFS Structure and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
  * multiple lexicographical breadth-first search (LBFS) sweeps.
  *
@@ -54,7 +54,7 @@ public final class IntervalGraphRecognizer<V, E>
      * 
      * @param graph the graph to be tested.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     public IntervalGraphRecognizer(Graph<V, E> graph)
     {
         this.graph = graph;
@@ -70,7 +70,12 @@ public final class IntervalGraphRecognizer<V, E>
 
         // An empty graph is an interval graph.
         if (graph.vertexSet().isEmpty()) {
+            // Create (empty) interval representation
+            this.intervalsSortedByStartingPoint = new ArrayList<>();
+            this.intervalToVertexMap = new HashMap<>(0);
+            this.vertexToIntervalMap = new HashMap<>(0);
             this.isIntervalGraph = true;
+
             return;
         }
 
@@ -107,8 +112,7 @@ public final class IntervalGraphRecognizer<V, E>
         // Step 6 - LBFS* with the resulting sweeps
         // Input - the result of sweep gamma and sweep epsilon
         // Output - the result of current sweep zeta
-        HashMap<V, Integer> sweepZeta =
-            lexBreadthFirstSearchStar(graph, sweepDelta, sweepEpsilon);
+        HashMap<V, Integer> sweepZeta = lexBreadthFirstSearchStar(graph, sweepDelta, sweepEpsilon);
 
         // if sweepZeta is umbrella-free, then the graph is interval.
         // otherwise, the graph is not interval
@@ -129,15 +133,19 @@ public final class IntervalGraphRecognizer<V, E>
                 neighborIndex.put(vertex, maxNeighbor);
             }
 
-            Interval<Integer>[] intervals = (Interval<Integer>[])Array.newInstance(Interval.class, graph.vertexSet().size());
-            this.intervalsSortedByStartingPoint =
-                new ArrayList<>(graph.vertexSet().size());
+            Interval<Integer>[] intervals =
+                (Interval<Integer>[]) Array.newInstance(Interval.class, graph.vertexSet().size());
+            this.intervalsSortedByStartingPoint = new ArrayList<>(graph.vertexSet().size());
 
-            // Initialize the vertex map. Because we know the number of vertices we can make sure the hashmap does not
-            // need to rehash by setting the capacity to the number of vertices divided by the default load factor
+            // Initialize the vertex map. Because we know the number of vertices we can make sure
+            // the hashmap does not
+            // need to rehash by setting the capacity to the number of vertices divided by the
+            // default load factor
             // of 0.75.
-            this.intervalToVertexMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
-            this.vertexToIntervalMap = new HashMap<>((int)Math.ceil(graph.vertexSet().size() / 0.75));
+            this.intervalToVertexMap =
+                new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
+            this.vertexToIntervalMap =
+                new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
 
             // Compute intervals and store them associated by their starting point ...
             for (V vertex : graph.vertexSet()) {
@@ -161,7 +169,7 @@ public final class IntervalGraphRecognizer<V, E>
             this.isIntervalGraph = false;
         }
     }
-    
+
     /**
      * Calculates if the given sweep is an I-Ordering (according to the Graph graph) in linear time.
      * 
@@ -171,11 +179,11 @@ public final class IntervalGraphRecognizer<V, E>
      * @param graph the graph we want to check if its an I-Order
      * @return true, if sweep is an I-Order according to graph
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     private static <V, E> boolean isIOrdering(HashMap<V, Integer> sweep, Graph<V, E> graph)
     {
         // Compute inverse sweep map to quickly find vertices at given indices
-        V[] inverseSweep = (V[])new Object[graph.vertexSet().size()];
+        V[] inverseSweep = (V[]) new Object[graph.vertexSet().size()];
 
         for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
@@ -184,12 +192,12 @@ public final class IntervalGraphRecognizer<V, E>
         // Compute maximal neighbors w.r.t. sweep ordering for every vertex
         HashMap<V, V> maxNeighbors = new HashMap<>(graph.vertexSet().size());
 
-        for(V vertex : graph.vertexSet()) {
+        for (V vertex : graph.vertexSet()) {
             List<V> neighbors = Graphs.neighborListOf(graph, vertex);
             V maxNeighbor = vertex;
 
-            for(V neighbor : neighbors) {
-                if(sweep.get(neighbor) > sweep.get(maxNeighbor)) {
+            for (V neighbor : neighbors) {
+                if (sweep.get(neighbor) > sweep.get(maxNeighbor)) {
                     maxNeighbor = neighbor;
                 }
             }
@@ -197,13 +205,14 @@ public final class IntervalGraphRecognizer<V, E>
             maxNeighbors.put(vertex, maxNeighbor);
         }
 
-        // Check if every vertex is connected to all vertices between itself and its maximal neighbor
-        for(V vertex : graph.vertexSet()) {
+        // Check if every vertex is connected to all vertices between itself and its maximal
+        // neighbor
+        for (V vertex : graph.vertexSet()) {
             int index = sweep.get(vertex);
             int maxIndex = sweep.get(maxNeighbors.get(vertex));
 
-            for(int i = index; i < maxIndex; i++) {
-                if(vertex != inverseSweep[i] && !graph.containsEdge(vertex, inverseSweep[i])) {
+            for (int i = index; i < maxIndex; i++) {
+                if (vertex != inverseSweep[i] && !graph.containsEdge(vertex, inverseSweep[i])) {
                     // Found missing edge
                     return false;
                 }
@@ -255,9 +264,11 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
-     * Returns the list of all intervals sorted by starting point, or null, if the graph was not an interval graph.
+     * Returns the list of all intervals sorted by starting point, or null, if the graph was not an
+     * interval graph.
      *
-     * @return The list of all intervals sorted by starting point, or null, if the graph was not an interval graph.
+     * @return The list of all intervals sorted by starting point, or null, if the graph was not an
+     *         interval graph.
      */
     public ArrayList<Interval<Integer>> getIntervalsSortedByStartingPoint()
     {
@@ -266,9 +277,11 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
-     * Returns a mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
+     * Returns a mapping of the constructed intervals to the vertices of the original graph, or
+     * null, if the graph was not an interval graph.
      *
-     * @return A mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
+     * @return A mapping of the constructed intervals to the vertices of the original graph, or
+     *         null, if the graph was not an interval graph.
      */
     public Map<Interval<Integer>, V> getIntervalToVertexMap()
     {
@@ -277,9 +290,11 @@ public final class IntervalGraphRecognizer<V, E>
     }
 
     /**
-     * Returns a mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
+     * Returns a mapping of the vertices of the original graph to the constructed intervals, or
+     * null, if the graph was not an interval graph.
      *
-     * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
+     * @return A mapping of the vertices of the original graph to the constructed intervals, or
+     *         null, if the graph was not an interval graph.
      */
     public Map<V, IntervalVertexInterface<V, Integer>> getVertexToIntervalMap()
     {
