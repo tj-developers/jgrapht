@@ -1,8 +1,6 @@
 package org.jgrapht.alg.treedecomposition;
 
 import java.util.*;
-import java.util.Map.*;
-
 import org.jgrapht.*;
 import org.jgrapht.alg.intervalgraph.IntervalGraphRecognizer;
 import org.jgrapht.graph.*;
@@ -18,7 +16,7 @@ import org.jgrapht.intervalgraph.interval.*;
  * @author Ira Justus Fesefeldt (PhoenixIra)
  * @since Mai 14, 2018
  */
-public class IntervalgraphDecomposition<T extends Comparable<T>, V>
+public class IntervalGraphDecomposition<T extends Comparable<T>, V>
 {
     // resulting forest of the decomposition
     private Graph<Integer, DefaultEdge> decomposition = null;
@@ -45,7 +43,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      * @param sortedByEndPoint the intervals sorted after the ending points
      * @param intervalToVertexMap maps intervals to the vertices of the graph (may be the same)
      */
-    private IntervalgraphDecomposition(
+    private IntervalGraphDecomposition(
         List<Interval<T>> sortedByStartPoint, List<Interval<T>> sortedByEndPoint,
         Map<Interval<T>, V> intervalToVertexMap, Map<V, Interval<T>> vertexToIntervalMap)
     {
@@ -53,6 +51,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
         this.endSort = sortedByEndPoint;
         this.intervalToVertexMap = intervalToVertexMap;
         this.vertexToIntervalMap = vertexToIntervalMap;
+        computeNiceDecomposition();
     }
 
     /**
@@ -69,18 +68,21 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      *         graph was no interval graph
      * @see IntervalGraphRecognizer
      */
-    public static <V, E> IntervalgraphDecomposition<Integer, V> create(Graph<V, E> graph)
+    public static <V, E> IntervalGraphDecomposition<Integer, V> create(Graph<V, E> graph)
     {
         IntervalGraphRecognizer<V, E> recog = new IntervalGraphRecognizer<>(graph);
+        
         HashMap<V, Interval<Integer>> vertexToIntegerMap =
             new HashMap<>(recog.getVertexToIntervalMap().size());
-        for (Entry<V, IntervalVertexInterface<V, Integer>> entry : recog
-            .getVertexToIntervalMap().entrySet())
-            vertexToIntegerMap.put(entry.getKey(), entry.getValue().getInterval());
+        
+        Map<V,IntervalVertexInterface<V, Integer>> vertexToIntervalVertexMap = recog.getVertexToIntervalMap();
+        for (V key : vertexToIntervalVertexMap.keySet())
+            vertexToIntegerMap.put(key, vertexToIntervalVertexMap.get(key).getInterval());
+        
         if (recog.isIntervalGraph())
-            return new IntervalgraphDecomposition<Integer, V>(
+            return new IntervalGraphDecomposition<Integer, V>(
                 recog.getIntervalsSortedByStartingPoint(),
-                recog.getIntervalsSortedByStartingPoint(), recog.getIntervalToVertexMap(),
+                recog.getIntervalsSortedByEndingPoint(), recog.getIntervalToVertexMap(),
                 vertexToIntegerMap);
         else
             return null;
@@ -101,7 +103,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      * @see ArrayList#sort(Comparator)
      */
     public static <V extends IntervalVertexInterface<VertexType, T>, E, VertexType,
-        T extends Comparable<T>> IntervalgraphDecomposition<T, V> create(
+        T extends Comparable<T>> IntervalGraphDecomposition<T, V> create(
             IntervalGraph<V, E, VertexType, T> intervalGraph)
     {
         Set<V> vertexSet = intervalGraph.vertexSet();
@@ -117,7 +119,7 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
         ArrayList<Interval<T>> endSort = new ArrayList<>(intervals);
         startSort.sort(Interval.<T> getStartingComparator());
         endSort.sort(Interval.<T> getEndingComparator());
-        return new IntervalgraphDecomposition<T, V>(
+        return new IntervalGraphDecomposition<T, V>(
             startSort, endSort, intervalToVertexMap, vertexToIntervalMap);
     }
 
@@ -131,13 +133,13 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      * @param <T> the value of the intervals
      * @return the algorithm for the computation of the nice tree decomposition
      */
-    public static <T extends Comparable<T>> IntervalgraphDecomposition<T, Interval<T>> create(
+    public static <T extends Comparable<T>> IntervalGraphDecomposition<T, Interval<T>> create(
         List<Interval<T>> sortedByStartPoint, List<Interval<T>> sortedByEndPoint)
     {
         HashMap<Interval<T>, Interval<T>> identity = new HashMap<>(sortedByStartPoint.size());
         for (Interval<T> interval : sortedByStartPoint)
             identity.put(interval, interval);
-        return new IntervalgraphDecomposition<T, Interval<T>>(
+        return new IntervalGraphDecomposition<T, Interval<T>>(
             new ArrayList<Interval<T>>(sortedByStartPoint),
             new ArrayList<Interval<T>>(sortedByEndPoint), identity, identity);
     }
@@ -152,18 +154,14 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      * @return the algorithm for the computation of the nice tree decomposition
      * @see ArrayList#sort(Comparator)
      */
-    public static <T extends Comparable<T>> IntervalgraphDecomposition<T, Interval<T>> create(
+    public static <T extends Comparable<T>> IntervalGraphDecomposition<T, Interval<T>> create(
         List<Interval<T>> intervals)
     {
         ArrayList<Interval<T>> startSort = new ArrayList<>(intervals);
         ArrayList<Interval<T>> endSort = new ArrayList<>(intervals);
         startSort.sort(Interval.<T> getStartingComparator());
         endSort.sort(Interval.<T> getEndingComparator());
-        HashMap<Interval<T>, Interval<T>> identity = new HashMap<>(startSort.size());
-        for (Interval<T> interval : startSort)
-            identity.put(interval, interval);
-        return new IntervalgraphDecomposition<T, Interval<T>>(
-            startSort, endSort, identity, identity);
+        return create(startSort, endSort);
     }
 
     /**
@@ -179,7 +177,6 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
         initDecomposition();
 
         int endIndex = 0;
-        Interval<T> last = null;
 
         // as long as intervals remain
         for (Interval<T> current : startSort) {
@@ -187,22 +184,11 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
             while (endSort.get(endIndex).getEnd().compareTo(current.getStart()) < 0) {
                 addForget(endSort.get(endIndex));
                 endIndex++;
-            }
-            // root or leaf node AND last one had no successor (i.e. end of last is before start of
-            // current)
-            if (currentSet.size() != 0 || last == null) {
-                // no root node, so introduce
-                addIntroduce(current);
-            } else if (last.getEnd().compareTo(current.getStart()) < 0) {
-                // root node!
-                addNewRoot();
-                addIntroduce(current);
-            }
-            // save last node for root detection
-            last = current;
+            }            
+            addIntroduce(current);
         }
         // add the last forget nodes
-        while (endIndex < endSort.size() - 1) {
+        while (endIndex < endSort.size()) {
             addForget(endSort.get(endIndex++));
         }
     }
@@ -226,7 +212,9 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
 
     /**
      * Method for adding a new root as a joint node
+     * Will be used/changed in future
      */
+    @SuppressWarnings("unused")
     private void addNewRoot()
     {
         Set<V> nextVertex = new HashSet<>();
@@ -295,8 +283,6 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      */
     public Graph<Integer, DefaultEdge> getDecomposition()
     {
-        if (decomposition == null)
-            computeNiceDecomposition();
         return decomposition;
     }
 
@@ -308,8 +294,6 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      */
     public Map<Integer, Set<V>> getMap()
     {
-        if (decompositionIntervalMap == null)
-            computeNiceDecomposition();
         return decompositionIntervalMap;
     }
 
@@ -320,8 +304,6 @@ public class IntervalgraphDecomposition<T extends Comparable<T>, V>
      */
     public Integer getRoot()
     {
-        if (root == null)
-            computeNiceDecomposition();
         return root;
     }
 

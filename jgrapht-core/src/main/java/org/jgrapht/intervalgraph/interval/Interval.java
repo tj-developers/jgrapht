@@ -161,9 +161,16 @@ public class Interval<T extends Comparable<T>>
      * @param <T> the value of the interval
      * @return a starting point comparator
      */
-    public static <T extends Comparable<T>> StartingComparator<T> getStartingComparator()
+    public static <T extends Comparable<T>> Comparator<Interval<T>> getStartingComparator()
     {
-        return new StartingComparator<T>();
+        return new Comparator<Interval<T>>() 
+        {
+            @Override
+            public int compare(Interval<T> o1, Interval<T> o2)
+            {
+                return o1.getStart().compareTo(o2.getStart());
+            }
+        };
     }
 
     /**
@@ -172,48 +179,18 @@ public class Interval<T extends Comparable<T>>
      * @param <T> the value of the interval
      * @return a ending point comparator
      */
-    public static <T extends Comparable<T>> EndingComparator<T> getEndingComparator()
+    public static <T extends Comparable<T>> Comparator<Interval<T>> getEndingComparator()
     {
-        return new EndingComparator<T>();
-    }
-
-    /**
-     * private class for comparing the starting points of the interval
-     * 
-     * @author Ira Justus Fesefeldt (PhoenixIra)
-     *
-     * @param <T> the value of the interval
-     */
-    private static class StartingComparator<T extends Comparable<T>>
-        implements
-        Comparator<Interval<T>>
-    {
-
-        @Override
-        public int compare(Interval<T> o1, Interval<T> o2)
+        return new Comparator<Interval<T>>()
         {
-            return o1.getStart().compareTo(o2.getStart());
-        }
 
+            @Override
+            public int compare(Interval<T> o1, Interval<T> o2)
+            {
+                return o1.getEnd().compareTo(o2.getEnd());
+            }
+
+        };
     }
 
-    /**
-     * private class for comparing the ending points of the interval
-     * 
-     * @author Ira Justus Fesefeldt (PhoenixIra)
-     *
-     * @param <T> the value of the interval
-     */
-    private static class EndingComparator<T extends Comparable<T>>
-        implements
-        Comparator<Interval<T>>
-    {
-
-        @Override
-        public int compare(Interval<T> o1, Interval<T> o2)
-        {
-            return o1.getEnd().compareTo(o2.getEnd());
-        }
-
-    }
 }

@@ -263,7 +263,10 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> radixSortInteger(List<Interval<Integer>> list)
     {
-        if(list.size() == 0)
+        if(list == null)
+            throw new IllegalArgumentException("List parameter cannot be null.");
+        
+        if(list.isEmpty())
             return new ArrayList<Interval<Integer>>();
         
         ArrayList<Interval<Integer>> positiveList = new ArrayList<Interval<Integer>>(list.size());
@@ -289,7 +292,10 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> radixSortNatural(List<Interval<Integer>> list)
     {
-        if(list.size() == 0)
+        if(list == null)
+            throw new IllegalArgumentException("List parameter cannot be null.");
+        
+        if(list.isEmpty())
             return new ArrayList<Interval<Integer>>();
         
         ArrayList<Interval<Integer>> intervals = new ArrayList<Interval<Integer>>(list);
@@ -302,9 +308,9 @@ public final class IntervalGraphRecognizer<V, E>
 
         Interval<Integer> max =
             Collections.max(intervals, Interval.<Integer> getEndingComparator());
-        Integer power = 1;
+        int power = 1;
         // every digit
-        while (max.getEnd() / (power) > 0) {
+        while (max.getEnd() / power > 0) {
             int[] buckets = new int[10];
 
             // count all numbers with digit at position exponent

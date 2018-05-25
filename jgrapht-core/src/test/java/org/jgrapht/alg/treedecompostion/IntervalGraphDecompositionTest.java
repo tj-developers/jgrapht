@@ -11,7 +11,7 @@ import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.interval.*;
 import org.junit.*;
 
-public class IntervalgraphDecompositionTest
+public class IntervalGraphDecompositionTest
 {
 
     private <V,E,W> void testNiceDecomposition(Graph<V,E> decomposition, Map<V,Set<W>> map, V root){
@@ -28,7 +28,7 @@ public class IntervalgraphDecompositionTest
         {
             V current = queue.poll();
             List<V> successor = Graphs.successorListOf(decomposition, current);
-            if(successor.size() == 0 && map.get(current).size() <= 1) continue; //leaf node
+            if(successor.size() == 0 && map.get(current).isEmpty()) continue; //leaf node
             if(successor.size() == 1) //forget or introduce
             {
                 V next = successor.get(0);
@@ -128,7 +128,7 @@ public class IntervalgraphDecompositionTest
         }
         
         //compute decomposition
-        IntervalgraphDecomposition<Integer,Integer> decomp = IntervalgraphDecomposition.<Integer,DefaultEdge>create(g);
+        IntervalGraphDecomposition<Integer,Integer> decomp = IntervalGraphDecomposition.<Integer,DefaultEdge>create(g);
         assertNotNull("graph was detected as not an interval graph", decomp);
         
         //test for nice decomposition
@@ -178,7 +178,7 @@ public class IntervalgraphDecompositionTest
         {
             list.add(new Interval<Integer>(10,10+i));
         }
-        IntervalgraphDecomposition<Integer,Interval<Integer>> decompalg = IntervalgraphDecomposition.<Integer>create(list);
+        IntervalGraphDecomposition<Integer,Interval<Integer>> decompalg = IntervalGraphDecomposition.<Integer>create(list);
         Graph<Integer,DefaultEdge> decomp = decompalg.getDecomposition();
         Map<Integer,Set<Interval<Integer>>> map = decompalg.getMap();
         Integer root = decompalg.getRoot();
