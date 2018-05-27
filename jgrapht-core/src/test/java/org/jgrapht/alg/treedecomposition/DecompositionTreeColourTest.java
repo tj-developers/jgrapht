@@ -1,4 +1,4 @@
-package org.jgrapht.alg.color;
+package org.jgrapht.alg.treedecomposition;
 
 import static org.junit.Assert.assertEquals;
 

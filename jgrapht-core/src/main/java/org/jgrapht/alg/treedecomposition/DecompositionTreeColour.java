@@ -1,4 +1,4 @@
-package org.jgrapht.alg.color;
+package org.jgrapht.alg.treedecomposition;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -101,12 +101,5 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 		return  new ColoringImpl<>(asssignedColors, maxColourAssigned + 1);
 	}
 }
-
-
-
-
-
-
-
 
 
