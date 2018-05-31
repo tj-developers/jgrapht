@@ -8,7 +8,7 @@ import org.jgrapht.graph.*;
 
 /**
  * A builder for nice tree decompositions.
- * A tree decomposition of a graph G is a tree T and a map b: V(T) -> Set<V(G)>, which satisfies the properties:
+ * A tree decomposition of a graph G is a tree T and a map b: V(T) to Set of V(G), which satisfies the properties:
  * - for every edge e in E(G), there is a node t in V(T) with e is a subset of b(v)
  * - for all vertices v in V(G) the set {t in V(T) | v in b(t)} is non-empty and connected in T
  * 
