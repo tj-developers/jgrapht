@@ -213,6 +213,7 @@ public class ChordalityInspector<V, E> {
         return predecessors;
     }
 
+
     /**
      * Returns the type of iterator used in this {@code ChordalityInspector}
      *
