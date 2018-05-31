@@ -3,11 +3,21 @@ package org.jgrapht.decomposition;
 import java.util.*;
 
 import org.jgrapht.*;
+import org.jgrapht.alg.interfaces.VertexColoringAlgorithm.*;
 
 public class ChordalityNiceDecomposition<V>
     extends
     NiceDecompositionBuilder<V>
 {
+    
+    Graph<V,Object> graph;
+    
+    public ChordalityNiceDecomposition(Graph<V,Object> graph)
+    {
+        super();
+        this.graph = graph;
+    }
+
 
     /**
      * Returns the successors of {@code vertex} in the order defined by {@code map}. More precisely,
