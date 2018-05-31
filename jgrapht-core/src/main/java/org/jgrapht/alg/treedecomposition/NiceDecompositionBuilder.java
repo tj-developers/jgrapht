@@ -6,6 +6,23 @@ import org.jgrapht.*;
 import org.jgrapht.alg.util.*;
 import org.jgrapht.graph.*;
 
+/**
+ * A builder for nice tree decompositions.
+ * A tree decomposition of a graph G is a tree T and a map b: V(T) -> Set<V(G)>, which satisfies the properties:
+ * - for every edge e in E(G), there is a node t in V(T) with e is a subset of b(v)
+ * - for all vertices v in V(G) the set {t in V(T) | v in b(t)} is non-empty and connected in T
+ * 
+ * A nice tree decomposition is a special tree decomposition, which satisfies the properties:
+ * - for root r in V(T) and leaf l in V(T): b(r)=b(t)=empty set
+ * - every non-leaf node t in V(T) is of one of the following three types:
+ *      - introduce node: t has exactly one child d and b(t) = b(d) union w for some w in V(G)
+ *      - forget node: t has exactly one child d and b(t) union w = b(d) for some w in V(G)\b(t)
+ *      - join node: t has exactly two child d_1, d_2 and b(t)=b(d_1)=b(d_2)
+ * 
+ * @author Ira Justus Fesefeldt (phoenixIra)
+ *
+ * @param <V> the vertices of G
+ */
 public class NiceDecompositionBuilder<V>
 {
     
