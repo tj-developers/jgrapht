@@ -5,6 +5,15 @@ import java.util.*;
 import org.jgrapht.*;
 import org.jgrapht.alg.cycle.*;
 
+/**
+ * A builder for a nice decomposition for chordal graphs. 
+ * See {@link NiceDecompositionBuilder) for an explanation of nice decomposition.
+ * 
+ * @author Ira Justus Fesefeldt (PhoenixIra)
+ *
+ * @param <V> the vertex type of the graph
+ * @param <E> the edge type of the graph
+ */
 public class ChordalityNiceDecomposition<V,E>
     extends
     NiceDecompositionBuilder<V>
