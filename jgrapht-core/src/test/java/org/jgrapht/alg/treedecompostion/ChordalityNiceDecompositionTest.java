@@ -107,8 +107,6 @@ public class ChordalityNiceDecompositionTest
         {
             Graph<Integer,DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
             ChordalityNiceDecomposition<Integer, DefaultEdge> decompBuild = ChordalityNiceDecomposition.create(graph);
-            System.out.println(graph);
-            System.out.println(decompBuild);
             NiceDecompositionUtil.testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionUtil.testNiceDecomposition(decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot());
         }

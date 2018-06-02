@@ -142,8 +142,9 @@ public class NiceDecompositionBuilder<V>
      */
     public void leafClosure()
     {
+        Set<Integer> vertices = new HashSet<Integer>(decomposition.vertexSet());
         //make leave nodes
-        for(Integer leaf : decompositionMap.keySet()) {
+        for(Integer leaf : vertices) {
             //leaf is not a leaf
             if(Graphs.vertexHasSuccessors(decomposition,leaf))
                 continue;

@@ -46,7 +46,6 @@ public class ChordalityNiceDecomposition<V,E>
         this.graph = graph;
         this.perfectOrder = perfectOrder;
         vertexInOrder = getVertexInOrder();
-        System.out.println(perfectOrder);
         computeNiceDecomposition();
     }
     
@@ -59,41 +58,37 @@ public class ChordalityNiceDecomposition<V,E>
 
         // init
         Map<V, Integer> introduceMap = new HashMap<V, Integer>(graph.vertexSet().size());
-        V vertex = null;
         Integer decompVertex = getRoot();
 
         // iterate from last to first
-        for (int i = perfectOrder.size() - 1; i >= 0; i--) {
-            vertex = perfectOrder.get(i);
-            Set<V> successors = getSuccessors(vertex);
+        for (V vertex : perfectOrder) {
+            Set<V> predecessors = getPredecessors(vertexInOrder,vertex);
             // calculate nearest successors according to order
             V lastVertex = null;
-            for (V successor : successors) {
+            for (V predecessor : predecessors) {
                 if (lastVertex == null)
-                    lastVertex = successor;
-                if (vertexInOrder.get(successor) < vertexInOrder.get(lastVertex))
-                    lastVertex = successor;
+                    lastVertex = predecessor;
+                if (vertexInOrder.get(predecessor) > vertexInOrder.get(lastVertex))
+                    lastVertex = predecessor;
             }
 
             // create a join node for the nearest successor
-            Integer oldDecompVertex = -1;
             if (lastVertex != null)
-                oldDecompVertex = introduceMap.get(lastVertex);
+                decompVertex = introduceMap.get(lastVertex);
 
             // not a leaf node, thus create join node
             if (Graphs.vertexHasSuccessors(getDecomposition(), decompVertex)) {
                 // found some intersection!
                 if (lastVertex != null)
-                    decompVertex = addJoin(oldDecompVertex).getFirst();
-
-                // only root is possible (i.e. it is unconnected)
-                if (lastVertex == null)
-                    decompVertex =
-                        addJoin(getRoot()).getFirst();
+                    decompVertex = addJoin(decompVertex).getFirst();
+                // only root is possible 
+                //(should never happen, since if lastVertex == null then decompVertex is a leaf)
+                else 
+                    decompVertex = addJoin(getRoot()).getFirst();
             }
 
             // calculate nodes of nearest successor, which needs to be forgotten.
-            Set<V> clique = new HashSet<V>(successors);
+            Set<V> clique = new HashSet<V>(predecessors);
             clique.add(vertex);
             Set<V> toForget = new HashSet<V>(getMap().get(decompVertex));
             toForget.removeAll(clique);
@@ -127,27 +122,27 @@ public class ChordalityNiceDecomposition<V,E>
             vertexInOrder.put(vertex, i++);
         }
         return vertexInOrder;
-}
+    }
 
     /**
-     * Returns the successors of {@code vertex} in the order defined by {@code map}. More precisely,
-     * returns those of {@code vertex}, whose mapped index in {@code map} is greater then the index of {@code vertex}.
+     * Returns the predecessors of {@code vertex} in the order defined by {@code map}. More precisely,
+     * returns those of {@code vertex}, whose mapped index in {@code map} is less then the index of {@code vertex}.
      *
-     * @param vertexInOrder defines the mapping of vertices in {@code graph} to their indices in order.
-     * @param vertex        the vertex whose successors in order are to be returned.
-     * @return the successors of {@code vertex} in order defines by {@code map}.
+     * @param map    defines the mapping of vertices in {@code graph} to their indices in order.
+     * @param vertex the vertex whose predecessors in order are to be returned.
+     * @return the predecessors of {@code vertex} in order defines by {@code map}.
      */
-    private Set<V> getSuccessors(V vertex) {
-        Set<V> successors = new HashSet<>();
-        Integer vertexPosition = vertexInOrder.get(vertex);
+    private Set<V> getPredecessors(Map<V, Integer> map, V vertex) {
+        Set<V> predecessors = new HashSet<>();
+        Integer vertexPosition = map.get(vertex);
         Set<E> edges = graph.edgesOf(vertex);
         for (E edge : edges) {
             V oppositeVertex = Graphs.getOppositeVertex(graph, edge, vertex);
-            Integer destPosition = vertexInOrder.get(oppositeVertex);
-            if (destPosition > vertexPosition) {
-                successors.add(oppositeVertex);
+            Integer destPosition = map.get(oppositeVertex);
+            if (destPosition < vertexPosition) {
+                predecessors.add(oppositeVertex);
             }
         }
-        return successors;
+        return predecessors;
     }
 }
