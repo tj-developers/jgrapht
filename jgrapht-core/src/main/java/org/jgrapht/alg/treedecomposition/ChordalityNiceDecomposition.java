@@ -46,6 +46,7 @@ public class ChordalityNiceDecomposition<V,E>
         this.graph = graph;
         this.perfectOrder = perfectOrder;
         vertexInOrder = getVertexInOrder();
+        System.out.println(perfectOrder);
         computeNiceDecomposition();
     }
     
