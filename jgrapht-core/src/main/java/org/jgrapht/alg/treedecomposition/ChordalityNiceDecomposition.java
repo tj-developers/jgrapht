@@ -6,7 +6,7 @@ import org.jgrapht.*;
 import org.jgrapht.alg.cycle.*;
 
 /**
- * A builder for a nice decomposition for chordal graphs. See {@link NiceDecompositionBuilder) for
+ * A builder for a nice decomposition for chordal graphs. See {@link NiceDecompositionBuilder} for
  * an explanation of nice decomposition.
  * 
  * @author Ira Justus Fesefeldt (PhoenixIra)
@@ -27,12 +27,13 @@ public class ChordalityNiceDecomposition<V, E>
     // another representation of the perfect eliminiation order of graph
     Map<V, Integer> vertexInOrder;
 
-    /**
+    /**     
      * Factory method for the nice decomposition builder of chordal graphs. Returns null, if the
      * graph is not chordal.
      * 
-     * 
-     * @param graph
+     * @param <V> the vertex type of graph
+     * @param <E> the edge type of graph
+     * @param graph the chordal graph for which a decomposition should be created
      * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
     public static <V, E> ChordalityNiceDecomposition<V, E> create(Graph<V, E> graph)

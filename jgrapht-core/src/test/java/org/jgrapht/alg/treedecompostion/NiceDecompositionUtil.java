@@ -86,7 +86,7 @@ public class NiceDecompositionUtil
             {
                 if(map.get(v).contains(oldGraph.getEdgeSource(e)) && map.get(v).contains(oldGraph.getEdgeTarget(e))) {
                     hasVertex = true;
-                    continue; 
+                    break; 
                 }
             }
             assertTrue("Edge "+e+" is not found"
