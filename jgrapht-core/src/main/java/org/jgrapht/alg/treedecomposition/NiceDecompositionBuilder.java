@@ -5,18 +5,18 @@ import java.util.*;
 import org.jgrapht.*;
 import org.jgrapht.alg.util.*;
 import org.jgrapht.graph.*;
+
 /**
- * A builder for nice tree decompositions.
- * A tree decomposition of a graph G is a tree T and a map b: V(T) to Set of V(G), which satisfies the properties:
- * - for every edge e in E(G), there is a node t in V(T) with e is a subset of b(v)
- * - for all vertices v in V(G) the set {t in V(T) | v in b(t)} is non-empty and connected in T
+ * A builder for nice tree decompositions. A tree decomposition of a graph G is a tree T and a map
+ * b: V(T) to Set of V(G), which satisfies the properties: - for every edge e in E(G), there is a
+ * node t in V(T) with e is a subset of b(v) - for all vertices v in V(G) the set {t in V(T) | v in
+ * b(t)} is non-empty and connected in T
  * 
- * A nice tree decomposition is a special tree decomposition, which satisfies the properties:
- * - for root r in V(T) and leaf l in V(T): b(r)=b(t)=empty set
- * - every non-leaf node t in V(T) is of one of the following three types:
- *      - introduce node: t has exactly one child d and b(t) = b(d) union w for some w in V(G)
- *      - forget node: t has exactly one child d and b(t) union w = b(d) for some w in V(G)\b(t)
- *      - join node: t has exactly two child d_1, d_2 and b(t)=b(d_1)=b(d_2)
+ * A nice tree decomposition is a special tree decomposition, which satisfies the properties: - for
+ * root r in V(T) and leaf l in V(T): b(r)=b(t)=empty set - every non-leaf node t in V(T) is of one
+ * of the following three types: - introduce node: t has exactly one child d and b(t) = b(d) union w
+ * for some w in V(G) - forget node: t has exactly one child d and b(t) union w = b(d) for some w in
+ * V(G)\b(t) - join node: t has exactly two child d_1, d_2 and b(t)=b(d_1)=b(d_2)
  * 
  * @author Ira Justus Fesefeldt (PhoenixIra)
  *
@@ -24,19 +24,19 @@ import org.jgrapht.graph.*;
  */
 public class NiceDecompositionBuilder<V>
 {
-    
+
     // resulting forest of the decomposition
     private Graph<Integer, DefaultEdge> decomposition;
-    
+
     // map from decomposition nodes to the interval sets
-    private Map<Integer,Set<V>> decompositionMap;
-    
+    private Map<Integer, Set<V>> decompositionMap;
+
     // the root of the tree
     private Integer root;
-    
-    //next integer for vertex generation
+
+    // next integer for vertex generation
     private Integer nextInteger;
-    
+
     /**
      * constructor for all methods used in the abstract method
      */
@@ -45,16 +45,17 @@ public class NiceDecompositionBuilder<V>
         // creating objects
         decomposition = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
         decompositionMap = new HashMap<Integer, Set<V>>();
-        
+
         // create root
         root = 0;
         nextInteger = 1;
         decompositionMap.put(root, new HashSet<V>());
         decomposition.addVertex(root);
     }
-    
+
     /**
      * getter for the next free Integer
+     * 
      * @return unused integer
      */
     private Integer getNextInteger()
@@ -64,39 +65,37 @@ public class NiceDecompositionBuilder<V>
 
     /**
      * Method for adding a new join node
+     * 
      * @param toJoin which nodes should get a join node
-     * @return the new children of the join node, 
-     *         first element has no children, 
-     *         second element has the children of toJoin
+     * @return the new children of the join node, first element has no children, second element has
+     *         the children of toJoin
      */
-    public Pair<Integer,Integer> addJoin(Integer toJoin)
+    public Pair<Integer, Integer> addJoin(Integer toJoin)
     {
         Set<V> vertexSet = null;
-        
-        // new 
+
+        // new
         Integer vertexChildLeft = getNextInteger();
         decomposition.addVertex(vertexChildLeft);
         vertexSet = new HashSet<V>(decompositionMap.get(toJoin));
         decompositionMap.put(vertexChildLeft, vertexSet);
-        
+
         // new current root
         Integer vertexChildRight = getNextInteger();
         decomposition.addVertex(vertexChildRight);
         vertexSet = new HashSet<V>(decompositionMap.get(toJoin));
         decompositionMap.put(vertexChildRight, vertexSet);
-        
+
         // redirect all edges to new parent (should be just one!)
-        for(Integer successor : Graphs.successorListOf(decomposition, toJoin))
-        {
-            decomposition.removeEdge(toJoin,successor);
-            decomposition.addEdge(vertexChildRight,successor);
+        for (Integer successor : Graphs.successorListOf(decomposition, toJoin)) {
+            decomposition.removeEdge(toJoin, successor);
+            decomposition.addEdge(vertexChildRight, successor);
         }
-        //make children of parent vertex
+        // make children of parent vertex
         decomposition.addEdge(toJoin, vertexChildLeft);
         decomposition.addEdge(toJoin, vertexChildRight);
-        
 
-        return new Pair<Integer,Integer>(vertexChildLeft,vertexChildRight);
+        return new Pair<Integer, Integer>(vertexChildLeft, vertexChildRight);
     }
 
     /**
@@ -136,29 +135,28 @@ public class NiceDecompositionBuilder<V>
 
         return nextVertex;
     }
-    
+
     /**
      * Adds to all current leaves in the decomposition forget nodes until only empty sets are leaves
      */
     public void leafClosure()
     {
         Set<Integer> vertices = new HashSet<Integer>(decomposition.vertexSet());
-        //make leave nodes
-        for(Integer leaf : vertices) {
-            //leaf is not a leaf
-            if(Graphs.vertexHasSuccessors(decomposition,leaf))
+        // make leave nodes
+        for (Integer leaf : vertices) {
+            // leaf is not a leaf
+            if (Graphs.vertexHasSuccessors(decomposition, leaf))
                 continue;
-            
-            //otherwise add forget until empty set
+
+            // otherwise add forget until empty set
             Set<V> vertexSet = decompositionMap.get(leaf);
             Integer current = leaf;
-            for(V forget : vertexSet) {
+            for (V forget : vertexSet) {
                 current = addForget(forget, current);
             }
         }
     }
-    
-    
+
     /**
      * getter for the decomposition as an directed graph
      * 
@@ -189,7 +187,7 @@ public class NiceDecompositionBuilder<V>
     {
         return root;
     }
-    
+
     @Override
     public String toString()
     {
