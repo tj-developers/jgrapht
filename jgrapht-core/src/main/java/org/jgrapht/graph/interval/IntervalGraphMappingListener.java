@@ -4,6 +4,17 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import org.jgrapht.event.GraphListener;
 import org.jgrapht.event.GraphVertexChangeEvent;
 
+/**
+ * Implementation of an interval graph mapping listener. IntervalGraphMapping needs this class to provide a live mmaping.
+ *
+ * @param <V> the vertex type with a corresponding interval
+ * @param <E> the edge type
+ * @param <VertexType> the underlying vertex type
+ * @param <T> The underlying type for intervals
+ *
+ * @author Christoph Grüne (christophgruene)
+ * @since May 30, 2018
+ */
 public class IntervalGraphMappingListener<V extends IntervalVertexInterface<VertexType, T>, E, VertexType, T extends Comparable<T>> implements GraphListener<V, E> {
 
     private IntervalGraphMapping<V, E, VertexType, T> intervalGraphMapping;

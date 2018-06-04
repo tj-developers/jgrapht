@@ -12,11 +12,12 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
- * Implementation of an interval graph mapping . An interval graph is an intersection graph of intervals on a line. Because of
+ * Implementation of an interval graph mapping. An interval graph is an intersection graph of intervals on a line. Because of
  * that instances do not allow the adding or removing of edges. The edges are implicitly defined by the intervals.
  *
- * @param <V> the vertex type
+ * @param <V> the vertex type with a corresponding interval
  * @param <E> the edge type
+ * @param <VertexType> the underlying vertex type
  * @param <T> The underlying type for intervals
  *
  * @author Christoph Grüne (christophgruene)
