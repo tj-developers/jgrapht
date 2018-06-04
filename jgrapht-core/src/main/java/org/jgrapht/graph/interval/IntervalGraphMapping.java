@@ -1,13 +1,11 @@
 package org.jgrapht.graph.interval;
 
 import org.jgrapht.Graph;
-import org.jgrapht.GraphTests;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.alg.interval.IntervalGraphRecognizer;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.event.GraphListener;
 import org.jgrapht.graph.*;
-import org.jgrapht.util.TypeUtil;
 
 import java.io.Serializable;
 import java.util.*;
@@ -46,12 +44,12 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
     /**
      * stores state whether this mapping is valid
      */
-    private boolean isValid;
+    private boolean mappingValid;
 
     /**
      * stores state whether this mapping is live (that is, is a ListenableGraph used)
      */
-    private boolean liveMapping;
+    private boolean mappingLive;
 
     /**
      * Basic Constructor for a non-live mapping to an interval graph. All methods are passed through to the underlying interval graph.
@@ -62,11 +60,10 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         this.graph = graph;
         this.intervalStructure = new IntervalTreeStructure<>();
         this.intervalMap = new HashMap<>();
-        this.graphListener = new IntervalGraphMappingListener<>(this);
         // as we know that a this is a correctly initialized mapping, we can set this mapping to valid
-        this.isValid = false;
+        this.mappingValid = false;
         // as we know that no ListenableGraph is used, we set the mapping non-live
-        this.liveMapping = false;
+        this.mappingLive = false;
     }
 
     /**
@@ -77,8 +74,10 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      */
     private IntervalGraphMapping(ListenableGraph<V, E> graph) {
         this((Graph<V, E>) graph);
+        // add the basic IntervalGraphListener to the ListenableGraph such that we have a live mapping
+        graph.addGraphListener(new IntervalGraphMappingListener<>(this));
         // as we know that a ListenableGraph is used, we set the mapping live
-        this.liveMapping = true;
+        this.mappingLive = true;
     }
 
     /**
@@ -241,14 +240,23 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      * @return true, if mapping is valid; false, otherwise
      */
     public boolean isMappingValid() {
-        return isValid;
+        return mappingValid;
+    }
+
+    /**
+     * returns whether the mapping is valid
+     *
+     * @return true, if mapping is valid; false, otherwise
+     */
+    public boolean isMappingLive() {
+        return mappingLive;
     }
 
     /**
      * sets the mapping to invalid
      */
     void setMappingInvalid() {
-        this.isValid = false;
+        this.mappingValid = false;
     }
 
     /**
@@ -256,8 +264,10 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      *
      * @param v the vertex to add
      */
-    void addVertex(V v) {
-        graph.addVertex(v);
+    public void addVertex(V v) {
+        if(!graph.containsVertex(v)) {
+            graph.addVertex(v);
+        }
 
         intervalStructure.add(v.getInterval());
         List<Interval<T>> intervalList = intervalStructure.overlapsWith(v.getInterval());
@@ -275,8 +285,10 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      *
      * @param v the vertex to remove
      */
-    void removeVertex(V v) {
-        graph.removeVertex(v);
+    public void removeVertex(V v) {
+        if(graph.containsVertex(v)) {
+            graph.removeVertex(v);
+        }
 
         intervalStructure.remove(v.getInterval());
         intervalMap.remove(v.getInterval());
