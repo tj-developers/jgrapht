@@ -1,21 +1,17 @@
 package org.jgrapht.graph.interval;
 
 import org.jgrapht.Graph;
-import org.jgrapht.GraphType;
-import org.jgrapht.Graphs;
+import org.jgrapht.GraphTests;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.alg.interval.IntervalGraphRecognizer;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.event.GraphListener;
 import org.jgrapht.graph.*;
-import org.jgrapht.graph.specifics.UndirectedEdgeContainer;
 import org.jgrapht.util.TypeUtil;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Supplier;
-
-import static org.jgrapht.graph.interval.IntervalVertex.*;
 
 /**
  * Implementation of an interval graph mapping . An interval graph is an intersection graph of intervals on a line. Because of
@@ -47,17 +43,46 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      */
     private Map<Interval<T>, V> intervalMap;
 
-    private boolean isInvalid;
+    /**
+     * stores state whether this mapping is valid
+     */
+    private boolean isValid;
 
-    public IntervalGraphMapping(ListenableGraph<V, E> graph) {
+    /**
+     * stores state whether this mapping is live (that is, is a ListenableGraph used)
+     */
+    private boolean liveMapping;
+
+    /**
+     * Basic Constructor for a non-live mapping to an interval graph. All methods are passed through to the underlying interval graph.
+     *
+     * @param graph the graph to be mapped
+     */
+    private IntervalGraphMapping(Graph<V, E> graph) {
         this.graph = graph;
         this.intervalStructure = new IntervalTreeStructure<>();
         this.intervalMap = new HashMap<>();
         this.graphListener = new IntervalGraphMappingListener<>(this);
+        // as we know that a this is a correctly initialized mapping, we can set this mapping to valid
+        this.isValid = false;
+        // as we know that no ListenableGraph is used, we set the mapping non-live
+        this.liveMapping = false;
     }
 
     /**
-     * Constructs a new interval graph mapping with a new graph. The graph can either be directed or undirected, depending on the
+     * Basic constructor for a live mapping to an interval graph. All methods are passed through to the underlying interval graph.
+     * Every vertex and edge update will be considered.
+     *
+     * @param graph the graph to be mapped
+     */
+    private IntervalGraphMapping(ListenableGraph<V, E> graph) {
+        this((Graph<V, E>) graph);
+        // as we know that a ListenableGraph is used, we set the mapping live
+        this.liveMapping = true;
+    }
+
+    /**
+     * Constructs a new live interval graph mapping with a new graph. The graph can either be directed or undirected, depending on the
      * specified edge supplier.
      *
      * @param vertexSupplier the vertex supplier of the new graph
@@ -69,7 +94,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
     }
 
     /**
-     * Construct a new interval graph mapping with a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
+     * Construct a new live interval graph mapping with a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
      * specified edge supplier.
      *
      * @param vertices initial vertices
@@ -93,7 +118,6 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
             }
             current = next;
         }
-
 
         if(isSorted) {
             ArrayList<LinkedList<V>> edges = new ArrayList<>(vertices.size());
@@ -124,7 +148,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
     /**
      * This method can only be used if the graph is an interval graph! Therefore, it is private. We use it for asIntervalGraphMapping()
      *
-     * Construct a new interval graph mapping with a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
+     * Construct a new live interval graph mapping with a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
      * specified edge factory.
      *
      * @param vertices initial vertices
@@ -138,6 +162,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      */
     private IntervalGraphMapping(ArrayList<V> vertices, Map<Pair<V, V>, E> edges, Supplier<V> vertexSupplier, Supplier<E> edgeSupplier, boolean weighted) {
         this(new DefaultListenableGraph<>(new DefaultUndirectedGraph<>(vertexSupplier, edgeSupplier, weighted)));
+
         // add sorted vertices
         for(V v : vertices) {
             graph.addVertex(v);
@@ -149,6 +174,11 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         }
     }
 
+    /**
+     * Getter for the underlying graph.
+     *
+     * @return the underlying graph
+     */
     public Graph<V, E> getGraph() {
         return graph;
     }
@@ -163,27 +193,36 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      */
     public static <E, VertexType> IntervalGraphMapping<IntervalVertexInterface<VertexType, Integer>, E, VertexType, Integer> asIntervalGraphMapping(Graph<VertexType, E> graph) {
 
-        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecognizer<>(graph);
-
+        // easy case -> this is no interval graph
         if(graph.getType().isDirected() || graph.getType().isAllowingMultipleEdges() || graph.getType().isAllowingSelfLoops()) {
             return null;
         }
+
+        // initialize IntervalGraphRecognizer
+        IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecognizer<>(graph);
+
+        // execute IntervalGraphRecognizer
         if(!intervalGraphRecognizer.isIntervalGraph()) {
             return null;
         }
 
+        // get necessary data structures from IntervalGraphRecognizer
         ArrayList<Interval<Integer>> sortedIntervalList = intervalGraphRecognizer.getIntervalsSortedByStartingPoint();
         Map<Interval<Integer>, VertexType> intervalVertexMap = intervalGraphRecognizer.getIntervalToVertexMap();
         Map<VertexType, IntervalVertexInterface<VertexType, Integer>> vertexIntervalMap = intervalGraphRecognizer.getVertexToIntervalMap();
 
+        //initialize ArrayList for vertices for quick iteration
         ArrayList<IntervalVertexInterface<VertexType, Integer>> vertices = new ArrayList<>(sortedIntervalList.size());
 
+        // add vertices to the vertex list
         for(int i = 0; i < sortedIntervalList.size(); ++i) {
             vertices.add(i, vertexIntervalMap.get(intervalVertexMap.get(sortedIntervalList.get(i))));
         }
 
+        // initialze a map from vertex pairs to all edges
         Map<Pair<IntervalVertexInterface<VertexType, Integer>, IntervalVertexInterface<VertexType, Integer>>, E> edges = new LinkedHashMap<>();
 
+        // add the edges to the map
         for(IntervalVertexInterface<VertexType, Integer> vertex : vertices) {
             for (E edge : graph.outgoingEdgesOf(vertex.getVertex())) {
                 if (!vertex.getVertex().equals(graph.getEdgeTarget(edge))) {
@@ -196,52 +235,27 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         return new IntervalGraphMapping<>(vertices, edges, () -> null, () -> graph.getEdgeSupplier().get(), graph.getType().isWeighted());
     }
 
-    public boolean isMappingInvalid() {
-        return isInvalid;
+    /**
+     * returns whether the mapping is valid
+     *
+     * @return true, if mapping is valid; false, otherwise
+     */
+    public boolean isMappingValid() {
+        return isValid;
     }
-
-    void  setMappingInvalid() {
-        this.isInvalid = true;
-    }
-
 
     /**
-     * Returns a shallow copy of this graph instance. Neither edges nor vertices are cloned.
-     *
-     * @return a shallow copy of this graph.
-     *
-     * @throws RuntimeException in case the clone is not supported
-     *
-     * @see java.lang.Object#clone()
+     * sets the mapping to invalid
      */
-    @Override
-    public Object clone() {
-
-        //TODO
-        /*
-        try {
-            IntervalGraphMapping<V, E, VertexType, T> newGraphMapping = TypeUtil.uncheckedCast(super.clone());
-
-            newGraph.edgeSupplier = this.edgeSupplier;
-            newGraph.unmodifiableVertexSet = null;
-
-            // NOTE: it's important for this to happen in an object
-            // method so that the new inner class instance gets associated with
-            // the right outer class instance
-            newGraph.specifics = newGraph.createSpecifics();
-            newGraph.intrusiveEdgesSpecifics =
-                    newGraph.createIntrusiveEdgesSpecifics(this.weighted);
-
-            Graphs.addGraph(newGraph, this);
-
-            return newGraph;
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
-        }*/
-        return null;
+    void setMappingInvalid() {
+        this.isValid = false;
     }
 
+    /**
+     * adds a vertex to all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
+     *
+     * @param v the vertex to add
+     */
     void addVertex(V v) {
         graph.addVertex(v);
 
@@ -256,6 +270,11 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         addIntervalEdges(v, vertexList);
     }
 
+    /**
+     * removes a vertex from all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
+     *
+     * @param v the vertex to remove
+     */
     void removeVertex(V v) {
         graph.removeVertex(v);
 
