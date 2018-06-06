@@ -72,11 +72,11 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
             color.put(v, alpha.getColors().get(v)); // assign a color to every vertex (for initialization)
         }
         k = alpha.getNumberColors(); // number of colors used
-        Stack<Integer> S_refine = getS_refine(alpha); // get an ascendingly sorted stack of all colors that are predefined by alpha
-        //S_refine.sort(Comparator.comparingInt(o -> o)); // TODO sort stack ascendingly (not necessary with this implementation because getS_refine() already returns a sorted stack) -> maybe it will be necessary
+        Deque<Integer> S_refine = getSortedStack(alpha); // get an ascendingly sorted stack of all colors that are predefined by alpha
+        //S_refine.sort(Comparator.comparingInt(o -> o)); // TODO sort stack ascendingly (not necessary with this implementation because getSortedStack() already returns a sorted stack) -> maybe it will be necessary
         LinkedList<Integer> Colors_adj = new LinkedList<>(); // list of all colors that have at least one vertex with cdeg >= 1
 
-        while(!S_refine.empty()) {
+        while(!S_refine.isEmpty()) {
             Integer r = S_refine.pop(); // analyze the next color
 
             //calculate number of neighbours of v of color r, and calculate maximum and minimum degree of all colors
@@ -159,7 +159,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param mincdeg the mapping from color to its minimum color degree
      * @param cdeg the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void calculateColorPartition(Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, Stack<Integer> S_refine, Integer k, LinkedList<Integer> Colors_adj, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
+    private void calculateColorPartition(Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, Deque<Integer> S_refine, Integer k, LinkedList<Integer> Colors_adj, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
         LinkedList<Integer> Colors_split = new LinkedList<>(); // subset of Colors_adj that will be split up into different color classes
         for(Integer c : Colors_adj) {
             if(mincdeg.get(c) < maxcdeg.get(c)) { // colors have to be refined as the vertices with that color do not have the same color degree
@@ -186,7 +186,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param mincdeg the mapping from color to its minimum color degree
      * @param cdeg the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void SplitUpColor(Integer s, Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, Stack<Integer> S_refine, Integer k, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
+    private void SplitUpColor(Integer s, Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, Deque<Integer> S_refine, Integer k, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
         Map<Integer, Integer> numcdeg = new HashMap<>(); // mapping from the color degree to the number of vertices with that color degree
         Map<Integer, Integer> f = new HashMap<>(); // mapping from color degrees that occur in S to newly introduced colors or to color s
         boolean instack; // helper variable that stores if a color is already in the stack S_refine
@@ -237,7 +237,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param instack contains whether color s is already in stack
      * @param b index with the maximum number of vertices with the corresponding color degree
      */
-    private void addColorsToS_refineAndCalculateF(Integer s, Integer maxcdeg_, Map<Integer, Integer> mincdeg, Stack<Integer> S_refine, Integer k, Map<Integer, Integer> numcdeg, Map<Integer, Integer> f, boolean instack, int b) {
+    private void addColorsToS_refineAndCalculateF(Integer s, Integer maxcdeg_, Map<Integer, Integer> mincdeg, Deque<Integer> S_refine, Integer k, Map<Integer, Integer> numcdeg, Map<Integer, Integer> f, boolean instack, int b) {
         for(int i = 0; i <= maxcdeg_; ++i) { // go through all indices (color degrees) of numcdeg
             if(numcdeg.get(i) >= 1) { // if there is a vertex with color degree i
                 if(i == mincdeg.get(s)) { // i is the minimum color degree of s
@@ -301,12 +301,15 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param alpha the surjective l-coloring
      * @return a canonically sorted stack of all colors of alpha
      */
-    private Stack<Integer> getS_refine(Coloring<V> alpha) {
-        Stack<Integer> S_refine = new Stack<>();
-        for(int i = alpha.getNumberColors(); i > 0; --i) {
-            S_refine.push(i);
+    private Deque<Integer> getSortedStack(Coloring<V> alpha) {
+        int numberColors = alpha.getNumberColors();
+        // We use an ArrayDeque since it is fast, can be initialized with the correct size
+        // and because Stack is kind of deprecated
+        Deque<Integer> stack = new ArrayDeque<>(numberColors);
+        for(int i = numberColors; i > 0; --i) {
+            stack.push(i);
         }
-        return S_refine;
+        return stack;
     }
 
 }
