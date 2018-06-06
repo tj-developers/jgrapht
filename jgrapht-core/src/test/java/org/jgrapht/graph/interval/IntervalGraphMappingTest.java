@@ -5,6 +5,7 @@ import org.jgrapht.util.SupplierUtil;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 

@@ -31,8 +31,6 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
 
     private Graph<V, E> graph;
 
-    private GraphListener<V, E> graphListener;
-
     /**
      * <code>intervalStructure</code> maintains all intervals in order to get intersecting intervals efficiently.
      */
@@ -134,7 +132,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
 
             // add all calculated edges and all vertices to the graph
             for(int i = 0; i < vertices.size(); ++i) {
-                graph.addVertex(vertices.get(i));
+                addVertexToDataStructures(vertices.get(i));
                 addIntervalEdges(vertices.get(i), edges.get(i));
             }
 
@@ -165,7 +163,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
 
         // add sorted vertices
         for(V v : vertices) {
-            graph.addVertex(v);
+            addVertexToDataStructures(v);
         }
 
         // add all edges
@@ -232,7 +230,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         }
 
         // return new IntervalGraphMapping with an invalid vertex supplier as adding of general vertices is not allowed because we need for every vertex the corresponding interval.
-        return new IntervalGraphMapping<>(vertices, edges, () -> null, () -> graph.getEdgeSupplier().get(), graph.getType().isWeighted());
+        return new IntervalGraphMapping<>(vertices, edges, null, () -> graph.getEdgeSupplier().get(), graph.getType().isWeighted());
     }
 
     /**
@@ -264,35 +262,49 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      * adds a vertex to all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
      *
      * @param v the vertex to add
+     *
+     * @return <tt>true</tt> if this graph did not already contain the specified edge.
+     *
+     * @throws NullPointerException if any of the specified vertices is <code>null</code>.
      */
-    public void addVertex(V v) {
-        if(!graph.containsVertex(v)) {
+    public boolean addVertex(V v) {
+        if(v == null) {
+            throw new NullPointerException();
+        } else if(!graph.containsVertex(v)) {
             graph.addVertex(v);
+
+
+            intervalStructure.add(v.getInterval());
+            intervalMap.put(v.getInterval(), v);
+            List<Interval<T>> intervalList = intervalStructure.overlapsWith(v.getInterval());
+            List<V> vertexList = new LinkedList<>();
+
+            for (Interval<T> interval : intervalList) {
+                vertexList.add(intervalMap.get(interval));
+            }
+
+            addIntervalEdges(v, vertexList);
+            return true;
         }
-
-        intervalStructure.add(v.getInterval());
-        List<Interval<T>> intervalList = intervalStructure.overlapsWith(v.getInterval());
-        List<V> vertexList = new LinkedList<>();
-
-        for(Interval<T> interval: intervalList) {
-            vertexList.add(intervalMap.get(interval));
-        }
-
-        addIntervalEdges(v, vertexList);
+        return false;
     }
 
     /**
      * removes a vertex from all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
      *
      * @param v the vertex to remove
+     *
+     * @return <code>true</code> if the graph contained the specified vertex; <code>false</code> otherwise.
      */
-    public void removeVertex(V v) {
+    public boolean removeVertex(V v) {
         if(graph.containsVertex(v)) {
             graph.removeVertex(v);
-        }
 
-        intervalStructure.remove(v.getInterval());
-        intervalMap.remove(v.getInterval());
+            intervalStructure.remove(v.getInterval());
+            intervalMap.remove(v.getInterval());
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -307,5 +319,16 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
                 graph.addEdge(sourceVertex, targetVertex, e);
             }
         }
+    }
+
+    /**
+     * adds given vertex to all data structures without adding the interval edges to the graph
+     *
+     * @param v the vertex
+     */
+    private void addVertexToDataStructures(V v) {
+        intervalStructure.add(v.getInterval());
+        intervalMap.put(v.getInterval(), v);
+        graph.addVertex(v);
     }
 }
