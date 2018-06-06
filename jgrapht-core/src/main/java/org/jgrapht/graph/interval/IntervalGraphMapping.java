@@ -130,9 +130,13 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
                 }
             }
 
-            // add all calculated edges and all vertices to the graph
+            // add all vertices to the graph
             for(int i = 0; i < vertices.size(); ++i) {
                 addVertexToDataStructures(vertices.get(i));
+            }
+
+            // add all calculated edges to the graph
+            for(int i = 0; i < vertices.size(); ++i) {
                 addIntervalEdges(vertices.get(i), edges.get(i));
             }
 
@@ -315,8 +319,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
     private void addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
         for(V targetVertex: targetVertices) {
             if(!sourceVertex.equals(targetVertex)) {
-                E e = graph.getEdgeSupplier().get();
-                graph.addEdge(sourceVertex, targetVertex, e);
+                graph.addEdge(sourceVertex, targetVertex);
             }
         }
     }
