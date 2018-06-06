@@ -53,18 +53,23 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         Integer n = graph.vertexSet().size(); // the size of the graph
         Integer k; // number of colors used
 
-        Map<Integer, LinkedList<V>> C = new HashMap<>(); // mapping from all colors to their classes
-        Map<Integer, LinkedList<V>> A = new HashMap<>(); // mapping from color to their classes, whereby every vertex in the classes has cdeg(v) >= 1
+        // The following arrays have length of n+1 instead of n, since c ranges from 1 to n and not from 0 to n-1
+        // TODO: Adjust c and the array ranges
 
-        Map<Integer, Integer> maxcdeg = new HashMap<>(); // mapping from color to its maximum color degree
-        Map<Integer, Integer> mincdeg = new HashMap<>(); // mapping from color to its minimum color degree
+        // mapping from all colors to their classes
+        ArrayList<List<V>> C = new ArrayList<>(n + 1);
+        // mapping from color to their classes, whereby every vertex in the classes has cdeg(v) >= 1
+        ArrayList<List<V>> A = new ArrayList<>(n + 1);
+
+        int[] maxcdeg = new int[n + 1]; // mapping from color to its maximum color degree
+        int[] mincdeg = new int[n + 1]; // mapping from color to its minimum color degree
         Map<V, Integer> cdeg = new HashMap<>(); // mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
         Map<V, Integer> color = new HashMap<>(); // stores the coloring (that is returned in the end)
 
         for(int c = 1; c <= n; ++c) {
-            C.put(c, new LinkedList<>()); // init color classes
-            A.put(c, new LinkedList<>()); // init color classes with cdeg(v) >= 1
-            maxcdeg.put(c, 0); // init the maximum color degree mapping with 0
+            C.add(c, new LinkedList<>()); // init color classes
+            A.add(c, new LinkedList<>()); // init color classes with cdeg(v) >= 1
+            // the maximum color degree is already initialised with 0
         }
         for(V v : graph.vertexSet()) {
             C.get(alpha.getColors().get(v)).add(v); // init the color classes corresponding to the given coloring alpha
@@ -74,6 +79,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         k = alpha.getNumberColors(); // number of colors used
         Deque<Integer> S_refine = getSortedStack(alpha); // get an ascendingly sorted stack of all colors that are predefined by alpha
         //S_refine.sort(Comparator.comparingInt(o -> o)); // TODO sort stack ascendingly (not necessary with this implementation because getSortedStack() already returns a sorted stack) -> maybe it will be necessary
+        // TODO Argue if linked list should be replaced by ArrayList
         LinkedList<Integer> Colors_adj = new LinkedList<>(); // list of all colors that have at least one vertex with cdeg >= 1
 
         while(!S_refine.isEmpty()) {
@@ -90,8 +96,8 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
                 for(V v : A.get(c)) {
                     cdeg.put(v, 0);
                 }
-                maxcdeg.put(c, 0);
-                A.put(c, new LinkedList<>());
+                maxcdeg[c] = 0;
+                A.add(c, new LinkedList<>());
                 Colors_adj.remove(c);
             }
 
@@ -103,8 +109,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     /**
      * Helper method for getColoring().
      * calculates the color degree for every vertex and the maximum and minimum color degree for every color.
-     *
-     * @param r refining color (current color in the iteration)
+     *  @param r refining color (current color in the iteration)
      * @param color the color mapping
      * @param C the mapping from all colors to their classes
      * @param A the mapping from all colors to their classes with cdeg(v) >= 1
@@ -113,7 +118,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param mincdeg the mapping from color to its minimum color degree
      * @param cdeg the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void calculateColorDegree(Integer r, Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, LinkedList<Integer> Colors_adj, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
+    private void calculateColorDegree(Integer r, Map<V, Integer> color, ArrayList<List<V>> C, ArrayList<List<V>> A, LinkedList<Integer> Colors_adj, int[] maxcdeg, int[] mincdeg, Map<V, Integer> cdeg) {
         for(V v : C.get(r)) {
             Set<E> N_minus = graph.incomingEdgesOf(v); // get all incident edges to get all adjacent vertices
             for(E e : N_minus) { // go through all incident edges
@@ -125,20 +130,20 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
                 if(!Colors_adj.contains(color.get(w))) { // add vertex to Color_adj only if it is not already contained in Color_adj
                     Colors_adj.add(color.get(w));
                 }
-                if(cdeg.get(w) > maxcdeg.get(color.get(w))) { // update maxcdeg for color(w) if maximum color degree has increased
-                    maxcdeg.put(color.get(w), cdeg.get(w));
+                if(cdeg.get(w) > maxcdeg[color.get(w)]) { // update maxcdeg for color(w) if maximum color degree has increased
+                    maxcdeg[color.get(w)] = cdeg.get(w);
                 }
             }
         }
 
         for(Integer c : Colors_adj) { // go through all colors, which have at least one vertex with cdeg >= 1, to update mincdeg
             if(C.get(c).size() != A.get(c).size()) { // if there is a vertex with cdeg(v) = 0 < 1, set minimum color degree to 0
-                mincdeg.put(c, 0);
+                mincdeg[c] = 0;
             } else {
-                mincdeg.put(c, maxcdeg.get(c)); // set mincdeg(c) to maxcdeg before iterating over all vertices
+                mincdeg[c] = maxcdeg[c]; // set mincdeg(c) to maxcdeg before iterating over all vertices
                 for(V v : A.get(c)) { // update mincdeg by iterating over all vertices
-                    if (cdeg.get(v) < mincdeg.get(c)) { // if there is a vertex v with lower color degree, update
-                        mincdeg.put(c, cdeg.get(v));
+                    if (cdeg.get(v) < mincdeg[c]) { // if there is a vertex v with lower color degree, update
+                        mincdeg[c] = cdeg.get(v);
                     }
                 } // now mincdeg is correctly computed for color c
             }
@@ -148,8 +153,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     /**
      * Helper method for getColoring().
      * Partition the colors that do not have the same minimum and maximum color degree. That is, these colors are not completely refined.
-     *
-     * @param color the color mapping
+     *  @param color the color mapping
      * @param C the mapping from all colors to their classes
      * @param A the mapping from all colors to their classes with cdeg(v) >= 1
      * @param S_refine the stack containing all colors that have to be refined
@@ -159,10 +163,10 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param mincdeg the mapping from color to its minimum color degree
      * @param cdeg the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void calculateColorPartition(Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, Deque<Integer> S_refine, Integer k, LinkedList<Integer> Colors_adj, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
+    private void calculateColorPartition(Map<V, Integer> color, ArrayList<List<V>> C, ArrayList<List<V>> A, Deque<Integer> S_refine, Integer k, LinkedList<Integer> Colors_adj, int[] maxcdeg, int[] mincdeg, Map<V, Integer> cdeg) {
         LinkedList<Integer> Colors_split = new LinkedList<>(); // subset of Colors_adj that will be split up into different color classes
         for(Integer c : Colors_adj) {
-            if(mincdeg.get(c) < maxcdeg.get(c)) { // colors have to be refined as the vertices with that color do not have the same color degree
+            if(mincdeg[c] < maxcdeg[c]) { // colors have to be refined as the vertices with that color do not have the same color degree
                 Colors_split.add(c);
             }
         }
@@ -175,8 +179,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     /**
      * Helper method for getColoring().
      *
-     *
-     * @param s the color to split the color class for
+     *  @param s the color to split the color class for
      * @param color the color mapping
      * @param C the mapping from all colors to their classes
      * @param A the mapping from all colors to their classes with cdeg(v) >= 1
@@ -186,12 +189,12 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param mincdeg the mapping from color to its minimum color degree
      * @param cdeg the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void SplitUpColor(Integer s, Map<V, Integer> color, Map<Integer, LinkedList<V>> C, Map<Integer, LinkedList<V>> A, Deque<Integer> S_refine, Integer k, Map<Integer, Integer> maxcdeg, Map<Integer, Integer> mincdeg, Map<V, Integer> cdeg) {
+    private void SplitUpColor(Integer s, Map<V, Integer> color, ArrayList<List<V>> C, ArrayList<List<V>> A, Deque<Integer> S_refine, Integer k, int[] maxcdeg, int[] mincdeg, Map<V, Integer> cdeg) {
         Map<Integer, Integer> numcdeg = new HashMap<>(); // mapping from the color degree to the number of vertices with that color degree
         Map<Integer, Integer> f = new HashMap<>(); // mapping from color degrees that occur in S to newly introduced colors or to color s
         boolean instack; // helper variable that stores if a color is already in the stack S_refine
 
-        int maxcdeg_ = maxcdeg.get(s); // maxcdeg_ is the maximum color degree of color s (the color to split the color class for)
+        int maxcdeg_ = maxcdeg[s]; // maxcdeg_ is the maximum color degree of color s (the color to split the color class for)
 
         for(int i = 1; i <= maxcdeg_; ++i) { // initialize numcdeg
             numcdeg.put(i, 0);
@@ -226,8 +229,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     /**
      * Helper method for getColoring().
      * adds all colors to S_refine which have to be refined further and constructs the mapping f.
-     *
-     * @param s the current color
+     *  @param s the current color
      * @param maxcdeg_ maximum color degree of s
      * @param mincdeg the mapping from color to its minimum color degree
      * @param S_refine the stack S_refine that administrates all colors tobe refined
@@ -237,10 +239,10 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @param instack contains whether color s is already in stack
      * @param b index with the maximum number of vertices with the corresponding color degree
      */
-    private void addColorsToS_refineAndCalculateF(Integer s, Integer maxcdeg_, Map<Integer, Integer> mincdeg, Deque<Integer> S_refine, Integer k, Map<Integer, Integer> numcdeg, Map<Integer, Integer> f, boolean instack, int b) {
+    private void addColorsToS_refineAndCalculateF(Integer s, Integer maxcdeg_, int[] mincdeg, Deque<Integer> S_refine, Integer k, Map<Integer, Integer> numcdeg, Map<Integer, Integer> f, boolean instack, int b) {
         for(int i = 0; i <= maxcdeg_; ++i) { // go through all indices (color degrees) of numcdeg
             if(numcdeg.get(i) >= 1) { // if there is a vertex with color degree i
-                if(i == mincdeg.get(s)) { // i is the minimum color degree of s
+                if(i == mincdeg[s]) { // i is the minimum color degree of s
                     f.put(i, s); // colors with minimum color degree keep color s
                     if(!instack && b != i) { // push s on the stack if it is not in the stack and i is not the index with the maximum number of vertices with the corresponding color degree
                         S_refine.push(f.get(i));
