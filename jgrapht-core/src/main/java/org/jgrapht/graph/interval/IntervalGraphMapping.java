@@ -195,11 +195,6 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      */
     public static <E, VertexType> IntervalGraphMapping<IntervalVertexInterface<VertexType, Integer>, E, VertexType, Integer> asIntervalGraphMapping(Graph<VertexType, E> graph) {
 
-        // easy case -> this is no interval graph
-        if(graph.getType().isDirected() || graph.getType().isAllowingMultipleEdges() || graph.getType().isAllowingSelfLoops()) {
-            return null;
-        }
-
         // initialize IntervalGraphRecognizer
         IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecognizer<>(graph);
 
@@ -302,10 +297,20 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      */
     public boolean removeVertex(V v) {
         if(graph.containsVertex(v)) {
+            boolean mappingCurrentlyValid = true;
+            if(!mappingValid) {
+                mappingCurrentlyValid = false;
+            }
+
             graph.removeVertex(v);
 
             intervalStructure.remove(v.getInterval());
             intervalMap.remove(v.getInterval());
+
+            if(mappingCurrentlyValid) {
+                mappingValid = true;
+            }
+
             return true;
         }
         return false;
@@ -317,10 +322,17 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      * @param targetVertices target vertices of edges
      */
     private void addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
+        boolean mappingCurrentlyValid = true;
+        if(!mappingValid) {
+            mappingCurrentlyValid = false;
+        }
         for(V targetVertex: targetVertices) {
             if(!sourceVertex.equals(targetVertex)) {
                 graph.addEdge(sourceVertex, targetVertex);
             }
+        }
+        if(mappingCurrentlyValid) {
+            mappingValid = true;
         }
     }
 
