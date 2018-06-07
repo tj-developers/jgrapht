@@ -60,7 +60,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         this.intervalStructure = new IntervalTreeStructure<>();
         this.intervalMap = new HashMap<>();
         // as we know that a this is a correctly initialized mapping, we can set this mapping to valid
-        this.mappingValid = false;
+        this.mappingValid = true;
         // as we know that no ListenableGraph is used, we set the mapping non-live
         this.mappingLive = false;
     }

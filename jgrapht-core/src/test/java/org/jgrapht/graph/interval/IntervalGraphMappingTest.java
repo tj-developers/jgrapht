@@ -1,11 +1,12 @@
 package org.jgrapht.graph.interval;
 
+import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.util.SupplierUtil;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -49,9 +50,43 @@ public class IntervalGraphMappingTest {
                 vertices, null, SupplierUtil.createDefaultEdgeSupplier(), false
         );
 
-        intervalGraphMapping.removeVertex(vertex1);
+        intervalGraphMapping.removeVertex(vertex2);
         assertFalse(intervalGraphMapping.getGraph().vertexSet().contains(vertex2));
         assertTrue(intervalGraphMapping.getGraph().vertexSet().contains(vertex1));
         assertEquals(1, intervalGraphMapping.getGraph().vertexSet().size());
+    }
+
+    @Test
+    public void testAsIntervalGraphMapping() {
+        Graph<Integer, DefaultEdge> graph = new DefaultUndirectedGraph<>(DefaultEdge.class);
+
+        graph.addVertex(1);
+        graph.addVertex(2);
+
+        graph.addEdge(1, 2);
+
+        IntervalGraphMapping intervalGraphMapping = IntervalGraphMapping.asIntervalGraphMapping(graph);
+        assertEquals(2, intervalGraphMapping.getGraph().vertexSet().size());
+        assertEquals(1, intervalGraphMapping.getGraph().edgeSet().size());
+    }
+
+    @Test
+    public void testIsMappingValid() {
+        intervalGraphMapping = new IntervalGraphMapping<>(
+                null, SupplierUtil.createDefaultEdgeSupplier(), false
+        );
+
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        Interval<Integer> interval1 = new Interval<>(3, 7);
+        IntervalVertex<Integer, Integer> vertex1 = IntervalVertex.of(1, interval1);
+        intervalGraphMapping.addVertex(vertex1);
+
+        Interval<Integer> interval2 = new Interval<>(4, 309);
+        IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(2, interval2);
+        intervalGraphMapping.addVertex(vertex2);
+
+        assertTrue(intervalGraphMapping.isMappingValid());
+
     }
 }
