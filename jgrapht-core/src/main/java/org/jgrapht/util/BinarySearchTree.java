@@ -61,9 +61,12 @@ public interface BinarySearchTree<K, V> {
 
 
     /**
-     * Removes the specified key and its associated value from this tree
+     * Removes the specified key and its associated value from this tree. It returns true iff the key has been deleted successfully.
      *
-     * @param  key the key
+     * @param key the key
+     *
+     * @return true, if the key was contained in the tree; false, otherwise
+     *
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     boolean delete(K key);
