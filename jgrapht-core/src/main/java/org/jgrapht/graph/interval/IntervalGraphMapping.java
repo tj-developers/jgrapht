@@ -31,8 +31,6 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
 
     private Graph<V, E> graph;
 
-    private GraphListener<V, E> graphListener;
-
     /**
      * <code>intervalStructure</code> maintains all intervals in order to get intersecting intervals efficiently.
      */
@@ -62,7 +60,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         this.intervalStructure = new IntervalTreeStructure<>();
         this.intervalMap = new HashMap<>();
         // as we know that a this is a correctly initialized mapping, we can set this mapping to valid
-        this.mappingValid = false;
+        this.mappingValid = true;
         // as we know that no ListenableGraph is used, we set the mapping non-live
         this.mappingLive = false;
     }
@@ -96,6 +94,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
     /**
      * Construct a new live interval graph mapping with a new graph with given <code>vertices</code>. The graph can either be directed or undirected, depending on the
      * specified edge supplier.
+     * Runs in linear time if vertex list is sorted by the starting point and the end point of the interval, otherwise naive insertion is performed
      *
      * @param vertices initial vertices
      * @param vertexSupplier the vertex supplier of the new graph.
@@ -121,6 +120,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
 
         if(isSorted) {
             ArrayList<LinkedList<V>> edges = new ArrayList<>(vertices.size());
+            ArrayList<Interval<T>> vertexIntervals = new ArrayList<>(vertices.size());
 
             // calculate all edges
             for(int i = 0; i < vertices.size(); ++i) {
@@ -132,9 +132,18 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
                 }
             }
 
-            // add all calculated edges and all vertices to the graph
+            // add all vertices to the graph
             for(int i = 0; i < vertices.size(); ++i) {
+                vertexIntervals.add(vertices.get(i).getInterval());
+                intervalMap.put(vertices.get(i).getInterval(), vertices.get(i));
                 graph.addVertex(vertices.get(i));
+            }
+
+            // build up the interval tree in linear time
+            this.intervalStructure = new IntervalTreeStructure<T>(vertexIntervals);
+
+            // add all calculated edges to the graph
+            for(int i = 0; i < vertices.size(); ++i) {
                 addIntervalEdges(vertices.get(i), edges.get(i));
             }
 
@@ -163,10 +172,16 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
     private IntervalGraphMapping(ArrayList<V> vertices, Map<Pair<V, V>, E> edges, Supplier<V> vertexSupplier, Supplier<E> edgeSupplier, boolean weighted) {
         this(new DefaultListenableGraph<>(new DefaultUndirectedGraph<>(vertexSupplier, edgeSupplier, weighted)));
 
+        ArrayList<Interval<T>> vertexIntervals = new ArrayList<>(vertices.size());
+
         // add sorted vertices
         for(V v : vertices) {
+            vertexIntervals.add(v.getInterval());
+            intervalMap.put(v.getInterval(), v);
             graph.addVertex(v);
         }
+
+        this.intervalStructure = new IntervalTreeStructure<>(vertexIntervals);
 
         // add all edges
         for(Pair<V, V> v : edges.keySet()) {
@@ -192,11 +207,6 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      * @return interval graph representation if one exists, otherwise null
      */
     public static <E, VertexType> IntervalGraphMapping<IntervalVertexInterface<VertexType, Integer>, E, VertexType, Integer> asIntervalGraphMapping(Graph<VertexType, E> graph) {
-
-        // easy case -> this is no interval graph
-        if(graph.getType().isDirected() || graph.getType().isAllowingMultipleEdges() || graph.getType().isAllowingSelfLoops()) {
-            return null;
-        }
 
         // initialize IntervalGraphRecognizer
         IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecognizer<>(graph);
@@ -232,7 +242,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
         }
 
         // return new IntervalGraphMapping with an invalid vertex supplier as adding of general vertices is not allowed because we need for every vertex the corresponding interval.
-        return new IntervalGraphMapping<>(vertices, edges, () -> null, () -> graph.getEdgeSupplier().get(), graph.getType().isWeighted());
+        return new IntervalGraphMapping<>(vertices, edges, null, () -> graph.getEdgeSupplier().get(), graph.getType().isWeighted());
     }
 
     /**
@@ -264,48 +274,81 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      * adds a vertex to all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
      *
      * @param v the vertex to add
+     *
+     * @return <tt>true</tt> if this graph did not already contain the specified edge.
+     *
+     * @throws NullPointerException if any of the specified vertices is <code>null</code>.
      */
-    public void addVertex(V v) {
-        if(!graph.containsVertex(v)) {
-            graph.addVertex(v);
+    public boolean addVertex(V v) {
+        if(v == null) {
+            throw new NullPointerException();
         }
+        graph.addVertex(v);
+        if(intervalStructure.add(v.getInterval())) {
+            intervalMap.put(v.getInterval(), v);
 
-        intervalStructure.add(v.getInterval());
-        List<Interval<T>> intervalList = intervalStructure.overlapsWith(v.getInterval());
-        List<V> vertexList = new LinkedList<>();
 
-        for(Interval<T> interval: intervalList) {
-            vertexList.add(intervalMap.get(interval));
+            List<Interval<T>> intervalList = intervalStructure.overlapsWith(v.getInterval());
+            List<V> vertexList = new LinkedList<>();
+
+            for (Interval<T> interval : intervalList) {
+                vertexList.add(intervalMap.get(interval));
+            }
+
+            addIntervalEdges(v, vertexList);
+            return true;
         }
-
-        addIntervalEdges(v, vertexList);
+        return false;
     }
 
     /**
      * removes a vertex from all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
      *
      * @param v the vertex to remove
+     *
+     * @return <code>true</code> if the graph contained the specified vertex; <code>false</code> otherwise.
      */
-    public void removeVertex(V v) {
-        if(graph.containsVertex(v)) {
-            graph.removeVertex(v);
+    public boolean removeVertex(V v) {
+        if(v == null) {
+            throw new NullPointerException();
         }
 
-        intervalStructure.remove(v.getInterval());
-        intervalMap.remove(v.getInterval());
+        boolean mappingCurrentlyValid = true;
+        if(!mappingValid) {
+            mappingCurrentlyValid = false;
+        }
+        graph.removeVertex(v);
+        if(mappingCurrentlyValid) {
+            mappingValid = true;
+        }
+        if(intervalStructure.remove(v.getInterval())) {
+            intervalMap.remove(v.getInterval());
+
+            return true;
+        }
+        return false;
     }
 
     /**
      * Adds edges between <code>sourceVertex</code> and every vertex from <code>vertices</code>.
+     * The mapping remains valid if it was valid before.
+     * That is, use this method only for adding correctly defined interval edges.
+     *
      * @param sourceVertex source vertex of all edges
      * @param targetVertices target vertices of edges
      */
     private void addIntervalEdges(V sourceVertex, Collection<V> targetVertices) {
+        boolean mappingCurrentlyValid = true;
+        if(!mappingValid) {
+            mappingCurrentlyValid = false;
+        }
         for(V targetVertex: targetVertices) {
             if(!sourceVertex.equals(targetVertex)) {
-                E e = graph.getEdgeSupplier().get();
-                graph.addEdge(sourceVertex, targetVertex, e);
+                graph.addEdge(sourceVertex, targetVertex);
             }
+        }
+        if(mappingCurrentlyValid) {
+            mappingValid = true;
         }
     }
 }

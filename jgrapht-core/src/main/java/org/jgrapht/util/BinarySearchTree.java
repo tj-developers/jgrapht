@@ -30,10 +30,6 @@ import java.util.NoSuchElementException;
  */
 public interface BinarySearchTree<K, V> {
 
-    /*
-     * Search Operations
-     */
-
     /**
      * Returns the value associated with the given key
      *
@@ -53,10 +49,6 @@ public interface BinarySearchTree<K, V> {
     boolean contains(K key);
 
 
-    /*
-     * Insertion Operations
-     */
-
     /**
      * Inserts the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
      * it overwrites the old value with the new.
@@ -68,17 +60,13 @@ public interface BinarySearchTree<K, V> {
     void insert(K key, V val);
 
 
-    /*
-     * Deletion Operations
-     */
-
     /**
      * Removes the specified key and its associated value from this tree
      *
      * @param  key the key
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    void delete(K key);
+    boolean delete(K key);
 
     /**
      * Removes the smallest key and associated value from the tree.
@@ -93,20 +81,12 @@ public interface BinarySearchTree<K, V> {
     void deleteMax();
 
 
-    /*
-     * Utility Operations
-     */
-
     /**
      * Returns the height of the BST.
      * @return the height of the BST (a tree with 1 node has height 0)
      */
     int height();
 
-
-    /*
-     * Special Search Operations
-     */
 
     /**
      * Returns the smallest key in the tree.
@@ -160,10 +140,6 @@ public interface BinarySearchTree<K, V> {
      */
     int rank(K key);
 
-
-    /*
-     * Range Search Operations
-     */
 
     /**
      * Returns all keys in the symbol table as an <code>Iterable</code>.

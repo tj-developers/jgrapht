@@ -49,16 +49,20 @@ public interface IntervalStructureInterface<T extends Comparable<T>> {
     List<Interval<T>> overlapsWithPoint(T point);
 
     /**
-     * adds an interval to the interval tree
+     * adds an interval to the interval tree. It returns true iff the key has been added successfully.
      *
      * @param interval the interval
+     *
+     * @return true, if the key was not contained in the tree; false, otherwise
      */
-    void add(Interval<T> interval);
+    boolean add(Interval<T> interval);
 
     /**
-     * removes an interval from the tree
+     * removes an interval from the tree. It returns true iff the key has been removed successfully.
      *
      * @param interval the interval
+     *
+     * @return true, if the key was contained in the tree; false, otherwise
      */
-    void remove(Interval<T> interval);
+    boolean remove(Interval<T> interval);
 }
