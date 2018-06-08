@@ -45,7 +45,9 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
     }
 
     /**
-     * Initializes a new instance of the class
+     * Initializes a new instance of the class.
+     * Runs in linear time if list is sorted, otherwise naive insertion is performed
+     *
      * @param intervals The set of contained intervals
      */
     public IntervalTreeStructure(ArrayList<Interval<T>> intervals) {
@@ -77,23 +79,37 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
     }
 
     /**
-     * adds an interval to the interval tree
+     * adds an interval to the interval tree. It returns true iff the key has been added successfully.
      *
      * @param interval the interval
+     *
+     * @return true, if the key was not contained in the tree; false, otherwise
      */
     @Override
-    public void add(Interval<T> interval) {
-        tree.insert(new IntervalTreeNodeKey<>(interval, getComparator()), new IntervalTreeNodeValue<>(interval));
+    public boolean add(Interval<T> interval) {
+        if(interval == null) {
+            throw new NullPointerException();
+        }
+        if(!tree.contains(new IntervalTreeNodeKey<>(interval, getComparator()))) {
+            tree.insert(new IntervalTreeNodeKey<>(interval, getComparator()), new IntervalTreeNodeValue<>(interval));
+            return true;
+        }
+        return false;
     }
 
     /**
-     * removes an interval from the tree
+     * removes an interval from the tree. It returns true iff the key has been removed successfully.
      *
      * @param interval the interval
+     *
+     * @return true, if the key was contained in the tree; false, otherwise
      */
     @Override
-    public void remove(Interval<T> interval) {
-        tree.delete(new IntervalTreeNodeKey<>(interval, getComparator()));
+    public boolean remove(Interval<T> interval) {
+        if(interval == null) {
+            throw new NullPointerException();
+        }
+        return tree.delete(new IntervalTreeNodeKey<>(interval, getComparator()));
     }
 
     /**

@@ -179,9 +179,9 @@ public class IntervalGraphMappingTest {
 
         intervalGraphMapping.addVertex(vertex1);
 
-        interval2 = new Interval<>(-90, 23);
-        vertex2 = IntervalVertex.of(2, interval2);
-        intervalGraphMapping.addVertex(vertex2);
+        Interval<Integer> interval3 = new Interval<>(-90, 23);
+        IntervalVertex<Integer, Integer> vertex3 = IntervalVertex.of(2, interval3);
+        intervalGraphMapping.addVertex(vertex3);
 
         assertTrue(intervalGraphMapping.isMappingValid());
     }

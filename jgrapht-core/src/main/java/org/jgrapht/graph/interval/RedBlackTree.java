@@ -193,18 +193,21 @@ class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>
     }
 
     /**
-     * Removes the specified key and its associated value from this tree
+     * Removes the specified key and its associated value from this tree. It returns true iff the key has been deleted successfully.
      *
      * @param key the key
+     *
+     * @return true, if the key was contained in the tree; false, otherwise
+     *
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     @Override
-    public void delete(K key) {
+    public boolean delete(K key) {
         if (key == null) {
             throw new IllegalArgumentException("Key cannot be null.");
         }
         if (!contains(key)) {
-            return;
+            return false;
         }
 
         if (!isRed(root.getLeftChild()) && !isRed(root.getRightChild())) {
@@ -215,6 +218,7 @@ class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>
         if (!isEmpty()) {
             root.setBlack();
         }
+        return true;
     }
 
     private boolean isEmpty() {
