@@ -1,6 +1,7 @@
 package org.jgrapht.graph.interval;
 
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.util.SupplierUtil;
@@ -39,7 +40,7 @@ public class IntervalGraphMappingTest {
         Interval<Integer> interval1 = new Interval<>(3, 7);
         IntervalVertex<Integer, Integer> vertex1 = IntervalVertex.of(1, interval1);
 
-        Interval<Integer> interval2 = new Interval<>(2, 49);
+        Interval<Integer> interval2 = new Interval<>(5, 49);
         IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(2, interval2);
 
         ArrayList<IntervalVertexInterface<Integer, Integer>> vertices = new ArrayList<>();
@@ -54,20 +55,37 @@ public class IntervalGraphMappingTest {
         assertFalse(intervalGraphMapping.getGraph().vertexSet().contains(vertex2));
         assertTrue(intervalGraphMapping.getGraph().vertexSet().contains(vertex1));
         assertEquals(1, intervalGraphMapping.getGraph().vertexSet().size());
+
+        intervalGraphMapping.removeVertex(vertex1);
+        assertFalse(intervalGraphMapping.getGraph().vertexSet().contains(vertex1));
+        assertFalse(intervalGraphMapping.getGraph().vertexSet().contains(vertex2));
+        assertEquals(0, intervalGraphMapping.getGraph().vertexSet().size());
     }
 
     @Test
-    public void testAsIntervalGraphMapping() {
-        Graph<Integer, DefaultEdge> graph = new DefaultUndirectedGraph<>(DefaultEdge.class);
+    public void testAsIntervalGraphMappingForUndirectedGraph() {
+        Graph<Integer, DefaultEdge> undirectedGraph = new DefaultUndirectedGraph<>(DefaultEdge.class);
 
-        graph.addVertex(1);
-        graph.addVertex(2);
+        undirectedGraph.addVertex(1);
+        undirectedGraph.addVertex(2);
+        undirectedGraph.addEdge(1, 2);
 
-        graph.addEdge(1, 2);
-
-        IntervalGraphMapping intervalGraphMapping = IntervalGraphMapping.asIntervalGraphMapping(graph);
+        IntervalGraphMapping intervalGraphMapping = IntervalGraphMapping.asIntervalGraphMapping(undirectedGraph);
         assertEquals(2, intervalGraphMapping.getGraph().vertexSet().size());
         assertEquals(1, intervalGraphMapping.getGraph().edgeSet().size());
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAsIntervalGraphMappingForDirectedGraph() {
+        Graph<Integer, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+        directedGraph.addVertex(1);
+        directedGraph.addVertex(2);
+        directedGraph.addEdge(1, 2);
+
+        intervalGraphMapping = IntervalGraphMapping.asIntervalGraphMapping(directedGraph);
+        assertNull(intervalGraphMapping);
     }
 
     @Test
@@ -88,5 +106,83 @@ public class IntervalGraphMappingTest {
 
         assertTrue(intervalGraphMapping.isMappingValid());
 
+        intervalGraphMapping.removeVertex(vertex1);
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        intervalGraphMapping.removeVertex(vertex2);
+        assertTrue(intervalGraphMapping.isMappingValid());
+    }
+
+    @Test
+    public void testIsMappingValidAfterRemovingEdges() {
+        intervalGraphMapping = new IntervalGraphMapping<>(
+                null, SupplierUtil.createDefaultEdgeSupplier(), false
+        );
+
+        Interval<Integer> interval1 = new Interval<>(-3, 43);
+        IntervalVertex<Integer, Integer> vertex1 = IntervalVertex.of(1, interval1);
+        intervalGraphMapping.addVertex(vertex1);
+
+        Interval<Integer> interval2 = new Interval<>(39, 44);
+        IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(2, interval2);
+        intervalGraphMapping.addVertex(vertex2);
+
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        DefaultEdge  edge1 = intervalGraphMapping.getGraph().getEdge(vertex1, vertex2);
+        intervalGraphMapping.getGraph().removeEdge(edge1);
+
+        assertFalse(intervalGraphMapping.isMappingValid());
+    }
+
+    @Test
+    public void testIsMapingValidAfterAddingEdges() {
+        intervalGraphMapping = new IntervalGraphMapping<>(
+                null, SupplierUtil.createDefaultEdgeSupplier(), false
+        );
+
+        Interval<Integer> interval1 = new Interval<>(-3, 43);
+        IntervalVertex<Integer, Integer> vertex1 = IntervalVertex.of(1, interval1);
+        intervalGraphMapping.addVertex(vertex1);
+
+        Interval<Integer> interval2 = new Interval<>(87, 89);
+        IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(2, interval2);
+        intervalGraphMapping.addVertex(vertex2);
+
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        intervalGraphMapping.getGraph().addEdge(vertex1, vertex2);
+        assertFalse(intervalGraphMapping.isMappingValid());
+    }
+
+    @Test
+    public void testIsMappingValidAfterRemovingOrAddingVertices() {
+        intervalGraphMapping = new IntervalGraphMapping<>(
+                null, SupplierUtil.createDefaultEdgeSupplier(), false
+        );
+
+        Interval<Integer> interval1 = new Interval<>(-984, -45);
+        IntervalVertex<Integer, Integer> vertex1 = IntervalVertex.of(1, interval1);
+        intervalGraphMapping.addVertex(vertex1);
+
+        Interval<Integer> interval2 = new Interval<>(-9, 23);
+        IntervalVertex<Integer, Integer> vertex2 = IntervalVertex.of(2, interval2);
+        intervalGraphMapping.addVertex(vertex2);
+
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        intervalGraphMapping.getGraph().removeVertex(vertex1);
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        intervalGraphMapping.getGraph().removeVertex(vertex2);
+        assertTrue(intervalGraphMapping.isMappingValid());
+
+        intervalGraphMapping.addVertex(vertex1);
+
+        interval2 = new Interval<>(-90, 23);
+        vertex2 = IntervalVertex.of(2, interval2);
+        intervalGraphMapping.addVertex(vertex2);
+
+        assertTrue(intervalGraphMapping.isMappingValid());
     }
 }
