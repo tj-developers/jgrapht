@@ -9,8 +9,9 @@ import java.util.Map.*;
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
 
-public class NiceDecompositionUtil
+public final class NiceDecompositionUtil
 {
+    //static class
     private NiceDecompositionUtil() {}
     
     /**
@@ -27,7 +28,7 @@ public class NiceDecompositionUtil
         //test and add root
         assertTrue(root+" is no valid root"
                 + "\n in decomposition "+decomposition
-                + "\n and map"+map, map.get(root).size() == 0);
+                + "\n and map"+map, map.get(root).isEmpty());
        queue.add(root);
         
         while(!queue.isEmpty())

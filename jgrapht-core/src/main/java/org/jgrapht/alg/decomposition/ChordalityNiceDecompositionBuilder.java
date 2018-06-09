@@ -85,11 +85,11 @@ public class ChordalityNiceDecomposition<V, E>
                     lastVertex = predecessor;
             }
 
-            // create a join node for the nearest successor
+            // get introduce vertex from neares predecessor
             if (lastVertex != null)
                 decompVertex = introduceMap.get(lastVertex);
 
-            // not a leaf node, thus create join node
+            // if introduce node is not a leaf node, create a join node
             if (Graphs.vertexHasSuccessors(getDecomposition(), decompVertex)) {
                 // found some intersection!
                 if (lastVertex != null)
