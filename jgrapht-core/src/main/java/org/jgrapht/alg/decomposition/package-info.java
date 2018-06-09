@@ -3,4 +3,4 @@
  * Tree Decomposition related algorithms
  *
  */
-package org.jgrapht.alg.treedecomposition;
+package org.jgrapht.alg.decomposition;

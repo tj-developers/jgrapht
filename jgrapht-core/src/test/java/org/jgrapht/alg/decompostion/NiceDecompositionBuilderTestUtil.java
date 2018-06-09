@@ -1,4 +1,4 @@
-package org.jgrapht.alg.treedecompostion;
+package org.jgrapht.alg.decompostion;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -9,9 +9,9 @@ import java.util.Map.*;
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
 
-public class NiceDecompositionUtil
+public class NiceDecompositionBuilderTestUtil
 {
-    private NiceDecompositionUtil() {}
+    private NiceDecompositionBuilderTestUtil() {}
     
     /**
      * tests whether the tree decomposition (decomposition, map) with root is nice
@@ -27,7 +27,7 @@ public class NiceDecompositionUtil
         //test and add root
         assertTrue(root+" is no valid root"
                 + "\n in decomposition "+decomposition
-                + "\n and map"+map, map.get(root).size() == 0);
+                + "\n and map"+map, map.get(root).isEmpty());
        queue.add(root);
         
         while(!queue.isEmpty())

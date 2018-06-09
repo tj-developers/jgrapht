@@ -1,4 +1,4 @@
-package org.jgrapht.alg.treedecompostion;
+package org.jgrapht.alg.decompostion;
 
 import static org.junit.Assert.*;
 
@@ -10,7 +10,7 @@ import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.interval.*;
 import org.junit.*;
 
-public class IntervalGraphDecompositionTest
+public class IntervalGraphDecompositionBuilderTest
 {
 
     
@@ -44,12 +44,12 @@ public class IntervalGraphDecompositionTest
         }
         
         //compute decomposition
-        IntervalGraphNiceDecomposition<Integer,Integer> decomp = IntervalGraphNiceDecomposition.<Integer,DefaultEdge>create(g);
+        IntervalGraphNiceDecomposition<Integer,Integer> decomp = IntervalGraphNiceDecompositionBuilder.<Integer,DefaultEdge>create(g);
         assertNotNull("graph was detected as not an interval graph", decomp);
         
         //test for nice decomposition
-        NiceDecompositionUtil.testNiceDecomposition(decomp.getDecomposition(), decomp.getMap(), decomp.getRoot());
-        NiceDecompositionUtil.testDecomposition(g, decomp.getDecomposition(), decomp.getMap());
+        NiceDecompositionBuilderTestUtil.testNiceDecomposition(decomp.getDecomposition(), decomp.getMap(), decomp.getRoot());
+        NiceDecompositionBuilderTestUtil.testDecomposition(g, decomp.getDecomposition(), decomp.getMap());
     }
 
     @Test
@@ -94,11 +94,11 @@ public class IntervalGraphDecompositionTest
         {
             list.add(new Interval<Integer>(10,10+i));
         }
-        IntervalGraphNiceDecomposition<Integer,Interval<Integer>> decompalg = IntervalGraphNiceDecomposition.<Integer>create(list);
+        IntervalGraphNiceDecomposition<Integer,Interval<Integer>> decompalg = IntervalGraphNiceDecompositionBuilder.<Integer>create(list);
         Graph<Integer,DefaultEdge> decomp = decompalg.getDecomposition();
         Map<Integer,Set<Interval<Integer>>> map = decompalg.getMap();
         Integer root = decompalg.getRoot();
-        NiceDecompositionUtil.testNiceDecomposition(decomp,map,root);
+        NiceDecompositionBuilderTestUtil.testNiceDecomposition(decomp,map,root);
         
     }
 

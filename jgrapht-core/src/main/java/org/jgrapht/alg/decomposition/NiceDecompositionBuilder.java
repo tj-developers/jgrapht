@@ -1,4 +1,4 @@
-package org.jgrapht.alg.treedecomposition;
+package org.jgrapht.alg.decomposition;
 
 import java.util.*;
 
