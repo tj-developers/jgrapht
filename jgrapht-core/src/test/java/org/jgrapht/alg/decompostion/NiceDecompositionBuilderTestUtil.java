@@ -1,4 +1,4 @@
-package org.jgrapht.alg.treedecompostion;
+package org.jgrapht.alg.decompostion;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -9,10 +9,10 @@ import java.util.Map.*;
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
 
-public final class NiceDecompositionUtil
+public final class NiceDecompositionBuilderTestUtil
 {
     //static class
-    private NiceDecompositionUtil() {}
+    private NiceDecompositionBuilderTestUtil() {}
     
     /**
      * tests whether the tree decomposition (decomposition, map) with root is nice

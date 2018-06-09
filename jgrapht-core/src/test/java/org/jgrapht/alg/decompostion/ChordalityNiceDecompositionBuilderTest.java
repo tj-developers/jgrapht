@@ -1,14 +1,14 @@
-package org.jgrapht.alg.treedecompostion;
+package org.jgrapht.alg.decompostion;
 
 import org.jgrapht.*;
-import org.jgrapht.alg.treedecomposition.*;
+import org.jgrapht.alg.decomposition.*;
 import org.jgrapht.alg.util.*;
 import org.jgrapht.generate.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.builder.*;
 import org.junit.*;
 
-public class ChordalityNiceDecompositionTest
+public class ChordalityNiceDecompositionBuilderTest
 {
 
     private Graph<Integer, DefaultEdge> makeCompleteGraph(int n)
@@ -25,11 +25,11 @@ public class ChordalityNiceDecompositionTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeCompleteGraph(i);
-            ChordalityNiceDecomposition<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecomposition.create(graph);
-            NiceDecompositionUtil
+            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalityNiceDecompositionBuilder.create(graph);
+            NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
-            NiceDecompositionUtil.testNiceDecomposition(
+            NiceDecompositionBuilderTestUtil.testNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot());
         }
     }
@@ -59,11 +59,11 @@ public class ChordalityNiceDecompositionTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeGraphsWithTriangles(i);
-            ChordalityNiceDecomposition<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecomposition.create(graph);
-            NiceDecompositionUtil
+            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalityNiceDecompositionBuilder.create(graph);
+            NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
-            NiceDecompositionUtil.testNiceDecomposition(
+            NiceDecompositionBuilderTestUtil.testNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot());
         }
     }
@@ -81,11 +81,11 @@ public class ChordalityNiceDecompositionTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeUnconnectedGraph(i);
-            ChordalityNiceDecomposition<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecomposition.create(graph);
-            NiceDecompositionUtil
+            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalityNiceDecompositionBuilder.create(graph);
+            NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
-            NiceDecompositionUtil.testNiceDecomposition(
+            NiceDecompositionBuilderTestUtil.testNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot());
         }
     }
@@ -112,11 +112,11 @@ public class ChordalityNiceDecompositionTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
-            ChordalityNiceDecomposition<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecomposition.create(graph);
-            NiceDecompositionUtil
+            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalityNiceDecompositionBuilder.create(graph);
+            NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
-            NiceDecompositionUtil.testNiceDecomposition(
+            NiceDecompositionBuilderTestUtil.testNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot());
         }
     }

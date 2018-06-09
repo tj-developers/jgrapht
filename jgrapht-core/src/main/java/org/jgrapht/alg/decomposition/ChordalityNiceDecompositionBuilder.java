@@ -1,4 +1,4 @@
-package org.jgrapht.alg.treedecomposition;
+package org.jgrapht.alg.decomposition;
 
 import java.util.*;
 
@@ -14,7 +14,7 @@ import org.jgrapht.alg.cycle.*;
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
  */
-public class ChordalityNiceDecomposition<V, E>
+public class ChordalityNiceDecompositionBuilder<V, E>
     extends
     NiceDecompositionBuilder<V>
 {
@@ -36,13 +36,13 @@ public class ChordalityNiceDecomposition<V, E>
      * @param graph the chordal graph for which a decomposition should be created
      * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
-    public static <V, E> ChordalityNiceDecomposition<V, E> create(Graph<V, E> graph)
+    public static <V, E> ChordalityNiceDecompositionBuilder<V, E> create(Graph<V, E> graph)
     {
         ChordalityInspector<V, E> inspec = new ChordalityInspector<V, E>(graph);
         if (!inspec.isChordal())
             return null;
         else
-            return new ChordalityNiceDecomposition<>(graph, inspec.getSearchOrder());
+            return new ChordalityNiceDecompositionBuilder<>(graph, inspec.getSearchOrder());
 
     }
 
@@ -52,7 +52,7 @@ public class ChordalityNiceDecomposition<V, E>
      * @param graph the chordal graph
      * @param perfectOrder the perfect elimination order of graph
      */
-    private ChordalityNiceDecomposition(Graph<V, E> graph, List<V> perfectOrder)
+    private ChordalityNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectOrder)
     {
         super();
         this.graph = graph;
