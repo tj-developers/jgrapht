@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 import org.jgrapht.*;
-import org.jgrapht.alg.treedecomposition.*;
+import org.jgrapht.alg.decomposition.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.intervalgraph.interval.*;
 import org.junit.*;
@@ -44,7 +44,7 @@ public class IntervalGraphDecompositionBuilderTest
         }
         
         //compute decomposition
-        IntervalGraphNiceDecomposition<Integer,Integer> decomp = IntervalGraphNiceDecompositionBuilder.<Integer,DefaultEdge>create(g);
+        IntervalGraphNiceDecompositionBuilder<Integer,Integer> decomp = IntervalGraphNiceDecompositionBuilder.<Integer,DefaultEdge>create(g);
         assertNotNull("graph was detected as not an interval graph", decomp);
         
         //test for nice decomposition
@@ -94,7 +94,7 @@ public class IntervalGraphDecompositionBuilderTest
         {
             list.add(new Interval<Integer>(10,10+i));
         }
-        IntervalGraphNiceDecomposition<Integer,Interval<Integer>> decompalg = IntervalGraphNiceDecompositionBuilder.<Integer>create(list);
+        IntervalGraphNiceDecompositionBuilder<Integer,Interval<Integer>> decompalg = IntervalGraphNiceDecompositionBuilder.<Integer>create(list);
         Graph<Integer,DefaultEdge> decomp = decompalg.getDecomposition();
         Map<Integer,Set<Interval<Integer>>> map = decompalg.getMap();
         Integer root = decompalg.getRoot();
