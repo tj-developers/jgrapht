@@ -6,9 +6,9 @@ import java.util.*;
 
 /**
  * Implementation of an algorithm for the local augmentation problem for the cyclic exchange neighborhood,
- * i.e. it finds subset-disjoint negative cycles, based on the paper by Ahuja et al.
- * (<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf">
- * http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf</a>).
+ * i.e. it finds subset-disjoint negative cycles, based on the
+ * <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf">paper</a>
+ * by Ahuja et al.
  *
  * @param <V> the vertex type
  * @param <E> the edge type
