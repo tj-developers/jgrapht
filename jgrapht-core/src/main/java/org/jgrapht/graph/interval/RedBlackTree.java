@@ -193,7 +193,8 @@ class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>
     }
 
     /**
-     * Removes the specified key and its associated value from this tree. It returns true iff the key has been deleted successfully.
+     * Removes the specified key and its associated value from this tree. It returns true iff the key has been deleted
+     * successfully.
      *
      * @param key the key
      *
@@ -500,10 +501,7 @@ class RedBlackTree<K extends Comparable<K>, V> implements BinarySearchTree<K, V>
 
         return getSize(node);
     }
-
-    /*******************************************************************************************************************
-     * HELPER METHODS                                                                                                  *
-     ******************************************************************************************************************/
+    
 
     protected Node<K, V> rotateLeft(Node<K, V> node) {
         Node<K, V> rightChild = node.getRightChild();

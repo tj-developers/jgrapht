@@ -34,7 +34,9 @@ import java.util.List;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public interface IntervalTreeInterface< T extends Comparable<T>, K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>> extends BinarySearchTree<K, NodeValue> {
+public interface IntervalTreeInterface
+        <T extends Comparable<T>, K extends Comparable<K>, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>>
+        extends BinarySearchTree<K, NodeValue> {
 
     /**
      * Returns all intervals of all vertices that intersect with the given <code>interval</code>

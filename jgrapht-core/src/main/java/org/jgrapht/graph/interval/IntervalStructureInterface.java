@@ -17,8 +17,6 @@
  */
 package org.jgrapht.graph.interval;
 
-import org.jgrapht.graph.interval.Interval;
-
 import java.util.List;
 
 /**
