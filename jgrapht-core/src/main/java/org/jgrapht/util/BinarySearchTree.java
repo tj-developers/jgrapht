@@ -159,7 +159,7 @@ public interface BinarySearchTree<K, V> {
      *
      * @param  min minimum endpoint
      * @param  max maximum endpoint
-     * @return all keys in the sybol table between <code>min</code>
+     * @return all keys in the symbol table between <code>min</code>
      *    (inclusive) and <code>max</code> (inclusive) as an <code>Iterable</code>
      * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
      *    is <code>null</code>
@@ -171,7 +171,7 @@ public interface BinarySearchTree<K, V> {
      *
      * @param  min minimum endpoint
      * @param  max maximum endpoint
-     * @return the number of keys in the sybol table between <code>min</code>
+     * @return the number of keys in the symbol table between <code>min</code>
      *    (inclusive) and <code>max</code> (inclusive)
      * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
      *    is <code>null</code>

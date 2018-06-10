@@ -12,8 +12,9 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
- * Implementation of an interval graph mapping. An interval graph is an intersection graph of intervals on a line. Because of
- * that instances do not allow the adding or removing of edges. The edges are implicitly defined by the intervals.
+ * Implementation of an interval graph mapping. An interval graph is an intersection graph of intervals on a line.
+ * Because of that instances do not allow the adding or removing of edges. The edges are implicitly defined by the
+ * intervals.
  *
  * @param <V>          the vertex type with a corresponding interval
  * @param <E>          the edge type
@@ -184,7 +185,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
      * @return interval graph representation if one exists, otherwise null
      */
     public static <E, VertexType> IntervalGraphMapping<IntervalVertexInterface<VertexType, Integer>, E, VertexType, Integer>
-        asIntervalGraphMapping(Graph<VertexType, E> graph) {
+    asIntervalGraphMapping(Graph<VertexType, E> graph) {
 
         // initialize IntervalGraphRecognizer
         IntervalGraphRecognizer<VertexType, E> intervalGraphRecognizer = new IntervalGraphRecognizer<>(graph);
@@ -208,7 +209,7 @@ public class IntervalGraphMapping<V extends IntervalVertexInterface<VertexType, 
             vertices.add(i, vertexIntervalMap.get(intervalVertexMap.get(sortedIntervalList.get(i))));
         }
 
-        // initialze a map from vertex pairs to all edges
+        // initialize a map from vertex pairs to all edges
         Map<Pair<IntervalVertexInterface<VertexType, Integer>, IntervalVertexInterface<VertexType, Integer>>, E> edges =
                 new HashMap<>();
 
