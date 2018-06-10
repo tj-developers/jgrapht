@@ -1,3 +1,20 @@
+/*
+ * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * This program and the accompanying materials are dual-licensed under
+ * either
+ *
+ * (a) the terms of the GNU Lesser General Public License version 2.1
+ * as published by the Free Software Foundation, or (at your option) any
+ * later version.
+ *
+ * or (per the licensee's choosing)
+ *
+ * (b) the terms of the Eclipse Public License v1.0 as published by
+ * the Eclipse Foundation.
+ */
 package org.jgrapht.alg.cycle;
 
 import org.jgrapht.util.TypeUtil;
@@ -6,7 +23,7 @@ import java.util.*;
 
 /**
  * Implementation of a labeled path.
- * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maitain the paths in the calculation.
+ * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maintain the paths in the calculation.
  *
  * @param <V> the vertex type
  *
