@@ -135,6 +135,15 @@ public class LabeledPath<V> implements Cloneable {
         return cost;
     }
 
+    /**
+     * Returns a shallow copy of this labeled path instance. Vertices are not cloned.
+     *
+     * @return a shallow copy of this labeled paths.
+     *
+     * @throws RuntimeException in case the clone is not supported
+     *
+     * @see java.lang.Object#clone()
+     */
     public LabeledPath<V> clone() {
         try {
             LabeledPath<V> newLabeledPath = TypeUtil.uncheckedCast(super.clone());
