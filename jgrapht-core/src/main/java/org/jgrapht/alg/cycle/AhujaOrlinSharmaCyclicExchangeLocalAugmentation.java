@@ -86,29 +86,37 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
 
         while(k < lengthBound && C.getCost() >= 0) {
             while(!PathsLengthK.isEmpty()) {
-                for(Iterator<LabeledPath<V>> it = PathsLengthK.iterator(); it.hasNext();) { // go through all valid paths of length k
+                // go through all valid paths of length k
+                for(Iterator<LabeledPath<V>> it = PathsLengthK.iterator(); it.hasNext();) {
                     LabeledPath<V> path = it.next();
                     it.remove();
 
                     V head = path.getHead();
                     V tail = path.getTail();
 
-                    if(graph.containsEdge(tail, head) && path.getCost() + graph.getEdgeWeight(graph.getEdge(tail, head)) < C.getCost()) { // the path builds a valid cycle
+                    if(graph.containsEdge(tail, head) && path.getCost() + graph.getEdgeWeight(graph.getEdge(tail, head))
+                            < C.getCost()) { // the path builds a valid cycle
                         C = path.clone();
                         C.addVertex(head, graph.getEdgeWeight(graph.getEdge(tail, head)), labels.get(head));
-                        if(C.getCost() < 0) { // only return the cycle if it is negative (in the first iteration it can be nonnegative)
+                        // only return the cycle if it is negative (in the first iteration it can be non-negative)
+                        if(C.getCost() < 0) {
                             return C;
                         }
                     }
 
                     for(E e : graph.outgoingEdgesOf(tail)) {
                         V currentVertex = graph.getEdgeTarget(e);
-                        if(!path.getLabels().contains(labels.get(currentVertex)) && path.getCost() + graph.getEdgeWeight(e) < 0) { // extend the path if the extension is still negative a correctly labeled
+
+                        // extend the path if the extension is still negative a correctly labeled
+                        if(!path.getLabels().contains(labels.get(currentVertex))
+                                && path.getCost() + graph.getEdgeWeight(e) < 0) {
                             LabeledPath<V> newPath = path.clone();
                             newPath.addVertex(currentVertex, graph.getEdgeWeight(e), labels.get(currentVertex));
                             PathsLengthKplus1.add(newPath);
 
-                            testDomination(path,  PathsLengthKplus1); // check if paths are dominated, i.e. if the path is definitly worse than other paths and does not have to be considered in the future
+                            // check if paths are dominated, i.e. if the path is definitely worse than other paths and
+                            // does not have to be considered in the further calculation
+                            testDomination(path,  PathsLengthKplus1);
                         }
                     }
                 }
@@ -141,8 +149,12 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
             }
 
             if(path1.dominates(path)) {
-                removePath = true; // we have to delete path after the for loop otherwise we get an ConcurrentModificationException
-                break; // we can break because domination of paths is transitive, i.e. path1 already removed the dominated paths
+                // we have to delete path after the for loop otherwise we get an ConcurrentModificationException
+                removePath = true;
+
+                // we can break because domination of paths is transitive,
+                // i.e. path1 already removed the dominated paths
+                break;
             }
             if(path.dominates(path1)) {
                 PathsLengthKplus1.remove(path1);

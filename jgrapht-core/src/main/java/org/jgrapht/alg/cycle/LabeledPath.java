@@ -42,7 +42,7 @@ public class LabeledPath<V> implements Cloneable {
      *
      * @param vertices the vertices of the path in order of the path
      * @param cost the cost of the edges connecting the vertices
-     * @param labels the mapping of the vertives to labels (subsets)
+     * @param labels the mapping of the vertices to labels (subsets)
      */
     public LabeledPath(LinkedList<V> vertices, double cost, Map<V, Integer> labels) {
         this.vertices = vertices;
