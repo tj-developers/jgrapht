@@ -35,7 +35,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
      * returns the mapping if the calculated coarse coloring returned by color refinement is discrete.
      * Otherwise it returns null.
      *
-     * @return the mapping of the graph isomorphism if the coloring wa discrete, otherwise null.
+     * @return the mapping of the graph isomorphism if the coloring is discrete, otherwise null.
      */
     @Override
     public Iterator<GraphMapping<V, E>> getMappings() throws IllegalStateException {
@@ -47,11 +47,12 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
      * returns whether the graphs are isomorphic or not.
      *
      * @return false, iff the graphs are not isomorphic; true, iff we cannot decide whether they are isomorphic.
-     * If the method says true, call isColorinDiscrete(). If this method says true, the graphs are isomorphic,
+     * If the method says true, call isColoringDiscrete(). If this method says true, the graphs are isomorphic,
      * otherwise we cannot say whether they are or not.
      */
     @Override
     public boolean isomorphismExists() {
+        // TODO: maybe rename to couldBeIsomorphic
         if(isomorphismTestExecuted) {
             return isIsomorphic;
         }
