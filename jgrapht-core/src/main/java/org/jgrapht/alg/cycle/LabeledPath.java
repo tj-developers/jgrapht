@@ -153,7 +153,13 @@ public class LabeledPath<V> implements Cloneable {
     }
     
     /**
-     * {@inheritDoc}
+     * Returns a shallow copy of this labeled path instance. Vertices are not cloned.
+     *
+     * @return a shallow copy of this path.
+     *
+     * @throws RuntimeException in case the clone is not supported
+     *
+     * @see java.lang.Object#clone()
      */
     public LabeledPath<V> clone() {
         try {
