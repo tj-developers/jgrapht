@@ -55,7 +55,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
     /**
      * calculates a valid subset-disjoint negative cycle
      *
-     * @return a valid subset-disjoint negative cycle encoded as LabeledPath<V>
+     * @return a valid subset-disjoint negative cycle encoded as LabeledPath
      */
     public LabeledPath<V> getLocalAugmentationCycle() {
 
