@@ -17,9 +17,7 @@
  */
 package org.jgrapht.traverse;
 
-import org.jgrapht.Graph;
-import org.jgrapht.GraphTests;
-import org.jgrapht.Graphs;
+import org.jgrapht.*;
 
 import java.util.*;
 
@@ -33,13 +31,13 @@ import java.util.*;
  * some separator between them. For example, 7#4#3 is a valid vertex label.
  * <p>
  * Iterator chooses vertex with lexicographically largest label and returns it. It breaks ties
- * arbitrarily. For more information on lexicographical BFS see the following article:
- * Corneil D.G. (2004) <a href="https://pdfs.semanticscholar.org/d4b5/a492f781f23a30773841ec79c46d2ec2eb9c.pdf">
- * <i>Lexicographic Breadth First Search – A Survey</i></a>. In: Hromkovič J., Nagl M.,
- * Westfechtel B. (eds) Graph-Theoretic Concepts in Computer Science. WG 2004. Lecture Notes in
- * Computer Science, vol 3353. Springer, Berlin, Heidelberg; and the following paper:<a
- * href="http://www.cse.iitd.ac.in/~naveen/courses/CSL851/uwaterloo.pdf"><i>CS 762: Graph-theoretic
- * algorithms. Lecture notes of a graduate course. University of Waterloo</i></a>.
+ * arbitrarily. For more information on lexicographical BFS see the following article: Corneil D.G.
+ * (2004) <a href="https://pdfs.semanticscholar.org/d4b5/a492f781f23a30773841ec79c46d2ec2eb9c.pdf">
+ * <i>Lexicographic Breadth First Search – A Survey</i></a>. In: Hromkovič J., Nagl M., Westfechtel
+ * B. (eds) Graph-Theoretic Concepts in Computer Science. WG 2004. Lecture Notes in Computer
+ * Science, vol 3353. Springer, Berlin, Heidelberg; and the following
+ * paper:<a href="http://www.cse.iitd.ac.in/~naveen/courses/CSL851/uwaterloo.pdf"><i>CS 762:
+ * Graph-theoretic algorithms. Lecture notes of a graduate course. University of Waterloo</i></a>.
  * <p>
  * For this iterator to work correctly the graph must not be modified during iteration. Currently
  * there are no means to ensure that, nor to fail-fast. The results of such modifications are
@@ -52,7 +50,10 @@ import java.util.*;
  * @author Timofey Chudakov
  * @since March 2018
  */
-public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
+public class LexBreadthFirstIterator<V, E>
+    extends
+    AbstractGraphIterator<V, E>
+{
 
     /**
      * Reference to the {@code BucketList} that contains unvisited vertices.
@@ -69,7 +70,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
      *
      * @param graph the graph to be iterated.
      */
-    public LexBreadthFirstIterator(Graph<V, E> graph) {
+    public LexBreadthFirstIterator(Graph<V, E> graph)
+    {
         super(graph);
         GraphTests.requireUndirected(graph);
         bucketList = new BucketList(graph.vertexSet());
@@ -132,7 +134,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
      * @return true if there exist unvisited vertices.
      */
     @Override
-    public boolean hasNext() {
+    public boolean hasNext()
+    {
         if (current != null) {
             return true;
         }
@@ -149,7 +152,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
      * @return the next vertex in the ordering.
      */
     @Override
-    public V next() {
+    public V next()
+    {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
@@ -167,7 +171,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
      * Always returns true since this iterator doesn't care about connected components.
      */
     @Override
-    public boolean isCrossComponentTraversal() {
+    public boolean isCrossComponentTraversal()
+    {
         return true;
     }
 
@@ -178,7 +183,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
      * {@link IllegalArgumentException}.
      */
     @Override
-    public void setCrossComponentTraversal(boolean crossComponentTraversal) {
+    public void setCrossComponentTraversal(boolean crossComponentTraversal)
+    {
         if (!crossComponentTraversal) {
             throw new IllegalArgumentException("Iterator is always cross-component");
         }
@@ -189,7 +195,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
      *
      * @return the vertex retrieved from the {@code bucketList}.
      */
-    private V advance() {
+    private V advance()
+    {
         V vertex = bucketList.poll();
         if (vertex != null) {
             bucketList.updateBuckets(getUnvisitedNeighbours(vertex));
@@ -198,12 +205,14 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     }
 
     /**
-     * Computes and returns neighbours of {@code vertex} which haven't been visited by this iterator.
+     * Computes and returns neighbours of {@code vertex} which haven't been visited by this
+     * iterator.
      *
      * @param vertex the vertex, whose neighbours are being explored.
      * @return neighbours of {@code vertex} which have yet to be visited by this iterator.
      */
-    private Set<V> getUnvisitedNeighbours(V vertex) {
+    private Set<V> getUnvisitedNeighbours(V vertex)
+    {
         Set<V> unmapped = new HashSet<>();
         Set<E> edges = graph.edgesOf(vertex);
         for (E edge : edges) {
@@ -216,21 +225,22 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
     }
 
     /**
-     * Data structure for performing lexicographical breadth-first search. Allows to add and retrieve
-     * vertices from buckets, update their buckets after a new vertex has been added to the LexBFS
-     * order. Labels aren't used explicitly, which results in time and space optimization.
+     * Data structure for performing lexicographical breadth-first search. Allows to add and
+     * retrieve vertices from buckets, update their buckets after a new vertex has been added to the
+     * LexBFS order. Labels aren't used explicitly, which results in time and space optimization.
      *
      * @author Timofey Chudakov
      * @since March 2018
      */
-    class BucketList {
+    class BucketList
+    {
         /**
          * Bucket with the vertices that have lexicographically largest label.
          */
         private Bucket head;
         /**
-         * Map for mapping vertices to buckets they are currently in. Is used for finding the bucket of
-         * the vertex in constant time.
+         * Map for mapping vertices to buckets they are currently in. Is used for finding the bucket
+         * of the vertex in constant time.
          */
         private Map<V, Bucket> bucketMap;
         
@@ -252,12 +262,15 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         private HashMap<V, Integer> priorityB = null;
         
         /**
-         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in
+         * it.
          *
-         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param vertices the vertices of the graph, that should be stored in the {@code head}
+         *        bucket.
          */
-        BucketList(Collection<V> vertices) {
-            head = new Bucket(vertices, priorityComparator); // we do not need a comparator
+        BucketList(Collection<V> vertices)
+        {
+            head = new Bucket(vertices);
             bucketMap = new HashMap<>(vertices.size());
             for (V vertex : vertices) {
                 bucketMap.put(vertex, head);
@@ -336,25 +349,27 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         /**
          * Checks whether there exists a bucket with the specified {@code vertex}.
          *
-         * @param vertex the vertex whose presence in some {@code Bucket} in this {@code BucketList} is
-         *               checked.
+         * @param vertex the vertex whose presence in some {@code Bucket} in this {@code BucketList}
+         *        is checked.
          * @return <tt>true</tt> if there exists a bucket with {@code vertex} in it, otherwise
-         * <tt>false</tt>.
+         *         <tt>false</tt>.
          */
-        boolean containsBucketWith(V vertex) {
+        boolean containsBucketWith(V vertex)
+        {
             return bucketMap.containsKey(vertex);
         }
 
         /**
-         * Retrieves element from the head bucket by invoking {@link Bucket#poll()} or
-         * null if this {@code BucketList} is empty.
+         * Retrieves element from the head bucket by invoking {@link Bucket#poll()} or null if this
+         * {@code BucketList} is empty.
          * <p>
          * Removes the head bucket if it becomes empty after the operation.
          *
-         * @return vertex returned by {@link Bucket#poll()} invoked on head bucket or
-         * null if this {@code BucketList} is empty.
+         * @return vertex returned by {@link Bucket#poll()} invoked on head bucket or null if this
+         *         {@code BucketList} is empty.
          */
-        V poll() {
+        V poll()
+        {
             if (bucketMap.size() > 0) {
                 V res = null;
                 
@@ -378,15 +393,17 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         }
 
         /**
-         * For every bucket B in this {@code BucketList}, which contains vertices from the set {@code
-         * vertices}, creates a new {@code Bucket} B' and moves vertices from B to B' according to the
-         * following rule: $B' = B\cap vertices$ and $B = B\backslash B'$. For every such {@code Bucket}
-         * B only one {@code Bucket} B' is created. If some bucket B becomes empty after this operation,
-         * it is removed from the data structure.
+         * For every bucket B in this {@code BucketList}, which contains vertices from the set
+         * {@code
+         * vertices}, creates a new {@code Bucket} B' and moves vertices from B to B' according to
+         * the following rule: $B' = B\cap vertices$ and $B = B\backslash B'$. For every such
+         * {@code Bucket} B only one {@code Bucket} B' is created. If some bucket B becomes empty
+         * after this operation, it is removed from the data structure.
          *
          * @param vertices the vertices, that should be moved to new buckets.
          */
-        void updateBuckets(Set<V> vertices) {
+        void updateBuckets(Set<V> vertices)
+        {
             Set<Bucket> visitedBuckets = new HashSet<>();
             for (V vertex : vertices) {
                 Bucket bucket = bucketMap.get(vertex);
@@ -417,13 +434,14 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
         }
 
         /**
-         * Plays the role of the container of vertices. All vertices stored in a bucket have identical
-         * label. Labels aren't used explicitly.
+         * Plays the role of the container of vertices. All vertices stored in a bucket have
+         * identical label. Labels aren't used explicitly.
          * <p>
-         * Encapsulates operations of addition and removal of vertices from the bucket and removal of a
-         * bucket from the data structure.
+         * Encapsulates operations of addition and removal of vertices from the bucket and removal
+         * of a bucket from the data structure.
          */
-        private class Bucket {
+        private class Bucket
+        {
             /**
              * Reference of the bucket with lexicographically smaller label.
              */
@@ -446,13 +464,9 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param vertices vertices to store in this bucket.
              */
-            Bucket(Collection<V> vertices, Comparator<V> c) {
-                if(c == null) {
-                    this.vertices = new PriorityQueue<>();
-                } else {
-                    this.vertices = new PriorityQueue<>(c);
-                }
-                this.vertices.addAll(vertices);
+            Bucket(Collection<V> vertices)
+            {
+                this.vertices = new HashSet<>(vertices);
             }
 
             /**
@@ -460,12 +474,9 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param vertex the vertex to store in this bucket.
              */
-            Bucket(V vertex, Comparator<V> c) {
-                if(c == null) {
-                    this.vertices = new PriorityQueue<>();
-                } else {
-                    this.vertices = new PriorityQueue<>(c);
-                }
+            Bucket(V vertex)
+            {
+                this.vertices = new HashSet<>();
                 vertices.add(vertex);
             }
             
@@ -504,7 +515,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param vertex the vertex to remove.
              */
-            void removeVertex(V vertex) {
+            void removeVertex(V vertex)
+            {
                 vertices.remove(vertex);
                 
                 if(verticesB != null) {
@@ -515,7 +527,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
             /**
              * Removes this bucket from the data structure.
              */
-            void removeSelf() {
+            void removeSelf()
+            {
                 if (next != null) {
                     next.prev = prev;
                 }
@@ -529,7 +542,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param bucket the bucket, that will be the next to this bucket.
              */
-            void insertBefore(Bucket bucket) {
+            void insertBefore(Bucket bucket)
+            {
                 this.next = bucket;
                 if (bucket != null) {
                     this.prev = bucket.prev;
@@ -547,7 +561,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @param vertex the vertex to add.
              */
-            void addVertex(V vertex) {
+            void addVertex(V vertex)
+            {
                 vertices.add(vertex);
                 
                 if(verticesB != null) {
@@ -560,7 +575,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @return vertex, that was removed from this bucket, null if the bucket was empty.
              */
-            V poll() {
+            V poll()
+            {
                 if (vertices.isEmpty()) {
                     return null;
                 } else {
@@ -605,7 +621,8 @@ public class LexBreadthFirstIterator<V, E> extends AbstractGraphIterator<V, E> {
              *
              * @return <tt>true</tt> if this bucket doesn't contain any elements, otherwise false.
              */
-            boolean isEmpty() {
+            boolean isEmpty()
+            {
                 return vertices.size() == 0;
             }
         }
