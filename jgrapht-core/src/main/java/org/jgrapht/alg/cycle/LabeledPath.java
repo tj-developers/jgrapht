@@ -151,7 +151,10 @@ public class LabeledPath<V> implements Cloneable {
     public double getCost() {
         return cost;
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public LabeledPath<V> clone() {
         try {
             LabeledPath<V> newLabeledPath = TypeUtil.uncheckedCast(super.clone());
