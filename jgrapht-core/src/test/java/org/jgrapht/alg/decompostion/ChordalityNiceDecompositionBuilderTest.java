@@ -25,8 +25,8 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeCompleteGraph(i);
-            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecompositionBuilder.create(graph);
+            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalNiceDecompositionBuilder.create(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(
@@ -59,8 +59,8 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeGraphsWithTriangles(i);
-            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecompositionBuilder.create(graph);
+            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalNiceDecompositionBuilder.create(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(
@@ -81,8 +81,8 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeUnconnectedGraph(i);
-            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecompositionBuilder.create(graph);
+            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalNiceDecompositionBuilder.create(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(
@@ -112,8 +112,8 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
-            ChordalityNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalityNiceDecompositionBuilder.create(graph);
+            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
+                ChordalNiceDecompositionBuilder.create(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(

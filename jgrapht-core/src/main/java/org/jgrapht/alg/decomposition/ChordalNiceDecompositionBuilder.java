@@ -14,7 +14,7 @@ import org.jgrapht.alg.cycle.*;
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
  */
-public class ChordalityNiceDecompositionBuilder<V, E>
+public class ChordalNiceDecompositionBuilder<V, E>
     extends
     NiceDecompositionBuilder<V>
 {
@@ -36,13 +36,35 @@ public class ChordalityNiceDecompositionBuilder<V, E>
      * @param graph the chordal graph for which a decomposition should be created
      * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
-    public static <V, E> ChordalityNiceDecompositionBuilder<V, E> create(Graph<V, E> graph)
+    public static <V, E> ChordalNiceDecompositionBuilder<V, E> create(Graph<V, E> graph)
     {
         ChordalityInspector<V, E> inspec = new ChordalityInspector<V, E>(graph);
         if (!inspec.isChordal())
             return null;
-        else
-            return new ChordalityNiceDecompositionBuilder<>(graph, inspec.getSearchOrder());
+        ChordalNiceDecompositionBuilder<V,E> builder =
+            new ChordalNiceDecompositionBuilder<>(graph, inspec.getSearchOrder());
+        builder.computeNiceDecomposition();
+        return builder;
+
+    }
+    
+    /**     
+     * Factory method for the nice decomposition builder of chordal graphs. 
+     * This method needs the perfect elimination order. It does not check whether the order is correct.
+     * This method may behave arbitrary if the perfect elimination order is incorrect.
+     * 
+     * @param <V> the vertex type of graph
+     * @param <E> the edge type of graph
+     * @param graph the chordal graph for which a decomposition should be created
+     * @param perfectEliminationOrder the perfect elimination order of the graph
+     * @return a nice decomposition builder for the graph if the graph was chordal, else null
+     */
+    public static <V, E> ChordalNiceDecompositionBuilder<V, E> create(Graph<V, E> graph, List<V> perfectEliminationOrder)
+    {
+        ChordalNiceDecompositionBuilder<V,E> builder =
+            new ChordalNiceDecompositionBuilder<>(graph, perfectEliminationOrder);
+        builder.computeNiceDecomposition();
+        return builder;
 
     }
 
@@ -52,13 +74,12 @@ public class ChordalityNiceDecompositionBuilder<V, E>
      * @param graph the chordal graph
      * @param perfectOrder the perfect elimination order of graph
      */
-    private ChordalityNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectOrder)
+    private ChordalNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectOrder)
     {
         super();
         this.graph = graph;
         this.perfectOrder = perfectOrder;
         vertexInOrder = getVertexInOrder();
-        computeNiceDecomposition();
     }
 
     /**
