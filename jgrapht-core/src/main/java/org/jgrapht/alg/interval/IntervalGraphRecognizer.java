@@ -48,7 +48,7 @@ import org.jgrapht.graph.interval.Interval;
  * @author Dennis Fischer
  * @since April 2018
  */
-public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecongizerInterface<V>
+public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecognizerInterface<V>
 {
 
     /**

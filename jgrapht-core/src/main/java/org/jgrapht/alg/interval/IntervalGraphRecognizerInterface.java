@@ -4,8 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.jgrapht.graph.interval.*;
-
-public interface IntervalGraphRecongizerInterface<V>
+/**
+ * An Interface for IntervalGraph Recongizing algorithms
+ * @author Ira Justus Fesefeldt (PhoenixIra)
+ *
+ * @param <V> vertex type of the graph
+ */
+public interface IntervalGraphRecognizerInterface<V>
 {
     /**
      * Returns whether or not the graph is an interval graph.

@@ -21,7 +21,7 @@ import org.jgrapht.graph.interval.*;
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
  */
-public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraphRecongizerInterface<V>
+public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraphRecognizerInterface<V>
 {
 
     // The recognized graph
@@ -37,7 +37,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
     /**
      * Constructor for the algorithm
-     * @param graph
+     * @param graph the graph which should be recognized
      */
     public KorteMoehringIntervalGraphRecognizer(Graph<V, E> graph)
     {
