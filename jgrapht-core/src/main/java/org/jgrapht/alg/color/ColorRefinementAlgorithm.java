@@ -277,33 +277,29 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * @return whether alpha is a valid surjective l-coloring for the given graph
      */
     private boolean isAlphaConsistent(Coloring<V> alpha, Graph<V, E> graph) {
-        // check if every vertex is assigned a color
-        if(alpha.getColors().keySet().size() != graph.vertexSet().size()) {
 
-            // check surjectivity, i.e. are the colors in the set {1, ..., maximumColor} used?
-            if(alpha.getColorClasses().size() != alpha.getNumberColors()) {
+        // check if the coloring is restricted to the graph,
+        // i.e. there are exactly as many vertices in the graph as in the coloring
+        if(alpha.getColors().size() != graph.vertexSet().size()) {
+            return false;
+        }
+
+        // check surjectivity, i.e. are the colors in the set {1, ..., maximumColor} used?
+        if(alpha.getColorClasses().size() != alpha.getNumberColors()) {
+            return false;
+        }
+
+        for(V v : graph.vertexSet()) {
+            // ensure that the key set of alpha and the vertex set of the graph actually coincide
+            if(!alpha.getColors().containsKey(v)) {
                 return false;
             }
 
-            for(int color = 1; color <= alpha.getNumberColors(); color++) {
-                if(!alpha.getColors().values().contains(color)) {
-                    return false;
-                }
+            // ensure the colors lie in in the set {1, ..., maximumColor}
+            Integer currentColor = alpha.getColors().get(v);
+            if (currentColor > alpha.getNumberColors() || currentColor < 1) {
+                return false;
             }
-
-            for(V v : alpha.getColors().keySet()) {
-                Integer currentColor = alpha.getColors().get(v);
-                if (currentColor > alpha.getNumberColors() || currentColor < 1) {
-                    return false;
-                }
-
-                // ensure that the key set of alpha and the vertex set of the graph actually coincide
-                if (!graph.containsVertex(v)) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
         }
         return true;
     }
