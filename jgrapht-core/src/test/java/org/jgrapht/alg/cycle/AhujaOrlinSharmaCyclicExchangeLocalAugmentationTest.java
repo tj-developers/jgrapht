@@ -174,7 +174,10 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
 
         LabeledPath<Integer> calculatedCycle1 = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound1, labels).getLocalAugmentationCycle();
 
-        assertNull(calculatedCycle1);
+        assertEquals(new LabeledPath<>().getCost(), calculatedCycle1.getCost(), 0.0000001);
+        assertEquals(new LabeledPath<>().getVertices(), calculatedCycle1.getVertices());
+        assertEquals(new LabeledPath<>().getLabels().isEmpty(), calculatedCycle1.getLabels().isEmpty());
+        assertEquals(new LabeledPath<>().isEmpty(), calculatedCycle1.isEmpty());
 
         int lengthBound2 = 6;
 
