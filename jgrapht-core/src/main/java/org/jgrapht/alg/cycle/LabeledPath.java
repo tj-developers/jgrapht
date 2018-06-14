@@ -82,7 +82,7 @@ public class LabeledPath<V> implements Cloneable {
      */
     public boolean dominates(LabeledPath<V> path2) {
 
-        if(!(this.getCost() < path2.getCost())) {
+        if(this.getCost() >= path2.getCost()) {
             return false;
         }
         if(!this.getTail().equals(path2.getTail())) {

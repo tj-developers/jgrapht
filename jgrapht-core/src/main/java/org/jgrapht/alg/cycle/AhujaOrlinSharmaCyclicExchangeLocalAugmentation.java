@@ -27,6 +27,9 @@ import java.util.*;
  * <a href ="(http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf)">paper</a>
  * by Ahuja et al.
  *
+ * This algorithm may enumerate all paths up to the length given by the paramter <code>lengthBound</code>,
+ * i.e the algorithm runs in exponential time.
+ *
  * @param <V> the vertex type
  * @param <E> the edge type
  *
@@ -53,9 +56,10 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
     }
 
     /**
-     * calculates a valid subset-disjoint negative cycle
+     * calculates a valid subset-disjoint negative cycle.
+     * If there is no such a cycle, it returns an empty LabeledPath instance with cost Double.MAX_VALUE.
      *
-     * @return a valid subset-disjoint negative cycle encoded as LabeledPath<V>
+     * @return a valid subset-disjoint negative cycle encoded as LabeledPath
      */
     public LabeledPath<V> getLocalAugmentationCycle() {
 
@@ -118,7 +122,8 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
             PathsLengthK = PathsLengthKplus1;
             PathsLengthKplus1 = new LinkedHashSet<>();
         }
-        return null;
+
+        return new LabeledPath<>();
     }
 
     /**
@@ -134,18 +139,18 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
         boolean removePath = false;
 
         for(Iterator<LabeledPath<V>> it = PathsLengthKplus1.iterator(); it.hasNext();) {
-            LabeledPath<V> path1 = it.next();
+            LabeledPath<V> pathInSetKplus1 = it.next();
 
-            if(path == path1) {
+            if(path == pathInSetKplus1) {
                 continue;
             }
 
-            if(path1.dominates(path)) {
+            if(pathInSetKplus1.dominates(path)) {
                 removePath = true; // we have to delete path after the for loop otherwise we get an ConcurrentModificationException
-                break; // we can break because domination of paths is transitive, i.e. path1 already removed the dominated paths
+                break; // we can break because domination of paths is transitive, i.e. pathInSetKplus1 already removed the dominated paths
             }
-            if(path.dominates(path1)) {
-                PathsLengthKplus1.remove(path1);
+            if(path.dominates(pathInSetKplus1)) {
+                PathsLengthKplus1.remove(pathInSetKplus1);
             }
         }
 
