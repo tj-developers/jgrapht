@@ -27,7 +27,7 @@ import java.util.*;
  * <a href ="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf">paper</a>
  * by Ahuja et al.
  *
- * This algorithm may enumerate all paths up to the length given by the paramter <code>lengthBound</code>,
+ * This algorithm may enumerate all paths up to the length given by the parameter <code>lengthBound</code>,
  * i.e the algorithm runs in exponential time.
  *
  * @param <V> the vertex type
