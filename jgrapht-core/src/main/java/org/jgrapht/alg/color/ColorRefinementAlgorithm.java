@@ -278,26 +278,27 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      */
     private boolean isAlphaConsistent(Coloring<V> alpha, Graph<V, E> graph) {
         // check if every vertex is assigned a color
-        if(alpha.getColors().size() != graph.vertexSet().size()) {
+        if(alpha.getColors().keySet().size() != graph.vertexSet().size()) {
+
+            // check surjectivity, i.e. are the colors in the set {1, ..., maximumColor} used?
+            if(alpha.getColorClasses().size() != alpha.getNumberColors()) {
+                return false;
+            }
+
+            for(int color = 1; color <= alpha.getNumberColors(); color++) {
+                if(!alpha.getColors().values().contains(color)) {
+                    return false;
+                }
+            }
+
             for(V v : alpha.getColors().keySet()) {
-                // TODO: What does this do? Maybe check surjectivity of alpha?
-                if(alpha.getColors().get(v) <= alpha.getNumberColors() && alpha.getColors().get(v) >= 1) {
+                Integer currentColor = alpha.getColors().get(v);
+                if (currentColor > alpha.getNumberColors() || currentColor < 1) {
                     return false;
                 }
-                
-                // check surjectivity, i.e. are the colors in the set {1, ..., maximumColor} used?
-                if(alpha.getColorClasses().size() != alpha.getNumberColors()) {
-                    return false;
-                }
-                
-                for(int color = 1; color <= alpha.getNumberColors(); color++) {
-                    if(!alpha.getColors().values().contains(color)) {
-                        return false;
-                    }
-                }
- 
+
                 // ensure that the key set of alpha and the vertex set of the graph actually coincide
-                if(!graph.containsVertex(v)) {
+                if (!graph.containsVertex(v)) {
                     return false;
                 }
             }
