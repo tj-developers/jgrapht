@@ -108,7 +108,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                             newPath.addVertex(currentVertex, graph.getEdgeWeight(e), labels.get(currentVertex));
                             PathsLengthKplus1.add(newPath);
 
-                            testDomination(path,  PathsLengthKplus1); // check if paths are dominated, i.e. if the path is definitely worse than other paths and does not have to be considered in the future
+                            testDomination(path, PathsLengthKplus1); // check if paths are dominated, i.e. if the path is definitely worse than other paths and does not have to be considered in the future
                         }
                     }
                 }
