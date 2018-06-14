@@ -23,7 +23,7 @@ import java.util.*;
 
 /**
  * Implementation of a labeled path.
- * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maitain the paths in the calculation.
+ * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maintain the paths in the calculation.
  *
  * @param <V> the vertex type
  *
@@ -42,7 +42,7 @@ public class LabeledPath<V> implements Cloneable {
      *
      * @param vertices the vertices of the path in order of the path
      * @param cost the cost of the edges connecting the vertices
-     * @param labels the mapping of the vertives to labels (subsets)
+     * @param labels the mapping of the vertices to labels (subsets)
      */
     public LabeledPath(LinkedList<V> vertices, double cost, Map<V, Integer> labels) {
         this.vertices = vertices;
@@ -151,7 +151,16 @@ public class LabeledPath<V> implements Cloneable {
     public double getCost() {
         return cost;
     }
-
+    
+    /**
+     * Returns a shallow copy of this labeled path instance. Vertices are not cloned.
+     *
+     * @return a shallow copy of this path.
+     *
+     * @throws RuntimeException in case the clone is not supported
+     *
+     * @see java.lang.Object#clone()
+     */
     public LabeledPath<V> clone() {
         try {
             LabeledPath<V> newLabeledPath = TypeUtil.uncheckedCast(super.clone());

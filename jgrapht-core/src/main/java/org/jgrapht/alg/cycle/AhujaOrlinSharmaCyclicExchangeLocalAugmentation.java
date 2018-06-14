@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Implementation of an algorithm for the local augmentation problem for the cyclic exchange neighborhood,
  * i.e. it finds subset-disjoint negative cycles, based on the
- * <a href ="(http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf)">paper</a>
+ * <a href ="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.15.6758&rep=rep1&type=pdf">paper</a>
  * by Ahuja et al.
  *
  * This algorithm may enumerate all paths up to the length given by the paramter <code>lengthBound</code>,
@@ -112,7 +112,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                             newPath.addVertex(currentVertex, graph.getEdgeWeight(e), labels.get(currentVertex));
                             PathsLengthKplus1.add(newPath);
 
-                            testDomination(path,  PathsLengthKplus1); // check if paths are dominated, i.e. if the path is definitely worse than other paths and does not have to be considered in the future
+                            testDomination(path, PathsLengthKplus1); // check if paths are dominated, i.e. if the path is definitely worse than other paths and does not have to be considered in the future
                         }
                     }
                 }
