@@ -123,4 +123,45 @@ public class ColorRefinementAlgorithmTest
         assertEquals(colors.get(9).intValue(), colors.get(10).intValue());
     }
 
+    @Test
+    public void testDirectedGraph1() {
+        Graph<Integer, DefaultEdge> graph1 = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+
+        Graphs.addAllVertices(graph1, Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8));
+
+        graph1.addEdge(1, 2);
+
+        graph1.addEdge(2, 4);
+
+        graph1.addEdge(3, 2);
+
+        graph1.addEdge(4, 2);
+        graph1.addEdge(4, 5);
+        graph1.addEdge(4, 6);
+
+        graph1.addEdge(5, 8);
+
+        graph1.addEdge(6, 7);
+
+        graph1.addEdge(7, 8);
+
+        graph1.addEdge(8, 4);
+        graph1.addEdge(8, 6);
+
+
+        ColorRefinementAlgorithm<Integer, DefaultEdge> CR = new ColorRefinementAlgorithm<>(graph1);
+        Map<Integer, Integer> colors = CR.getColoring().getColors();
+
+        // 1 and 3 should have the same color, all others should have distinct colors
+
+        for(int i = 1; i < 9; i++) {
+            for(int j = i + 1; j <= 11; j++) {
+                if(i != 1 || j != 3) {
+                    assertNotEquals(colors.get(i).intValue(), colors.get(j).intValue());
+                }
+            }
+        }
+        assertEquals(colors.get(1).intValue(), colors.get(3).intValue());
+    }
 }
