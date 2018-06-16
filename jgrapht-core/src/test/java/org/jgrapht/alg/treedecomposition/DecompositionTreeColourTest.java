@@ -1,6 +1,7 @@
 package org.jgrapht.alg.treedecomposition;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,6 +89,9 @@ public class DecompositionTreeColourTest {
 		assertEquals(1, colors.get(2).intValue());
 		assertEquals(2, colors.get(3).intValue());
 		assertEquals(0, colors.get(4).intValue());
+		
+		//iterate over all edges/vertices and check if the test can be done better
+		assertNotEquals(colors.get(1).intValue(), colors.get(2).intValue());
 	}
 	@Test
 	public void testGreedy2()

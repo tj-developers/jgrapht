@@ -29,26 +29,25 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 	 */
 	private Graph<List<V>, E> graph;
 
-	
+
 	/**
-	 * @param graph
+	 * @param graph graph
 	 */
-	
+
 	public DecompositionTreeColour(Graph<List<V>, E> graph)
 	{
 		this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
 	}
-	
-	
+
+
 	/**
 	 * Getting the ordering for the vertices
 	 * @return the ordering of the vertices
 	 */
 	protected Iterable<List<V>> getVertexOrdering()
 	{
-		System.out.println((Iterable<List<V>>) graph.vertexSet());
 		return (Iterable<List<V>>) graph.vertexSet();
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -62,16 +61,13 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 		Set<Integer> used = new HashSet<>();
 		Set<V> free = new HashSet<>();
 
-		//lself loops not allowed, repeatations of inner vertices not allowed 
+		//self loops not allowed, repetitions of inner vertices not allowed 
 
 
 		for(List<V> outerVertex:getVertexOrdering() ) {
-			
-			//the case of a generalised decomposition tree
-		/*	for (E edge: graph.edgesOf(outerVertex)) {
-				List<V> oppoSiteVertex = Graphs.getOppositeVertex(graph, edge, outerVertex);
-			}*/
-			
+
+
+
 			//need to sort the inner vertex here or do something so that sorting is not needed
 			for(V innerVertex : outerVertex ) { 
 				//first need to iterate over each innerVertex in the outerVertex to check that if there is any vertex with an already assigned colour
@@ -109,8 +105,7 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 		}
 		int maxColourAssigned = Collections.max(asssignedColors.values());
 
-		
-		System.out.println(Arrays.asList(asssignedColors));
+
 		return  new ColoringImpl<>(asssignedColors, maxColourAssigned + 1);
 	}
 }
