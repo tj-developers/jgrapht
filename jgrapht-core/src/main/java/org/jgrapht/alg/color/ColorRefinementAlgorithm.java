@@ -128,11 +128,11 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
             
             for(E e: incomingEdges) {
                 // add the source vertices to the set -- however, this notion is unclear for undirected graphs, hence we need to test both edge endpoints and take the one not equal to v
-                V source = graph.getEdgeSource(e);
-                if(!source.equals(v) && !graph.getType().isDirected()) {
-                    inNeighborhood.add(source);
+                V target = graph.getEdgeTarget(e);
+                if(!target.equals(v)) {
+                    inNeighborhood.add(target);
                 } else {
-                    inNeighborhood.add(graph.getEdgeTarget(e));
+                    inNeighborhood.add(graph.getEdgeSource(e));
                 }
             }
             

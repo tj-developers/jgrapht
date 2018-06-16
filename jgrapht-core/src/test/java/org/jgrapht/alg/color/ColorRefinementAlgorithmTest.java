@@ -157,7 +157,9 @@ public class ColorRefinementAlgorithmTest
 
         for(int i = 1; i < 9; i++) {
             for(int j = i + 1; j < 9; j++) {
-                if(i != 1 || j != 3) {
+                if((i == 1 && j == 3) || (i == 5 && j == 7)) {
+                    assertEquals(colors.get(i).intValue(), colors.get(j).intValue());
+                } else {
                     assertNotEquals(colors.get(i).intValue(), colors.get(j).intValue());
                 }
             }
