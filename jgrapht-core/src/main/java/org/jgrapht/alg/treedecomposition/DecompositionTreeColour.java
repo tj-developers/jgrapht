@@ -1,6 +1,5 @@
 package org.jgrapht.alg.treedecomposition;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.jgrapht.Graph;
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 
 /**
@@ -49,6 +48,7 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 	protected Iterable<Integer> getVertexOrdering()
 	{
 		return (Iterable<Integer>)  graph.vertexSet();
+		
 
 	}
 
@@ -68,15 +68,16 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 
 		for(Integer vertex:getVertexOrdering() ) {
 
-			//find the intervals corresponding to the vertex
-			Set<V> intervalSet = decompositionMap.get(vertex);
+			//find the intervals corresponding to the vertex 
+			//need to sort the vertices
+			List<V> intervalSet = decompositionMap.get(vertex).stream().sorted().collect(Collectors.toList());
+			
 
 			for(V innerVertex : intervalSet ) { 
 				//first need to iterate over each innerVertex in the outerVertex to check that if there is any vertex with an already assigned colour
 				if(asssignedColors.containsKey(innerVertex)) {
 					used.add(asssignedColors.get(innerVertex));
-
-
+					
 
 				}
 				else {
@@ -105,8 +106,8 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 			used.clear();
 
 		}
+		
 		int maxColourAssigned = Collections.max(asssignedColors.values());
-
 
 		return  new ColoringImpl<>(asssignedColors, maxColourAssigned + 1);
 	}
