@@ -16,7 +16,7 @@ import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
  * Colouring of decomposition trees (currently done for interval graphs). This algorithm iterates over lists of vertices and assigns
  * the smallest colour to each of the vertices such that the no vertex in the same list has the same colour.
  * 
- * @author Suchanda Bhattacharyya
+ * @author Suchanda Bhattacharyya (dia007)
  *
  * @param <V> The type of graph vertex
  * @param <E> The type of graph edge
@@ -25,18 +25,19 @@ import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> {
 
 	/**
-	 * The input graph
+	 * The input graph 
 	 */
-	private Graph<List<V>, E> graph;
-
-
+	private Graph <Integer,E> graph;
 	/**
-	 * @param graph graph
+	 * The map of the vertices in the input graph to it's interval sets
 	 */
+	private Map <Integer, Set<V>> decompositionMap;
 
-	public DecompositionTreeColour(Graph<List<V>, E> graph)
+
+	public DecompositionTreeColour(Graph <Integer,E> graph,Map <Integer, Set<V>> decompositionMap)
 	{
 		this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
+		this.decompositionMap = Objects.requireNonNull(decompositionMap, "there must be some decomposition present");
 	}
 
 
@@ -44,9 +45,10 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 	 * Getting the ordering for the vertices
 	 * @return the ordering of the vertices
 	 */
-	protected Iterable<List<V>> getVertexOrdering()
+
+	protected Iterable<Integer> getVertexOrdering()
 	{
-		return (Iterable<List<V>>) graph.vertexSet();
+		return (Iterable<Integer>)  graph.vertexSet();
 
 	}
 
@@ -64,12 +66,12 @@ public class DecompositionTreeColour<V,E> implements VertexColoringAlgorithm<V> 
 		//self loops not allowed, repetitions of inner vertices not allowed 
 
 
-		for(List<V> outerVertex:getVertexOrdering() ) {
+		for(Integer vertex:getVertexOrdering() ) {
 
+			//find the intervals corresponding to the vertex
+			Set<V> intervalSet = decompositionMap.get(vertex);
 
-
-			//need to sort the inner vertex here or do something so that sorting is not needed
-			for(V innerVertex : outerVertex ) { 
+			for(V innerVertex : intervalSet ) { 
 				//first need to iterate over each innerVertex in the outerVertex to check that if there is any vertex with an already assigned colour
 				if(asssignedColors.containsKey(innerVertex)) {
 					used.add(asssignedColors.get(innerVertex));
