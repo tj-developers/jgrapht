@@ -1,19 +1,47 @@
 package org.jgrapht.util;
 
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
+import java.util.Iterator;
+import java.util.Optional;
 
-public class SubSplitQueue {
-    private int ownIndex;
-    private SuperSplitQueue parent;
+public class SubSplitQueue implements Iterable<Integer> {
+    final private int ownIndex;
 
-    public SubSplitQueue(int ownIndex, SuperSplitQueue parent) {
+    final public SuperSplitQueue parent;
+
+    private Optional<SubSplitQueue> prev;
+    private Optional<SubSplitQueue> next;
+
+    /**
+     * Returns a SubSplitQueue with elements from 0 to universeSize - 1
+     * @param universeSize
+     * @return
+     */
+    public static SubSplitQueue subSplitQueueFactory(int universeSize) {
+        return SuperSplitQueue.instantiate(universeSize);
+    }
+
+    /**
+     * Returns a SubSplitQueue with elements from sortedElements.
+     * SortedElements has to a subset of {0, ..., universeSize - 1}, sorted, and every entry should be unique
+     * @param universeSize
+     * @return
+     */
+    public static SubSplitQueue subSplitQueueFactory(int universeSize, int[] sortedElements) {
+        return SuperSplitQueue.instantiate(universeSize, sortedElements);
+    }
+
+    /**
+     *
+     * @param ownIndex
+     * @param parent
+     */
+    SubSplitQueue(int ownIndex, SuperSplitQueue parent) {
         this.ownIndex = ownIndex;
         this.parent = parent;
     }
 
 
-    public int getOwnIndex() {
+    int getOwnIndex() {
         return ownIndex;
     }
 
@@ -63,5 +91,22 @@ public class SubSplitQueue {
      */
     public SubSplitQueue split(int[] splitters) {
         return parent.split(splitters, ownIndex);
+    }
+
+    public boolean contains(int element) {
+        return parent.contains(element, ownIndex);
+    }
+
+    @Override
+    public Iterator<Integer> iterator() {
+        return parent.iterator(ownIndex);
+    }
+
+    public int[] asArray() {
+        return parent.asArray(ownIndex);
+    }
+
+    public int getSize() {
+        return parent.getSize(ownIndex);
     }
 }
