@@ -13,6 +13,7 @@ public class SubSplitQueue implements Iterable<Integer> {
 
     /**
      * Returns a SubSplitQueue with elements from 0 to universeSize - 1
+     * Runs in O(universeSize)
      * @param universeSize
      * @return
      */
@@ -68,6 +69,11 @@ public class SubSplitQueue implements Iterable<Integer> {
     }
 
 
+    /**
+     * Returns true iff the queue does not contain any elements.
+     * Runs in constant time.
+     * @return whether it is empty
+     */
     public boolean isEmpty() {
         return parent.isEmpty(ownIndex);
     }
@@ -82,10 +88,11 @@ public class SubSplitQueue implements Iterable<Integer> {
         parent.remove(element, ownIndex);
     }
 
+
     /**
      * Splits this queue in two: Elements in splitters are removed and transferred to a new queue,
      * the others stay.
-     * Run time:
+     * Run time: O(queue size)
      * @param splitters HAVE TO BE SORTED
      * @return
      */
@@ -93,19 +100,41 @@ public class SubSplitQueue implements Iterable<Integer> {
         return parent.split(splitters, ownIndex);
     }
 
+
+    /**
+     * Returns true iff the queue contains element.
+     * Runs in constant time.
+     * @return whether it contains element
+     */
     public boolean contains(int element) {
         return parent.contains(element, ownIndex);
     }
 
+
+    /**
+     * Iterates over the contained elements
+     * Every iteration takes constant time.
+     * @return the iterator
+     */
     @Override
     public Iterator<Integer> iterator() {
         return parent.iterator(ownIndex);
     }
 
+
+    /**
+     * Runs in O(queue size)
+     * @return an array containing the elements of this queue
+     */
     public int[] asArray() {
         return parent.asArray(ownIndex);
     }
 
+
+    /**
+     * Runs in constant time.
+     * @return the amount of contained elements
+     */
     public int getSize() {
         return parent.getSize(ownIndex);
     }

@@ -112,6 +112,5 @@ public class SuperSplitQueueTest {
         for (int i: split) {
             System.out.println(i);
         }
-
     }
 }
