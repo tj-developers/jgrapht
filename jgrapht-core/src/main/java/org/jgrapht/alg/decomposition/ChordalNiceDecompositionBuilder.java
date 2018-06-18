@@ -1,3 +1,20 @@
+/*
+ * (C) Copyright 2016-2018, by Ira Justus Fesefeldt and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * This program and the accompanying materials are dual-licensed under
+ * either
+ *
+ * (a) the terms of the GNU Lesser General Public License version 2.1
+ * as published by the Free Software Foundation, or (at your option) any
+ * later version.
+ *
+ * or (per the licensee's choosing)
+ *
+ * (b) the terms of the Eclipse Public License v1.0 as published by
+ * the Eclipse Foundation.
+ */
 package org.jgrapht.alg.decomposition;
 
 import java.util.*;
@@ -7,7 +24,12 @@ import org.jgrapht.alg.cycle.*;
 
 /**
  * A builder for a nice decomposition for chordal graphs. See {@link NiceDecompositionBuilder} for
- * an explanation of nice decomposition.
+ * an explanation of nice decomposition.<br>
+ * 
+ * This builder uses the perfect elimination order from {@link ChordalityInspector} to iterate over the 
+ * graph. For every node it generates a node for the predecessors of the current node according 
+ * to the perfect elimination order and builds a path to such a node from the node where the greatest predecessor
+ * was introduced. 
  * 
  * @author Ira Justus Fesefeldt (PhoenixIra)
  *
