@@ -49,6 +49,13 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
 
     private boolean isomorphismTestExecuted = false;
 
+    /**
+     * Constructor for a isomorphism inspector based on color refinement. It checks whether <code>graph1</code> and
+     * <code>graph2</code> are isomorphic.
+     *
+     * @param graph1 the first graph
+     * @param graph2 the second graph
+     */
     public ColorRefinementIsomorphismInspector(Graph<V, E> graph1, Graph<V, E> graph2) {
         super(graph1, graph2);
         isColoringDiscrete = false;
