@@ -23,10 +23,7 @@ import org.jgrapht.alg.color.ColorRefinementAlgorithm;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm.Coloring;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of the color refinement algorithm isomorphism test using its feature of detecting
@@ -45,7 +42,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
 
     private static final long serialVersionUID = -4798546523147487442L;
 
-    private IsomorphicGraphMapping isomorphicGraphMapping = null;
+    private GraphMapping<V, E> isomorphicGraphMapping = null;
 
     private boolean isColoringDiscrete;
     private boolean isIsomorphic;
@@ -65,8 +62,16 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
      */
     @Override
     public Iterator<GraphMapping<V, E>> getMappings() throws IllegalStateException {
-        //TODO we have to calculate the mapping if the coloring is discrete
-        return null;
+        if(!isomorphismTestExecuted) {
+            isomorphismExists();
+        }
+        if(isIsomorphic && isColoringDiscrete) {
+            ArrayList<GraphMapping<V, E>> iteratorList = new ArrayList<>(1);
+            iteratorList.add(isomorphicGraphMapping);
+            return iteratorList.iterator();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -152,6 +157,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
         if(!it1.hasNext() && !it2.hasNext()) { // no more color classes for both colorings, that is, the graphs have the same coloring.
             if(coloring1.getNumberColors() == graph1.vertexSet().size() && coloring2.getNumberColors() == graph2.vertexSet().size()) { // check if the colorings are discrete, that is, the color mapping is injective.
                 isColoringDiscrete = true;
+                calculateGraphMapping(coloring1, coloring2);
             }
             return true;
         } else { // just a safety check. The program should not go into that branch as we checked that the size of the sets of all color classes is the same. Nevertheless, the graphs are not isomorphic if this case occurs.
@@ -177,5 +183,36 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
             }
             return ((Integer) o1.size()).compareTo(o2.size());
         });
+    }
+
+    /**
+     * calculates the graph isomorphism as GraphMapping and assigns it to attribute <code>isomorphicGraphMapping</code>
+     *
+     * @param coloring1 the discrete vertex coloring of graph1
+     * @param coloring2 the discrete vertex coloring of graph2
+     */
+    private void calculateGraphMapping(Coloring<V> coloring1, Coloring<V> coloring2) {
+        GraphOrdering<V, E> graphOrdering1 = new GraphOrdering<>(graph1);
+        GraphOrdering<V, E> graphOrdering2 = new GraphOrdering<>(graph2);
+
+        int[] core1 = new int[graph1.vertexSet().size()];
+        int[] core2 = new int[graph2.vertexSet().size()];
+
+        Iterator<Set<V>> it1 = coloring1.getColorClasses().iterator();
+        Iterator<Set<V>> it2 = coloring2.getColorClasses().iterator();
+
+        // we only have to check one iterator as the color classes have the same size
+        while(it1.hasNext()) {
+            V v1 = it1.next().iterator().next();
+            V v2 = it2.next().iterator().next();
+
+            int numberOfV1 = graphOrdering1.getVertexNumber(v1);
+            int numberOfV2 = graphOrdering2.getVertexNumber(v2);
+
+            core1[numberOfV1] = numberOfV2;
+            core2[numberOfV2] = numberOfV1;
+        }
+
+        isomorphicGraphMapping = new IsomorphicGraphMapping<>(graphOrdering1, graphOrdering2, core1, core2);
     }
 }
