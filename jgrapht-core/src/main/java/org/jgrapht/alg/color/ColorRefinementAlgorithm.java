@@ -84,9 +84,6 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         Integer n = graph.vertexSet().size(); // the size of the graph
         k = alpha.getNumberColors(); // number of colors used
 
-        // The following arrays have length of n+1 instead of n, since c ranges from 1 to n and not from 0 to n-1
-        // TODO: Adjust c and the array ranges
-
         // mapping from all colors to their classes
         HashMap<Integer, List<V>> C = new HashMap<>(n + 1);
         // mapping from color to their classes, whereby every vertex in the classes has colorDegree(v) >= 1
@@ -108,7 +105,6 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
             coloring.put(v, alpha.getColors().get(v)); // assign a color to every vertex (for initialization)
         }
         Deque<Integer> refineStack = getSortedStack(alpha); // get an ascendingly sorted stack of all colors that are predefined by alpha
-        // TODO Argue if linked list should be replaced by ArrayList -- probably yes -- then please initialize it correctly such that it does not have to be reallocated.
         ArrayList<Integer> adjacentColors = new ArrayList<>(n); // list of all colors that have at least one vertex with colorDegree >= 1
 
         while(!refineStack.isEmpty()) {
@@ -351,7 +347,6 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         return new ColoringImpl<>(alpha, 1);
     }
 
-    //TODO is that correct???
     /**
      * returns a canonically sorted stack of all colors of alpha. It is important that alpha is consistent
      *
