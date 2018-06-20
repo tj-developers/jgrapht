@@ -152,14 +152,14 @@ public class ChordalNiceDecompositionBuilder<V, E>
                 decompNode = forgetNodeMap.get(lastVertex);
 
             // if this node is not a leaf node, create a join node
-            if (Graphs.vertexHasSuccessors(getDecomposition(), decompNode)) {
+            if (Graphs.vertexHasSuccessors(decomposition, decompNode)) {
                 decompNode = addJoin(decompNode).getFirst();
             }
 
             // calculate vertices of nearest successor, which needs to be handled
             Set<V> clique = new HashSet<V>(predecessors);
             clique.add(vertex);
-            Set<V> toIntroduce = new HashSet<V>(getMap().get(decompNode));
+            Set<V> toIntroduce = new HashSet<V>(decompositionMap.get(decompNode));
             toIntroduce.removeAll(clique);
 
             // first remove unnecessary nodes

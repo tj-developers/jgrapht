@@ -60,10 +60,10 @@ abstract public class NiceDecompositionBuilder<V>
 {
 
     // resulting decomposition
-    private Graph<Integer, DefaultEdge> decomposition;
+    protected Graph<Integer, DefaultEdge> decomposition;
 
     // map from decomposition nodes to the interval sets
-    private Map<Integer, Set<V>> decompositionMap;
+    protected Map<Integer, Set<V>> decompositionMap;
 
     // the root of the tree
     private Integer root;
