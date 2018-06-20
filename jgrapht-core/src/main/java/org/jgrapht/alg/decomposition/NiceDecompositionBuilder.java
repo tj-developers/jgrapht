@@ -25,21 +25,30 @@ import org.jgrapht.graph.*;
 
 /**
  * An abstract builder class for nice tree decompositions. <br>
- * A tree decomposition of a graph G is a tree T and a map b:V(T) &rarr; Set&lt;V(G)&gt;, 
- * which satisfies the properties: 
- * <ul> <li>for every edge e in E(G), there is a node t in V(T) with e is a subset of b(v)</li>
- * <li>for all vertices v in V(G) the set {t &isin; V(T) | v &isin; b(t)} is non-empty and connected in T</li></ul>
+ * A tree decomposition of a graph G is a tree T and a map b:V(T) &rarr; Set&lt;V(G)&gt;, which
+ * satisfies the properties:
+ * <ul>
+ * <li>for every edge e in E(G), there is a node t in V(T) with e is a subset of b(v)</li>
+ * <li>for all vertices v in V(G) the set {t &isin; V(T) | v &isin; b(t)} is non-empty and connected
+ * in T</li>
+ * </ul>
  * <br>
- * A nice tree decomposition is a special tree decomposition, which satisfies the properties: 
- * <ul> <li>for root r &isin; V(T) and leaf l &isin; V(T): b(r)=b(t)=&empty;</li>
- * <li>every non-leaf node t &isin; V(T) is of one of the following three types: 
- * <ul><li>introduce node: t has exactly one child d and b(t) = b(d) &cup; w for some w &isin; V(G)</li>
- * <li>forget node: t has exactly one child d and b(t) &cup; w = b(d) for some w &isin; V(G)\b(t)</li>
- * <li>join node: t has exactly two child d_1, d_2 and b(t)=b(d_1)=b(d_2)</li></ul></ul>
+ * A nice tree decomposition is a special tree decomposition, which satisfies the properties:
+ * <ul>
+ * <li>for root r &isin; V(T) and leaf l &isin; V(T): b(r)=b(t)=&empty;</li>
+ * <li>every non-leaf node t &isin; V(T) is of one of the following three types:
+ * <ul>
+ * <li>forget node: t has exactly one child d and b(t) = b(d) &cup; w for some w &isin; V(G)</li>
+ * <li>introduce node: t has exactly one child d and b(t) &cup; w = b(d) for some w &isin;
+ * V(G)\b(t)</li>
+ * <li>join node: t has exactly two child d_1, d_2 and b(t)=b(d_1)=b(d_2)</li>
+ * </ul>
+ * </ul>
  * <br>
  * See:<br>
- * Bodlaender, Hans &amp; Kloks, Ton. (1991). 
- * Better Algorithms for the Pathwidth and Treewidth of Graphs.. 544-555. 10.1007/3-540-54233-7_162. 
+ * <href=https://www.researchgate.net/publication/220896817_Better_Algorithms_for_the_Pathwidth_and_Treewidth_of_Graphs>
+ * Bodlaender, Hans &amp; Kloks, Ton. (1991). Better Algorithms for the Pathwidth and Treewidth of
+ * Graphs. 544-555. 10.1007/3-540-54233-7_162.</href>
  * 
  * @author Ira Justus Fesefeldt (PhoenixIra)
  *
