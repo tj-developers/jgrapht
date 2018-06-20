@@ -101,10 +101,11 @@ abstract public class NiceDecompositionBuilder<V>
 
     /**
      * Method for adding a new join node.<br>
-     * {@code node} is copied two times j1 and j2. {@code node} afterwards becomes the root of the subtree.
-     * j2 becomes the child of {@code node} and has the children of {@code node} as children. j1 becomes a leaf
-     * and the child of {@code node}. This can be used to make a join node retrospectively to branch of
-     * this node. j2 continues the path while j1 adds another path.<br>
+     * {@code node} is copied two times j1 and j2. {@code node} afterwards becomes the root of the
+     * subtree. j2 becomes the child of {@code node} and has the children of {@code node} as
+     * children. j1 becomes a leaf and the child of {@code node}. This can be used to make a join
+     * node retrospectively to branch of this node. j2 continues the path while j1 adds another
+     * path.<br>
      * The time complexity of this method is in $\mathcal{O}(|b(node)|)$.
      * 
      * @param node which nodes should become a join node

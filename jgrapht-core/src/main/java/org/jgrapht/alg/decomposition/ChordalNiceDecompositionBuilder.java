@@ -32,10 +32,10 @@ import org.jgrapht.alg.cycle.*;
  * greatest predecessor was introduced.
  * <p>
  * The complexity of this algorithm is in O(). Consider the every node in the nice tree
- * decomposition: There are exactly $|V|$ many forget nodes. There are at most $|2V|$ additionally
+ * decomposition: There are exactly $|V|$ many forget nodes. There are at most $2|V|$ additionally
  * nodes because of a join nodes. Every join node creates one additional path from root to a leaf,
  * every such path can contain for every vertex exactly one introduce node. Thus we have at most
- * $|V^2|$ introduce nodes. We have in total at most $|V^2+3V|$ nodes where the bag of every node has
+ * $|V|^2$ introduce nodes. We have in total at most $|V|^2+3|V|$ nodes where the bag of every node has
  * at most as many nodes of the closet ancestor forget node for vertex $v$, which are $|N(v)|$ many. Thus the
  * time complexity is in $\mathcal{O}(|V|(|V|+|E|))$.
  * <p>
