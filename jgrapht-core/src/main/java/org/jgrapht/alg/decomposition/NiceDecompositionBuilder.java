@@ -62,7 +62,7 @@ abstract public class NiceDecompositionBuilder<V>
     // resulting decomposition
     protected Graph<Integer, DefaultEdge> decomposition;
 
-    // map from decomposition nodes to the interval sets
+    // map from decomposition nodes to the vertex sets
     protected Map<Integer, Set<V>> decompositionMap;
 
     // the root of the tree
@@ -230,7 +230,7 @@ abstract public class NiceDecompositionBuilder<V>
 
     /**
      * Returns the map from integer nodes of the tree decomposition {@code getDecomposition()} to
-     * the intervals of the interval graph as an unmodifiable map
+     * the sets of the vertices from the graph as an unmodifiable map
      * 
      * @return the nodes of decomposition to sets of vertices map
      */
