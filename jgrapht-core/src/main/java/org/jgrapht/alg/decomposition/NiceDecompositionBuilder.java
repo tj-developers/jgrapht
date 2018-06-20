@@ -148,8 +148,8 @@ abstract public class NiceDecompositionBuilder<V>
      * 
      * @param forgottenElement the element, which gets forgotten
      * @param node the node of the tree decomposition, which becomes a forget node
-     * @return the newly created vertex, null and no change if either introducedElement is in the
-     *         bag of currentVertex or currentVertex is not a leaf.
+     * @return the newly created vertex, null and no change if either introducedElement is in
+     *         b({@code node}) or {@code node} is not a leaf.
      */
     protected Integer addForget(V forgottenElement, Integer node)
     {
@@ -176,8 +176,8 @@ abstract public class NiceDecompositionBuilder<V>
      * 
      * @param introducedElement the element, which is introduced
      * @param node the node, which becomes an introduce node
-     * @return the next vertex, null and no change if either introducedElement is in the bag of
-     *         currentVertex or currentVertex is not a leaf.
+     * @return the next vertex, null and no change if either introducedElement is in b({@code node})
+     *         or {@code node} is not a leaf.
      */
     protected Integer addIntroduce(V introducedElement, Integer node)
     {
