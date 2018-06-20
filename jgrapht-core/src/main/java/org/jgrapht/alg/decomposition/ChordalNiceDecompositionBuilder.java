@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016-2018, by Ira Justus Fesefeldt and Contributors.
+ * (C) Copyright 2018-2018, by Ira Justus Fesefeldt and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -24,12 +24,24 @@ import org.jgrapht.alg.cycle.*;
 
 /**
  * A builder for a nice decomposition for chordal graphs. See {@link NiceDecompositionBuilder} for
- * an explanation of nice decomposition.<br>
- * 
+ * an explanation of nice decomposition.
+ * <p>
  * This builder uses the perfect elimination order from {@link ChordalityInspector} to iterate over
  * the graph. For every node it generates a node for the predecessors of the current node according
  * to the perfect elimination order and builds a path to such a node from the node where the
  * greatest predecessor was introduced.
+ * <p>
+ * The complexity of this algorithm is in O(). Consider the every node in the nice tree
+ * decomposition: There are exactly $|V|$ many forget nodes. There are at most $|2V|$ additionally
+ * nodes because of a join nodes. Every join node creates one additional path from root to a leaf,
+ * every such path can contain for every vertex exactly one introduce node. Thus we have at most
+ * $|V^2|$ introduce nodes. We have in total at most $|V^2+3V|$ nodes where the bag of every node has
+ * at most as many nodes of the closet ancestor forget node for vertex $v$, which are $|N(v)|$ many. Thus the
+ * time complexity is in $\mathcal{O}(|V|(|V|+|E|))$.
+ * <p>
+ * This is a non-recursive adaption for nice tree decomposition of algorithm 2 from here: <br>
+ * Hans L. Bodlaender, Arie M.C.A. Koster, Treewidth computations I. Upper bounds, Information and
+ * Computation, Volume 208, Issue 3, 2010, Pages 259-275,
  * 
  * @author Ira Justus Fesefeldt (PhoenixIra)
  *
