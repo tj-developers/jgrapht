@@ -19,8 +19,10 @@ package org.jgrapht.alg.isomorphism;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.color.ColorRefinementAlgorithm;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm.Coloring;
+import org.jgrapht.traverse.BreadthFirstIterator;
 
 import java.io.Serializable;
 import java.util.*;
@@ -42,12 +44,13 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
 
     private static final long serialVersionUID = -4798546523147487442L;
 
-    private GraphMapping<V, E> isomorphicGraphMapping = null;
+    private GraphMapping<V, E> isomorphicGraphMapping;
 
     private boolean isColoringDiscrete;
     private boolean isIsomorphic;
+    private boolean isForest;
 
-    private boolean isomorphismTestExecuted = false;
+    private boolean isomorphismTestExecuted;
 
     /**
      * Constructor for a isomorphism inspector based on color refinement. It checks whether <code>graph1</code> and
@@ -58,7 +61,10 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
      */
     public ColorRefinementIsomorphismInspector(Graph<V, E> graph1, Graph<V, E> graph2) {
         super(graph1, graph2);
-        isColoringDiscrete = false;
+        this.isomorphicGraphMapping = null;
+        this.isColoringDiscrete = false;
+        this.isomorphismTestExecuted = false;
+        this.isForest = false;
     }
 
     /**
@@ -72,7 +78,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
         if(!isomorphismTestExecuted) {
             isomorphismExists();
         }
-        if(isIsomorphic && isColoringDiscrete) {
+        if(isIsomorphic && (isColoringDiscrete || isForest)) {
             ArrayList<GraphMapping<V, E>> iteratorList = new ArrayList<>(1);
             iteratorList.add(isomorphicGraphMapping);
             return iteratorList.iterator();
@@ -162,8 +168,11 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
         }
 
         if(!it1.hasNext() && !it2.hasNext()) { // no more color classes for both colorings, that is, the graphs have the same coloring.
-            if(coloring1.getNumberColors() == graph1.vertexSet().size() && coloring2.getNumberColors() == graph2.vertexSet().size()) { // check if the colorings are discrete, that is, the color mapping is injective.
+            if(coloring1.getColorClasses().size() == graph1.vertexSet().size() && coloring2.getColorClasses().size() == graph2.vertexSet().size()) { // check if the colorings are discrete, that is, the color mapping is injective.
                 isColoringDiscrete = true;
+                calculateGraphMapping(coloring1, coloring2);
+            } else if(isForest(graph1) && isForest(graph2)) {
+                isForest = true;
                 calculateGraphMapping(coloring1, coloring2);
             }
             return true;
@@ -205,21 +214,52 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
         int[] core1 = new int[graph1.vertexSet().size()];
         int[] core2 = new int[graph2.vertexSet().size()];
 
-        Iterator<Set<V>> it1 = coloring1.getColorClasses().iterator();
-        Iterator<Set<V>> it2 = coloring2.getColorClasses().iterator();
+        Iterator<Set<V>> setIterator1 = coloring1.getColorClasses().iterator();
+        Iterator<Set<V>> setIterator2 = coloring2.getColorClasses().iterator();
 
         // we only have to check one iterator as the color classes have the same size
-        while(it1.hasNext()) {
-            V v1 = it1.next().iterator().next();
-            V v2 = it2.next().iterator().next();
+        while(setIterator1.hasNext()) {
+            Iterator<V> vertexIterator1 = setIterator1.next().iterator();
+            Iterator<V> vertexIterator2 = setIterator2.next().iterator();
 
-            int numberOfV1 = graphOrdering1.getVertexNumber(v1);
-            int numberOfV2 = graphOrdering2.getVertexNumber(v2);
+            while(vertexIterator1.hasNext()) {
+                V v1 = vertexIterator1.next();
+                V v2 = vertexIterator2.next();
 
-            core1[numberOfV1] = numberOfV2;
-            core2[numberOfV2] = numberOfV1;
+                int numberOfV1 = graphOrdering1.getVertexNumber(v1);
+                int numberOfV2 = graphOrdering2.getVertexNumber(v2);
+
+                core1[numberOfV1] = numberOfV2;
+                core2[numberOfV2] = numberOfV1;
+            }
         }
 
         isomorphicGraphMapping = new IsomorphicGraphMapping<>(graphOrdering1, graphOrdering2, core1, core2);
+    }
+
+    /**
+     * Checks whether the given <code>graph</code> is a forest
+     *
+     * @param graph the graph to test for being a forest
+     * @return true, if <code>graph</code> is a forest; false, otherwise
+     */
+    private boolean isForest(Graph<V, E> graph) {
+        BreadthFirstIterator<V, E> breadthFirstIterator = new BreadthFirstIterator<>(graph);
+        Set<V> visitedVertices = new HashSet<>();
+
+        while (breadthFirstIterator.hasNext()) {
+            V current = breadthFirstIterator.next();
+            if(visitedVertices.contains(current)) {
+                return false;
+            }
+            for(E e : graph.outgoingEdgesOf(current)) {
+                V v = Graphs.getOppositeVertex(graph, e, current);
+                if(!v.equals(breadthFirstIterator.getParent(current)) && visitedVertices.contains(v)) {
+                    return false;
+                }
+            }
+            visitedVertices.add(current);
+        }
+        return true;
     }
 }
