@@ -81,7 +81,7 @@ public class ChordalNiceDecompositionBuilder<V, E>
         if (!inspec.isChordal())
             return null;
         ChordalNiceDecompositionBuilder<V, E> builder =
-            new ChordalNiceDecompositionBuilder<>(graph, inspec.getSearchOrder());
+            new ChordalNiceDecompositionBuilder<>(graph, inspec.getPerfectEliminationOrder());
         builder.computeNiceDecomposition();
         return builder;
 
