@@ -352,6 +352,8 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         MPQNode right;
         MPQNode parent;
         
+        MPQNodeSet bag;
+        
         public MPQNode(MPQNode left, MPQNode right, MPQNode parent) {
             this.left = left;
             this.right = right;
@@ -397,6 +399,21 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         public QSectionNode(MPQNode left, MPQNode right, MPQNode parent, MPQNode child) {
             super(left, right, parent);
             
+        }
+    }
+    
+    private class MPQNodeSet
+    {
+        V vertex;
+        MPQNodeSet left;
+        MPQNodeSet right;
+        MPQNode owner;
+        
+        public MPQNodeSet(V vertex, MPQNodeSet left, MPQNodeSet right, MPQNode owner) {
+            this.vertex = vertex;
+            this.left = left;
+            this.right = right;
+            this.owner = owner;
         }
     }
 }
