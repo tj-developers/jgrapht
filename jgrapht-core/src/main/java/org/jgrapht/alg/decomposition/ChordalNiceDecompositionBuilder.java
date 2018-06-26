@@ -31,13 +31,15 @@ import org.jgrapht.alg.cycle.*;
  * to the perfect elimination order and builds a path to such a node from the node where the
  * greatest predecessor was introduced.
  * <p>
- * The complexity of this algorithm is in O(). Consider the every node in the nice tree
- * decomposition: There are exactly $|V|$ many forget nodes. There are at most $2|V|$ additionally
- * nodes because of a join nodes. Every join node creates one additional path from root to a leaf,
- * every such path can contain for every vertex exactly one introduce node. Thus we have at most
- * $|V|^2$ introduce nodes. We have in total at most $|V|^2+3|V|$ nodes where the bag of every node has
- * at most as many nodes of the closet ancestor forget node for vertex $v$, which are $|N(v)|$ many. Thus the
- * time complexity is in $\mathcal{O}(|V|(|V|+|E|))$.
+ * The complexity of this algorithm is in $\mathcal{O}(|V|(|V|+|E|))$.<br>
+ * Consider the every node in the nice tree decomposition: There are exactly $|V|$ many forget
+ * nodes. There are at most $2|V|$ additionally nodes because of a join nodes. Every join node
+ * creates one additional path from root to a leaf, every such path can contain for every vertex at
+ * most one introduce node, which yields $|V|^2$ introduce nodes. Now considering the bags of the
+ * introduce nodes. On a path from root to a leaf we have at most one introduce node for every
+ * introduced vertex. Since this introduced vertex is part of the clique of the least ancestor
+ * forget node, the corresponding bag of the introduce node is smaller than the set of neighbors of
+ * this vertex. Thus the time complexity is in $\mathcal{O}(|V|(|V|+|E|))$.
  * <p>
  * This is a non-recursive adaption for nice tree decomposition of algorithm 2 from here: <br>
  * Hans L. Bodlaender, Arie M.C.A. Koster, Treewidth computations I. Upper bounds, Information and
@@ -119,8 +121,8 @@ public class ChordalNiceDecompositionBuilder<V, E>
 
     /**
      * Computes the nice decomposition of the graph. We iterate over the perfect elimination order
-     * of the chordal graph and tries to add a node containing the predecessors regarding the
-     * perfect elimination as a bag of the tree
+     * of the chordal graph and try to add a node containing the predecessors regarding the
+     * perfect elimination as a bag to the tree
      */
     private void computeNiceDecomposition()
     {
@@ -171,6 +173,7 @@ public class ChordalNiceDecompositionBuilder<V, E>
             forgetNodeMap.put(vertex, decompNode);
 
         }
+        //finish all unfinished paths
         leafClosure();
 
     }
