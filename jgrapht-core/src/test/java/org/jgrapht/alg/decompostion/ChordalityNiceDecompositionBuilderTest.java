@@ -1,11 +1,14 @@
 package org.jgrapht.alg.decompostion;
 
+import java.util.function.Supplier;
+
 import org.jgrapht.*;
 import org.jgrapht.alg.decomposition.*;
 import org.jgrapht.alg.util.*;
 import org.jgrapht.generate.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.builder.*;
+import org.jgrapht.util.SupplierUtil;
 import org.junit.*;
 
 public class ChordalityNiceDecompositionBuilderTest
@@ -14,9 +17,10 @@ public class ChordalityNiceDecompositionBuilderTest
     private Graph<Integer, DefaultEdge> makeCompleteGraph(int n)
     {
         Graph<Integer, DefaultEdge> graph =
-            new SimpleGraph<Integer, DefaultEdge>(DefaultEdge.class);
+            new SimpleGraph<Integer, DefaultEdge>(SupplierUtil.createIntegerSupplier(), 
+                                                  SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
         CompleteGraphGenerator<Integer, DefaultEdge> cgGen = new CompleteGraphGenerator<>(n);
-        cgGen.generateGraph(graph, new IntegerVertexFactory(), null);
+        cgGen.generateGraph(graph);
         return graph;
     }
 
@@ -36,7 +40,8 @@ public class ChordalityNiceDecompositionBuilderTest
 
     private Graph<Integer, DefaultEdge> makeGraphsWithTriangles(int n)
     {
-        Graph<Integer, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
+        Graph<Integer, DefaultEdge> graph = new SimpleGraph<>(SupplierUtil.createIntegerSupplier(), 
+                                                              SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
         if (n == 0)
             return graph;
         int freeVertex = 1;
@@ -70,7 +75,8 @@ public class ChordalityNiceDecompositionBuilderTest
 
     private Graph<Integer, DefaultEdge> makeUnconnectedGraph(int n)
     {
-        Graph<Integer, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
+        Graph<Integer, DefaultEdge> graph = new SimpleGraph<>(SupplierUtil.createIntegerSupplier(), 
+                                                              SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
         for (int i = 0; i < n; i++)
             graph.addVertex(i);
         return graph;
@@ -93,7 +99,7 @@ public class ChordalityNiceDecompositionBuilderTest
     public Graph<Integer, DefaultEdge> makeLekkerkerkerBolandFamily(int n)
     {
         GraphBuilder<Integer, DefaultEdge, ? extends SimpleGraph<Integer, DefaultEdge>> builder =
-            SimpleGraph.createBuilder(DefaultEdge.class);
+            SimpleGraph.createBuilder(SupplierUtil.DEFAULT_EDGE_SUPPLIER);
 
         builder.addEdge(0, 1);
 
