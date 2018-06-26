@@ -17,12 +17,12 @@
  */
 package org.jgrapht.graph;
 
-import java.util.*;
-
 import org.jgrapht.*;
 import org.junit.*;
 
-import static org.junit.Assert.assertEquals;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * A unit test for the AsDirectedGraph view.
@@ -47,12 +47,31 @@ public class AsUndirectedGraphTest
     /**
      * .
      */
+    @Before
+    public void setUp()
+    {
+        directed = new DefaultDirectedGraph<>(DefaultEdge.class);
+        undirected = new AsUndirectedGraph<>(directed);
+
+        directed.addVertex(v1);
+        directed.addVertex(v2);
+        directed.addVertex(v3);
+        directed.addVertex(v4);
+        e12 = directed.addEdge(v1, v2);
+        e23 = directed.addEdge(v2, v3);
+        e24 = directed.addEdge(v2, v4);
+        loop = directed.addEdge(v4, v4);
+    }
+
+    /**
+     * .
+     */
     @Test
     public void testAddEdge()
     {
         try {
             undirected.addEdge(v3, v4);
-            Assert.fail(); //should not get here
+            Assert.fail(); // should not get here
         } catch (UnsupportedOperationException e) {
         }
 
@@ -204,25 +223,6 @@ public class AsUndirectedGraphTest
             "([v1, v2, v3, v4], [(v1,v2), (v2,v3), (v2,v4), (v4,v4)])", directed.toString());
         assertEquals(
             "([v1, v2, v3, v4], [{v1,v2}, {v2,v3}, {v2,v4}, {v4,v4}])", undirected.toString());
-    }
-
-    /**
-     * .
-     */
-    @Before
-    public void setUp()
-    {
-        directed = new DefaultDirectedGraph<>(DefaultEdge.class);
-        undirected = new AsUndirectedGraph<>(directed);
-
-        directed.addVertex(v1);
-        directed.addVertex(v2);
-        directed.addVertex(v3);
-        directed.addVertex(v4);
-        e12 = directed.addEdge(v1, v2);
-        e23 = directed.addEdge(v2, v3);
-        e24 = directed.addEdge(v2, v4);
-        loop = directed.addEdge(v4, v4);
     }
 }
 

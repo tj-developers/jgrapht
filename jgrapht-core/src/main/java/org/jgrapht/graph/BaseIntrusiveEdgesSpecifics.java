@@ -17,11 +17,11 @@
  */
 package org.jgrapht.graph;
 
-import java.io.*;
-import java.util.*;
-
 import org.jgrapht.*;
 import org.jgrapht.util.*;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * A base implementation for the intrusive edges specifics.
@@ -44,10 +44,12 @@ public abstract class BaseIntrusiveEdgesSpecifics<V, E, IE extends IntrusiveEdge
 
     /**
      * Constructor
+     * 
+     * @param edgeMap the map to use for storage
      */
-    public BaseIntrusiveEdgesSpecifics()
+    public BaseIntrusiveEdgesSpecifics(Map<E, IE> edgeMap)
     {
-        this.edgeMap = new LinkedHashMap<>();
+        this.edgeMap = Objects.requireNonNull(edgeMap);
     }
 
     /**
