@@ -40,10 +40,10 @@ import org.jgrapht.graph.*;
  * <li>for root $r \in V(T)$ and leaf $l \in V(T): b(r)=b(t)=\emptyset$</li>
  * <li>every non-leaf node $t \in V(T)$ is of one of the following three types:
  * <ul>
- * <li>forget node: $t$ has exactly one child $d$ and $b(t) = b(d) \cup \{ w\}$ for some $w \in
- * V(G)\setminus b(d)$</li>
- * <li>introduce node: $t$ has exactly one child $d$ and $b(t) \cup \{ w\} = b(d)$ for some $w \in
+ * <li>forget node: $t$ has exactly one child $d$ and $b(t) \cup \{ w\} = b(d)$ for some $w \in
  * V(G)\setminus b(t)$</li>
+ * <li>introduce node: $t$ has exactly one child $d$ and $b(t) = b(d) \cup \{ w\}$ for some $w \in
+ * V(G)\setminus b(d)$</li>
  * <li>join node: $t$ has exactly two children $d_1$, $d_2$ and $b(t)=b(d_1)=b(d_2)$</li>
  * </ul>
  * </ul>
@@ -60,19 +60,19 @@ abstract public class NiceDecompositionBuilder<V>
 {
 
     // resulting decomposition
-    private Graph<Integer, DefaultEdge> decomposition;
+    protected Graph<Integer, DefaultEdge> decomposition;
 
-    // map from decomposition nodes to the interval sets
-    private Map<Integer, Set<V>> decompositionMap;
+    // map from decomposition nodes to the vertex sets
+    protected Map<Integer, Set<V>> decompositionMap;
 
     // the root of the tree
-    private Integer root;
+    protected Integer root;
 
     // next integer for vertex generation
     private Integer nextInteger;
 
     /**
-     * Constructor for all methods used in the abstract method This constructor instantiates the
+     * Constructor for all methods used in the abstract method. This constructor instantiates the
      * tree of the decomposition, the map from tree vertices to vertex sets and adds the root to the
      * tree.
      */
@@ -101,39 +101,39 @@ abstract public class NiceDecompositionBuilder<V>
 
     /**
      * Method for adding a new join node.<br>
-     * {@code node} is copied two times j1 and j2. {@code node} afterwards becomes the root of the
-     * subtree. j2 becomes the child of {@code node} and has the children of {@code node} as
-     * children. j1 becomes a leaf and the child of {@code node}. This can be used to make a join
-     * node retrospectively to branch of this node. j2 continues the path while j1 adds another
-     * path.<br>
+     * {@code node} is copied two times jLeft and jRight. {@code node} afterwards becomes the root
+     * of the subtree. jRight becomes the child of {@code node} and has the children of {@code node}
+     * as children. jLeft becomes a leaf and the child of {@code node}. This can be used to make a
+     * join node retrospectively to branch of this node. jRight continues the path while jLeft adds
+     * another path.<br>
      * The time complexity of this method is in $\mathcal{O}(|b(node)|)$.
      * 
      * @param node which nodes should become a join node
-     * @return the new children of the join node, first element has no children, second element has
-     *         the children of toJoin
+     * @return the new children of the join node; first/left element has no children, second/right
+     *         element has the children of {@code node}
      */
     protected Pair<Integer, Integer> addJoin(Integer node)
     {
         Set<V> currentVertexBag = null;
 
-        // new
+        // create first/left new child of node
         Integer vertexChildLeft = getNextInteger();
         decomposition.addVertex(vertexChildLeft);
         currentVertexBag = new HashSet<V>(decompositionMap.get(node));
         decompositionMap.put(vertexChildLeft, currentVertexBag);
 
-        // new current root
+        // create second/right new child of node
         Integer vertexChildRight = getNextInteger();
         decomposition.addVertex(vertexChildRight);
         currentVertexBag = new HashSet<V>(decompositionMap.get(node));
         decompositionMap.put(vertexChildRight, currentVertexBag);
 
-        // redirect all edges to new parent (should be just one!)
+        // redirect all edges to new parent, the second/right element
         for (Integer successor : Graphs.successorListOf(decomposition, node)) {
             decomposition.removeEdge(node, successor);
             decomposition.addEdge(vertexChildRight, successor);
         }
-        // make children of parent vertex
+        // make edge from node to left and right vertex
         decomposition.addEdge(node, vertexChildLeft);
         decomposition.addEdge(node, vertexChildRight);
 
@@ -153,11 +153,13 @@ abstract public class NiceDecompositionBuilder<V>
      */
     protected Integer addForget(V forgottenElement, Integer node)
     {
+        //check precondition
         if (!Graphs.successorListOf(decomposition, node).isEmpty())
             return null;
         if (decompositionMap.get(node).contains(forgottenElement))
             return null;
 
+        //add new child
         Set<V> nextVertexBag = new HashSet<>(decompositionMap.get(node));
         nextVertexBag.add(forgottenElement);
         Integer nextVertex = getNextInteger();
@@ -165,6 +167,7 @@ abstract public class NiceDecompositionBuilder<V>
         decomposition.addEdge(node, nextVertex);
         decompositionMap.put(nextVertex, nextVertexBag);
 
+        //return child
         return nextVertex;
     }
 
@@ -181,11 +184,13 @@ abstract public class NiceDecompositionBuilder<V>
      */
     protected Integer addIntroduce(V introducedElement, Integer node)
     {
+        //check precondition
         if (!Graphs.successorListOf(decomposition, node).isEmpty())
             return null;
         if (!decompositionMap.get(node).contains(introducedElement))
             return null;
 
+        //add new child
         Set<V> nextVertexBag = new HashSet<>(decompositionMap.get(node));
         nextVertexBag.remove(introducedElement);
         Integer nextVertex = getNextInteger();
@@ -193,11 +198,12 @@ abstract public class NiceDecompositionBuilder<V>
         decomposition.addEdge(node, nextVertex);
         decompositionMap.put(nextVertex, nextVertexBag);
 
+        //return child
         return nextVertex;
     }
 
     /**
-     * Adds to all current leaves in the decomposition forget/introduce nodes until only empty sets
+     * Adds to all current leaves in the decomposition introduce nodes until only empty sets
      * are leaves.
      */
     protected void leafClosure()
@@ -230,7 +236,7 @@ abstract public class NiceDecompositionBuilder<V>
 
     /**
      * Returns the map from integer nodes of the tree decomposition {@code getDecomposition()} to
-     * the intervals of the interval graph as an unmodifiable map
+     * the sets of the vertices from the graph as an unmodifiable map
      * 
      * @return the nodes of decomposition to sets of vertices map
      */
