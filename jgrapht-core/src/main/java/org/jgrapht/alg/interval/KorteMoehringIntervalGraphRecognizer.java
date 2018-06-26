@@ -17,6 +17,7 @@ import org.jgrapht.graph.interval.*;
 /**
  * TODO: better Javadoc
  * @author Ira Justus Fesefeldt (PhoenixIra)
+ * @author Timofey Chudakov
  *
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
@@ -30,7 +31,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     ChordalityInspector<V, E> chorInspec;
 
     // TODO: add good mpqTree Implementation
-    private Graph<PQNode, DefaultEdge> mpqTree;
+    private Graph<MPQNode, DefaultEdge> mpqTree;
     
     private boolean isIntervalGraph;
     private boolean isChordal;
@@ -64,7 +65,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         }
         
         // init all relevant objects
-        mpqTree = new DefaultDirectedGraph<PQNode, DefaultEdge>(DefaultEdge.class);
+        mpqTree = new DefaultDirectedGraph<MPQNode, DefaultEdge>(DefaultEdge.class);
         Map<V, Integer> vertexOrder = getVertexInOrder(chorInspec.getPerfectEliminationOrder());
         // iterate over the perfect elimination order
         for (V u : chorInspec.getPerfectEliminationOrder()) {
@@ -80,7 +81,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             // labeling phase: 
             // 1 if one but not all vertices in a PQNode is a predecessor
             // 2/inf if all vertices in a PQNode is a predecessor
-            Map<PQNode,Integer> positiveLabels = labelTree(predecessors);
+            Map<MPQNode,Integer> positiveLabels = labelTree(predecessors);
             
             // test phase:
             // check for path of positive labels
@@ -95,13 +96,13 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             
             // update phase:
             // generate the path
-            List<PQNode> path = getPath(positiveLabels.keySet());
+            List<MPQNode> path = getPath(positiveLabels.keySet());
             
             //get lowest positive node in path
-            PQNode Nsmall = getNSmall(path, positiveLabels);
+            MPQNode Nsmall = getNSmall(path, positiveLabels);
             
             //get highest non-inf node in path
-            PQNode Nbig = getNBig(path, positiveLabels);
+            MPQNode Nbig = getNBig(path, positiveLabels);
             
             //update MPQ Tree
             if(Nsmall.equals(Nbig))
@@ -111,128 +112,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
         }
     }
-
-    /**
-     * TODO: better Javadoc
-     * Checks the path for specifig patterns and changes every node accordingly
-     * 
-     * @param u the vertex to add to the tree
-     * @param path the path of vertices to be changed
-     * @param nSmall the smalles positive node in path
-     * @param nBig the highest non-empty, non-inf node in path
-     */
-    private void changedPathAccordingly(V u, List<PQNode> path, PQNode nSmall, PQNode nBig)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /**
-     * TODO: better Javadoc
-     * Adds the vertex u to the leaf of the path
-     * 
-     * @param u the vertex to be added
-     * @param path the path of the leaf
-     */
-    private void addVertexToLeaf(V u, List<PQNode> path)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /**
-     * TODO: better Javadoc
-     * computes the highest vertex N of the tree which is non-empty and non-inf
-     * 
-     * @param path the path from root to leaf
-     * @param positiveLabels the map from nodes to positive labels
-     * @return highest non-empty, non-inf vertex N
-     */
-    private PQNode getNBig(List<PQNode> path, Map<PQNode, Integer> positiveLabels)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * TODO: better Javadoc
-     * computes the smallest vertex N of the Tree which has a positive label
-     * 
-     * @param path the path from root to leaf
-     * @param positiveLabels the map from nodes to positive labels
-     * @return smalles vertex N with positive label
-     */
-    private PQNode getNSmall(List<PQNode> path, Map<PQNode, Integer> positiveLabels)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * TODO: better Javadoc
-     * computes a path from the root to a leaf, containing all positive vertices
-     * 
-     * @param positiveLabels the vertices which forms a path
-     * @return the path from root to a leaf
-     */
-    private List<PQNode> getPath(Set<PQNode> positiveLabels)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * TODO: Better Javadoc
-     * tests if an outer section of every Q nodes N in positive labels contains predecessors intersection V(N)
-     * 
-     * @param positiveLabels the positive vertices
-     * @param predecessors the predecessors of u
-     * @return true iff it fulfills the condition
-     */
-    private boolean testOuterSectionsOfQNodes(Set<PQNode> positiveLabels, Set<V> predecessors)
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /**
-     * TODO: Better Javadoc
-     * tests if positiveLabels form a path
-     * 
-     * @param positiveLabels the vertices which should form a path
-     * @return true iff it forms a path
-     */
-    private boolean testPath(Set<PQNode> positiveLabels)
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /**
-     * TODO: Better Javadoc
-     * Label every positive vertex in the MPQ Tree
-     * 
-     * @param predecessors the predecessors which are used to label the vertices in the tree
-     * @return the labeling of all positive labeled vertices
-     */
-    private Map<PQNode,Integer> labelTree(Set<V> predecessors)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * TODO: Better Javadoc
-     * Changed the MPQ Tree if u has no predecessors
-     * 
-     * @param u the vertex to be added to the MPQ Tree
-     */
-    private void addEmptyPredecessors(V u)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
+    
     /**
      * Returns the predecessors of {@code vertex} in the order defined by {@code map}. More
      * precisely, returns those of {@code vertex}, whose mapped index in {@code map} is less then
@@ -275,6 +155,137 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         }
         return vertexInOrder;
     }
+    
+    
+    /**
+     * Adds 
+     * Changed the MPQ Tree if u has no predecessors
+     * 
+     * @param u the vertex to be added to the MPQ Tree
+     */
+    private void addEmptyPredecessors(V u)
+    {
+        // TODO Auto-generated method stub
+
+    }
+    
+    
+    
+
+    /**
+     * TODO: better Javadoc
+     * Checks the path for specifig patterns and changes every node accordingly
+     * 
+     * @param u the vertex to add to the tree
+     * @param path the path of vertices to be changed
+     * @param nSmall the smalles positive node in path
+     * @param nBig the highest non-empty, non-inf node in path
+     */
+    private void changedPathAccordingly(V u, List<MPQNode> path, MPQNode nSmall, MPQNode nBig)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /**
+     * TODO: better Javadoc
+     * Adds the vertex u to the leaf of the path
+     * 
+     * @param u the vertex to be added
+     * @param path the path of the leaf
+     */
+    private void addVertexToLeaf(V u, List<MPQNode> path)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /**
+     * TODO: better Javadoc
+     * computes the highest vertex N of the tree which is non-empty and non-inf
+     * 
+     * @param path the path from root to leaf
+     * @param positiveLabels the map from nodes to positive labels
+     * @return highest non-empty, non-inf vertex N
+     */
+    private MPQNode getNBig(List<MPQNode> path, Map<MPQNode, Integer> positiveLabels)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * TODO: better Javadoc
+     * computes the smallest vertex N of the Tree which has a positive label
+     * 
+     * @param path the path from root to leaf
+     * @param positiveLabels the map from nodes to positive labels
+     * @return smalles vertex N with positive label
+     */
+    private MPQNode getNSmall(List<MPQNode> path, Map<MPQNode, Integer> positiveLabels)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * TODO: better Javadoc
+     * computes a path from the root to a leaf, containing all positive vertices
+     * 
+     * @param positiveLabels the vertices which forms a path
+     * @return the path from root to a leaf
+     */
+    private List<MPQNode> getPath(Set<MPQNode> positiveLabels)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * TODO: Better Javadoc
+     * tests if an outer section of every Q nodes N in positive labels contains predecessors intersection V(N)
+     * 
+     * @param positiveLabels the positive vertices
+     * @param predecessors the predecessors of u
+     * @return true iff it fulfills the condition
+     */
+    private boolean testOuterSectionsOfQNodes(Set<MPQNode> positiveLabels, Set<V> predecessors)
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /**
+     * TODO: Better Javadoc
+     * tests if positiveLabels form a path
+     * 
+     * @param positiveLabels the vertices which should form a path
+     * @return true iff it forms a path
+     */
+    private boolean testPath(Set<MPQNode> positiveLabels)
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /**
+     * TODO: Better Javadoc
+     * Label every positive vertex in the MPQ Tree
+     * 
+     * @param predecessors the predecessors which are used to label the vertices in the tree
+     * @return the labeling of all positive labeled vertices
+     */
+    private Map<MPQNode,Integer> labelTree(Set<V> predecessors)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    
+    
+    
+    
     
     @Override
     public boolean isIntervalGraph()
@@ -324,5 +335,68 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     {
         // TODO implement
         return null;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    private abstract class MPQNode
+    {
+        MPQNode left;
+        MPQNode right;
+        MPQNode parent;
+        
+        public MPQNode(MPQNode left, MPQNode right, MPQNode parent) {
+            this.left = left;
+            this.right = right;
+        }
+    }
+        
+    private class LeafNode extends MPQNode {
+
+        public LeafNode(MPQNode left, MPQNode right, MPQNode parent)
+        {
+            super(left, right, parent);
+        }
+        
+    }
+    
+    private class PNode extends MPQNode
+    {
+        MPQNode child;
+        
+        public PNode(MPQNode left, MPQNode right, MPQNode parent, MPQNode child) {
+            super(left, right, parent);
+            this.child = child;
+        }
+    }
+    
+    private class QNode extends MPQNode
+    {
+        MPQNode leftestSection;
+        MPQNode rightestSection;
+        
+        public QNode(MPQNode left, MPQNode right, MPQNode parent, MPQNode section) {
+            super(left, right, parent);
+            this.leftestSection = section;
+            this.rightestSection = section;
+        }
+        
+    }
+    
+    private class QSectionNode extends MPQNode
+    {
+        MPQNode child;
+        
+        public QSectionNode(MPQNode left, MPQNode right, MPQNode parent, MPQNode child) {
+            super(left, right, parent);
+            
+        }
     }
 }
