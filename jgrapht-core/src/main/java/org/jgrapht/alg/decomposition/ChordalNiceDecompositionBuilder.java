@@ -46,6 +46,9 @@ import org.jgrapht.alg.cycle.*;
  * Computation, Volume 208, Issue 3, 2010, Pages 259-275,
  * 
  * @author Ira Justus Fesefeldt (PhoenixIra)
+ * @author Timofey Chudakov
+ *
+ * @since June 2018
  *
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
