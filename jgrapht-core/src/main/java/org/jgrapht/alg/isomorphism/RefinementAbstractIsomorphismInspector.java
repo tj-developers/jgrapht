@@ -22,6 +22,7 @@ import org.jgrapht.GraphMapping;
 import org.jgrapht.GraphType;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Base implementation of the color refinement algorithms using its feature of detecting
@@ -71,8 +72,5 @@ public abstract class RefinementAbstractIsomorphismInspector<V, E> implements Is
     public abstract Iterator<GraphMapping<V, E>> getMappings();
 
     @Override
-    public boolean isomorphismExists() {
-        Iterator<GraphMapping<V, E>> iter = getMappings();
-        return iter.hasNext();
-    }
+    public abstract Optional<Boolean> isomorphismExists();
 }

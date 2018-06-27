@@ -39,7 +39,8 @@ public class ColorRefinementIsomorphismInspectorTest {
 
         assertNull(isomorphismInspector.getMappings());
         assertFalse(isomorphismInspector.isColoringDiscrete());
-        assertTrue(isomorphismInspector.isomorphismExists());
+        assertFalse(isomorphismInspector.isomorphismExists().isPresent());
+        assertFalse(isomorphismInspector.isForest());
     }
 
     /**
@@ -69,8 +70,10 @@ public class ColorRefinementIsomorphismInspectorTest {
         ColorRefinementIsomorphismInspector<Integer, DefaultEdge> isomorphismInspector =
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
-        assertTrue(isomorphismInspector.isomorphismExists());
+        assertTrue(isomorphismInspector.isomorphismExists().isPresent());
+        assertTrue(isomorphismInspector.isomorphismExists().get());
         assertFalse(isomorphismInspector.isColoringDiscrete());
+        assertTrue(isomorphismInspector.isForest());
 
         GraphMapping<Integer, DefaultEdge> graphMapping = isomorphismInspector.getMappings().next();
 
