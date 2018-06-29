@@ -24,7 +24,6 @@ import org.jgrapht.alg.color.ColorRefinementAlgorithm;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm.Coloring;
 import org.jgrapht.traverse.BreadthFirstIterator;
 
-import javax.swing.text.html.Option;
 import java.io.Serializable;
 import java.util.*;
 
@@ -54,7 +53,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
      * contains whether the graphs are isomorphic or not.
      * If we cannot decide whether they are isomorphic the value will be not present.
      */
-    private Optional<Boolean> isIsomorphic;
+    private Boolean isIsomorphic;
     /**
      * contains whether the two graphs produce a discrete coloring.
      * Then, we can decide whether the graphs are isomorphic.
@@ -96,7 +95,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
         if(!isomorphismTestExecuted) {
             isomorphismExists();
         }
-        if(isIsomorphic.isPresent() && isIsomorphic.get()) {
+        if(isIsomorphic != null && isIsomorphic) {
             ArrayList<GraphMapping<V, E>> iteratorList = new ArrayList<>(1);
             iteratorList.add(isomorphicGraphMapping);
             return iteratorList.iterator();
@@ -114,7 +113,7 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
     @Override
     public Optional<Boolean> isomorphismExists() {
         if(isomorphismTestExecuted) {
-            return isIsomorphic;
+            return Optional.of(isIsomorphic);
         }
 
         if(graph1.vertexSet().size() != graph2.vertexSet().size()) {
@@ -127,8 +126,9 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
         Coloring<V> coloring1 = colorRefinementAlgorithm1.getColoring(); // execute color refinement for graph1
         Coloring<V> coloring2 = colorRefinementAlgorithm2.getColoring(); // execute color refinement for graph2
 
-        isIsomorphic = coarseColoringAreEqual(coloring1, coloring2);
-        return isIsomorphic;
+        Optional<Boolean> optionalIsIsomorphic = coarseColoringAreEqual(coloring1, coloring2);
+        isIsomorphic = coarseColoringAreEqual(coloring1, coloring2).orElse(null);
+        return optionalIsIsomorphic;
     }
 
     /**
@@ -145,7 +145,8 @@ public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstrac
     }
 
     /**
-     * returns whether the two given graphs if an isomorphism exists.
+     * returns whether the two given graphs are forests if an isomorphism exists and the coloring is not discrete,
+     * because if the coloring is discrete, it does not have to be calculated if the graphs are forests.
      * Otherwise, we do not compute if the graphs are forests, hence, this method is undefined.
      *
      * @return if the both colorings are discrete if they are the same on both graphs.

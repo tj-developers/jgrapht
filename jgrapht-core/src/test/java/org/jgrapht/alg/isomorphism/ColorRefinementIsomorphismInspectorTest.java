@@ -38,8 +38,8 @@ public class ColorRefinementIsomorphismInspectorTest {
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
         assertNull(isomorphismInspector.getMappings());
-        assertFalse(isomorphismInspector.isColoringDiscrete());
         assertFalse(isomorphismInspector.isomorphismExists().isPresent());
+        assertFalse(isomorphismInspector.isColoringDiscrete());
         assertFalse(isomorphismInspector.isForest());
     }
 
@@ -70,6 +70,7 @@ public class ColorRefinementIsomorphismInspectorTest {
         ColorRefinementIsomorphismInspector<Integer, DefaultEdge> isomorphismInspector =
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
+        assertNotNull(isomorphismInspector.getMappings());
         assertTrue(isomorphismInspector.isomorphismExists().isPresent());
         assertTrue(isomorphismInspector.isomorphismExists().get());
         assertFalse(isomorphismInspector.isColoringDiscrete());
@@ -159,6 +160,8 @@ public class ColorRefinementIsomorphismInspectorTest {
 
         GraphMapping<Integer, DefaultEdge> graphMapping = isomorphismInspector.getMappings().next();
 
+        assertNotNull(isomorphismInspector.getMappings());
+        assertTrue(isomorphismInspector.isomorphismExists().isPresent());
         assertTrue(isomorphismInspector.isomorphismExists().get());
         assertTrue(isomorphismInspector.isColoringDiscrete());
         assertFalse(isomorphismInspector.isForest());
@@ -198,8 +201,11 @@ public class ColorRefinementIsomorphismInspectorTest {
         ColorRefinementIsomorphismInspector<Integer, DefaultEdge> isomorphismInspector =
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
+        assertNull(isomorphismInspector.getMappings());
+        assertTrue(isomorphismInspector.isomorphismExists().isPresent());
         assertFalse(isomorphismInspector.isomorphismExists().get());
         assertFalse(isomorphismInspector.isColoringDiscrete());
+        assertFalse(isomorphismInspector.isForest());
     }
 
     @Test
@@ -222,8 +228,11 @@ public class ColorRefinementIsomorphismInspectorTest {
         ColorRefinementIsomorphismInspector<Integer, DefaultEdge> isomorphismInspector =
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
+        assertNull(isomorphismInspector.getMappings());
+        assertTrue(isomorphismInspector.isomorphismExists().isPresent());
         assertFalse(isomorphismInspector.isomorphismExists().get());
         assertFalse(isomorphismInspector.isColoringDiscrete());
+        assertFalse(isomorphismInspector.isForest());
     }
 
     @Test
@@ -248,24 +257,19 @@ public class ColorRefinementIsomorphismInspectorTest {
         ColorRefinementIsomorphismInspector<Integer, DefaultEdge> isomorphismInspector =
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
-        assertTrue(isomorphismInspector.isForest());
+        assertNotNull(isomorphismInspector.getMappings());
+        assertTrue(isomorphismInspector.isomorphismExists().isPresent());
         assertTrue(isomorphismInspector.isomorphismExists().get());
         assertFalse(isomorphismInspector.isColoringDiscrete());
+        assertTrue(isomorphismInspector.isForest());
 
         GraphMapping<Integer, DefaultEdge> graphMapping = isomorphismInspector.getMappings().next();
 
-        System.out.println(graphMapping);
-
-        assertTrue((graphMapping.getVertexCorrespondence(1, true) == 5) ||
-                (graphMapping.getVertexCorrespondence(1, true) == 6) ||
-                (graphMapping.getVertexCorrespondence(1, true) == 7)
-        );
+        assertTrue(graphMapping.getVertexCorrespondence(1, true) == 6);
         assertTrue((graphMapping.getVertexCorrespondence(2, true) == 5) ||
-                (graphMapping.getVertexCorrespondence(2, true) == 6) ||
                 (graphMapping.getVertexCorrespondence(2, true) == 7)
         );
         assertTrue((graphMapping.getVertexCorrespondence(3, true) == 5) ||
-                (graphMapping.getVertexCorrespondence(3, true) == 6) ||
                 (graphMapping.getVertexCorrespondence(3, true) == 7)
         );
         assertTrue((graphMapping.getVertexCorrespondence(4, true) == 2) ||
@@ -308,8 +312,10 @@ public class ColorRefinementIsomorphismInspectorTest {
         ColorRefinementIsomorphismInspector<Integer, DefaultEdge> isomorphismInspector =
                 new ColorRefinementIsomorphismInspector<>(graph1, graph2);
 
-        assertTrue(isomorphismInspector.isForest());
-        assertFalse(isomorphismInspector.isomorphismExists().isPresent());
-
+        assertNull(isomorphismInspector.getMappings());
+        assertTrue(isomorphismInspector.isomorphismExists().isPresent());
+        assertFalse(isomorphismInspector.isomorphismExists().get());
+        assertFalse(isomorphismInspector.isColoringDiscrete());
+        assertFalse(isomorphismInspector.isForest());
     }
 }
