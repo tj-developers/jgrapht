@@ -1,3 +1,20 @@
+/*
+ * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * This program and the accompanying materials are dual-licensed under
+ * either
+ *
+ * (a) the terms of the GNU Lesser General Public License version 2.1
+ * as published by the Free Software Foundation, or (at your option) any
+ * later version.
+ *
+ * or (per the licensee's choosing)
+ *
+ * (b) the terms of the Eclipse Public License v1.0 as published by
+ * the Eclipse Foundation.
+ */
 package org.jgrapht.util;
 
 import java.util.NoSuchElementException;
@@ -12,10 +29,6 @@ import java.util.NoSuchElementException;
  * @since Apr 18, 2018
  */
 public interface BinarySearchTree<K, V> {
-
-    /*
-     * Search Operations
-     */
 
     /**
      * Returns the value associated with the given key
@@ -36,10 +49,6 @@ public interface BinarySearchTree<K, V> {
     boolean contains(K key);
 
 
-    /*
-     * Insertion Operations
-     */
-
     /**
      * Inserts the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
      * it overwrites the old value with the new.
@@ -51,17 +60,16 @@ public interface BinarySearchTree<K, V> {
     void insert(K key, V val);
 
 
-    /*
-     * Deletion Operations
-     */
-
     /**
-     * Removes the specified key and its associated value from this tree
+     * Removes the specified key and its associated value from this tree. It returns true iff the key has been deleted successfully.
      *
-     * @param  key the key
+     * @param key the key
+     *
+     * @return true, if the key was contained in the tree; false, otherwise
+     *
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
-    void delete(K key);
+    boolean delete(K key);
 
     /**
      * Removes the smallest key and associated value from the tree.
@@ -76,20 +84,12 @@ public interface BinarySearchTree<K, V> {
     void deleteMax();
 
 
-    /*
-     * Utility Operations
-     */
-
     /**
      * Returns the height of the BST.
      * @return the height of the BST (a tree with 1 node has height 0)
      */
     int height();
 
-
-    /*
-     * Special Search Operations
-     */
 
     /**
      * Returns the smallest key in the tree.
@@ -144,10 +144,6 @@ public interface BinarySearchTree<K, V> {
     int rank(K key);
 
 
-    /*
-     * Range Search Operations
-     */
-
     /**
      * Returns all keys in the symbol table as an <code>Iterable</code>.
      * To iterate over all of the keys in the symbol table named <code>st</code>,
@@ -163,7 +159,7 @@ public interface BinarySearchTree<K, V> {
      *
      * @param  min minimum endpoint
      * @param  max maximum endpoint
-     * @return all keys in the sybol table between <code>min</code>
+     * @return all keys in the symbol table between <code>min</code>
      *    (inclusive) and <code>max</code> (inclusive) as an <code>Iterable</code>
      * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
      *    is <code>null</code>
@@ -175,7 +171,7 @@ public interface BinarySearchTree<K, V> {
      *
      * @param  min minimum endpoint
      * @param  max maximum endpoint
-     * @return the number of keys in the sybol table between <code>min</code>
+     * @return the number of keys in the symbol table between <code>min</code>
      *    (inclusive) and <code>max</code> (inclusive)
      * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
      *    is <code>null</code>
