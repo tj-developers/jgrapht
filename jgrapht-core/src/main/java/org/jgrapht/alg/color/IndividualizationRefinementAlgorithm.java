@@ -35,7 +35,7 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
      * @return the lexicographically smallest canonical bijective coloring
      */
     @Override
-    public Coloring getColoring() {
+    public Coloring<V> getColoring() {
         // counts the number of nodes in the search tree. This is done to have an index for all nodes.
         Integer countNodes = 1;
 
