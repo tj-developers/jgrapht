@@ -341,6 +341,66 @@ public class LexBreadthFirstIterator<V, E>
                 bucketMap.put(vertex, head);
             }
         }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param startingVertex the initial vertex.
+         */
+        BucketList(Collection<V> vertices, V startingVertex) {
+            bucketMap = new HashMap<>(vertices.size());
+            
+            // Split off starting vertex into its own bucket
+            vertices.remove(startingVertex);
+            head = new Bucket(startingVertex, priorityComparator);
+            head.insertBefore(new Bucket(vertices, priorityComparator));
+
+            bucketMap.put(startingVertex, head);
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head.next);
+            }
+        }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         * @param priorityComparator a comparator which defines a priority for tiebreaking.
+         * @param startingVertex the initial vertex.
+         */
+        BucketList(Collection<V> vertices, Comparator<V> priorityComparator) {
+            bucketMap = new HashMap<>(vertices.size());
+            
+            // Split off starting vertex into its own bucket
+            head = new Bucket(vertices, priorityComparator);
+
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head);
+            }
+        }
+        
+        /**
+         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in it.
+         *
+         * @param vertices the vertices of the graph, that should be stored in the {@code head} bucket.
+         */
+        BucketList(Collection<V> vertices, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB, HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB, HashMap<V, Set<V>> ASets, HashMap<V, Set<V>> BSets) {
+            this.neighborIndexA = neighborIndexA;
+            this.neighborIndexB = neighborIndexB;
+            this.ASets = ASets;
+            this.BSets = BSets;
+            this.priorityA = priorityA;
+            this.priorityB = priorityB;
+            
+            bucketMap = new HashMap<>(vertices.size());
+
+            head = new Bucket(vertices, new PriorityComparator(priorityA), new PriorityComparator(priorityB));
+
+            for (V vertex : vertices) {
+                bucketMap.put(vertex, head);
+            }
+        }
 
         /**
          * Checks whether there exists a bucket with the specified {@code vertex}.
@@ -608,6 +668,37 @@ public class LexBreadthFirstIterator<V, E>
                         vertices.remove(beta);
                         return verticesB.poll(); // return Beta
                     } else if(Objects.equals(neighborIndexA.get(BSets.get(beta).iterator().next()), priorityA.get(alpha))) {
+                        vertices.remove(beta);
+                        return verticesB.poll(); // return Beta
+                    } else {
+                        verticesB.remove(beta);
+                        return vertices.poll(); // return Alpha
+                    }
+                }
+            }
+            
+            /**
+             * Retrieves one vertex from this bucket (according to LBFS*).
+             *
+             * @return vertex, that was removed from this bucket, null if the bucket was empty.
+             */
+            V poll(HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB, HashMap<V, Set<V>> ASets, HashMap<V, Set<V>> BSets, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB) {
+                if (vertices.isEmpty()) {
+                    return null;
+                } else {
+                    V alpha = vertices.peek();
+                    V beta = verticesB.peek();
+                    
+                    if(neighborIndexA.get(alpha) > priorityA.get(alpha)) {
+                        vertices.remove(beta);
+                        return verticesB.poll(); // return Beta
+                    } else if(neighborIndexB.get(beta) > priorityB.get(beta)) {
+                        verticesB.remove(beta);
+                        return vertices.poll(); // return Alpha
+                    } else if(BSets.get(beta).isEmpty() || !ASets.get(alpha).isEmpty()) {
+                        vertices.remove(beta);
+                        return verticesB.poll(); // return Beta
+                    } else if(neighborIndexA.get(BSets.get(beta).iterator().next()) == priorityA.get(alpha)) {
                         vertices.remove(beta);
                         return verticesB.poll(); // return Beta
                     } else {
