@@ -17,10 +17,6 @@
  */
 package org.jgrapht.graph.interval;
 
-import org.jgrapht.graph.interval.Interval;
-import org.jgrapht.graph.interval.IntervalTreeNodeKey;
-import org.jgrapht.graph.interval.IntervalTreeNodeValue;
-import org.jgrapht.graph.interval.RedBlackIntervalTree;
 import org.junit.Before;
 import org.junit.Test;
 
