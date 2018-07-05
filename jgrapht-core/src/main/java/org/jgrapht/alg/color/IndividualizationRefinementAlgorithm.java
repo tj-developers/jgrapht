@@ -1,6 +1,7 @@
 package org.jgrapht.alg.color;
 
 import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 
 import java.awt.*;
@@ -229,7 +230,30 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
      */
     private Coloring<V> calculateLexicographicallyFirstColoring(List<Coloring<V>> leaves) {
         // comparator for the lexicographical ordering on the colorings
-        Comparator<Coloring<V>> leafComparator = (o1, o2) -> {
+        Comparator<Coloring<V>> leafComparator = getLexigrophicallyGraphColringComparator();
+
+        // search for lexicographical minimum
+        Coloring<V> first = leaves.get(0);
+        for(Coloring<V> leaf : leaves) {
+            if(leafComparator.compare(first, leaf) < 0) {
+                first = leaf;
+            }
+        }
+
+        return first;
+    }
+
+    /**
+     * Returns a comparator to compare graph colorings lexicographically.
+     * The string of the corresponding coloring, denoted by C, is defined as follows:
+     *   [C(v) [C(v)C(w) : for all (v,w) in E] : for all v in V sorted by coloring C]
+     * That is, we compare the corresponding neighbors sorted by the coloring of all vertices sorted by the coloring.
+     * If the size of a color class is less than the other, we define it to be lexicographically smaller.
+     *
+     * @return a comparator to compare graph colorings lexicographically.
+     */
+    private Comparator<Coloring<V>> getLexigrophicallyGraphColringComparator() {
+        return (o1, o2) -> {
             List<Set<V>> colorClasses1 = o1.getColorClasses();
             List<Set<V>> colorClasses2 = o2.getColorClasses();
 
@@ -242,28 +266,70 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
                 throw new IllegalArgumentException("Individualization refinement calculated an incorrect coloring. This is a bug.");
             }
 
+            // sort vertices by color
+            sortColorClasses(colorClasses1, o1);
+            sortColorClasses(colorClasses2, o2);
+
+            // iterator over all vertices sorted by color
             Iterator<Set<V>> it1 = colorClasses1.iterator();
             Iterator<Set<V>> it2 = colorClasses2.iterator();
-            while (it1.hasNext()) {
-                if(it1.next().size() == it2.next().size()) {
-                    break;
-                } else if(it1.next().size() < it2.next().size()) {
-                    return -1;
-                } else if(it1.next().size() > it2.next().size()) {
-                    return 1;
+
+            // check the neighborhood of every vertex pair of vertices with the same color
+            while(it1.hasNext()) {
+                // get vertex from color class
+                V cur1 = it1.next().iterator().next();
+                V cur2 = it2.next().iterator().next();
+
+                // get neighborhood for vertices
+                List<V> vList1 = Graphs.neighborListOf(graph, cur1);
+                List<V> vList2 = Graphs.neighborListOf(graph, cur2);
+
+                // define the smaller color class to be lexicographically smaller
+                if(vList1.size() != vList2.size()) {
+                    return Integer.compare(vList1.size(), vList2.size());
+                }
+
+                // sort the neighborhood by color
+                vList1.sort(Comparator.comparingInt(v -> o1.getColors().get(v)));
+                vList2.sort(Comparator.comparingInt(v -> o2.getColors().get(v)));
+
+                // iterate over all neighbors
+                Iterator<V> vIterator1 = vList1.iterator();
+                Iterator<V> vIterator2 = vList2.iterator();
+
+                // iterate over all neighbors
+                while(vIterator1.hasNext()) {
+                    V current1 = vIterator1.next();
+                    V current2 = vIterator2.next();
+
+                    // compare the neighbors by color
+                    if(!o1.getColors().get(current1).equals(o2.getColors().get(current2))) {
+                        return Integer.compare(o1.getColors().get(current1), o2.getColors().get(current2));
+                    }
                 }
             }
+
             return 0;
         };
+    }
 
-        // search for lexicographical minimum
-        Coloring<V> first = leaves.get(0);
-        for(Coloring<V> leaf : leaves) {
-            if(leafComparator.compare(first, leaf) < 0) {
-                first = leaf;
+    /**
+     * sorts a list of color classes by the size and the color (integer representation of the color) and
+     *
+     * @param colorClasses the list of the color classes
+     * @param coloring the coloring
+     */
+    private void sortColorClasses(List<Set<V>> colorClasses, VertexColoringAlgorithm.Coloring<V> coloring) {
+        colorClasses.sort((o1, o2) -> {
+            if(o1.size() == o2.size()) {
+                Iterator it1 = o1.iterator();
+                Iterator it2 = o2.iterator();
+                if(!it1.hasNext() || !it2.hasNext()) {
+                    return Integer.compare(o1.size(), o2.size());
+                }
+                return coloring.getColors().get(it1.next()).compareTo(coloring.getColors().get(it2.next()));
             }
-        }
-
-        return first;
+            return Integer.compare(o1.size(), o2.size());
+        });
     }
 }
