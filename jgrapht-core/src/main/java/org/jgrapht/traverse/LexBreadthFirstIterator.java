@@ -440,6 +440,11 @@ public class LexBreadthFirstIterator<V, E>
             for(V neighbor : sortedNeighborhood) {
                 Bucket B = bucketMap.get(neighbor);
                 
+                // If this vertex was already traversed, do not consider it
+                if(B == null) {
+                    continue;
+                }
+                
                 // If necessary, memorize that we need to update B and initialize a sorted list which holds the intersection of B and N(vertex)
                 if(!bucketsToUpdate.contains(B)) {
                     bucketsToUpdate.add(bucketMap.get(neighbor));
@@ -456,6 +461,11 @@ public class LexBreadthFirstIterator<V, E>
                 
                 for(V neighbor : sortedNeighborhoodB) {
                     Bucket B = bucketMap.get(neighbor);
+                    
+                    // If this vertex was already traversed, do not consider it
+                    if(B == null) {
+                        continue;
+                    }
                     
                     if(!intersectionListsB.containsKey(B)) {
                         intersectionListsB.put(B, new LinkedList<V>());
