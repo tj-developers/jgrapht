@@ -71,6 +71,7 @@
 								<exclude>**/perf/**</exclude>
 							</excludes>
 							<excludedGroups>${excludedGroups}</excludedGroups>
+							<trimStackTrace>false</trimStackTrace>
 						</configuration>
 					</execution>
 				</executions>
