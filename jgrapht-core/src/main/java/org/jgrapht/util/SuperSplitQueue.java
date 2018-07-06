@@ -5,25 +5,26 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with poll).
+ * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with
+ * poll).
  *
  */
-class SuperSplitQueue {
+class SuperSplitQueue
+{
     /**
-     * containedIn[i] == k IFF i is contained in queue k
-     * init with 0
+     * containedIn[i] == k IFF i is contained in queue k init with 0
      */
     final private int[] containedIn;
 
     /**
-     * previous[i] = j IFF i and j are in the same queue and j is the direct predecessor of i
-     *     or -1 if it is not contained in any queue or i is the first element in a queue
+     * previous[i] = j IFF i and j are in the same queue and j is the direct predecessor of i or -1
+     * if it is not contained in any queue or i is the first element in a queue
      */
     final private int[] previous;
 
     /**
-     * next[i] = j IFF IFF i and j are in the same queue and j is the direct successor of i
-     *      or -1 if i is not contained in the queue or i is the last element in a queue
+     * next[i] = j IFF IFF i and j are in the same queue and j is the direct successor of i or -1 if
+     * i is not contained in the queue or i is the last element in a queue
      */
     final private int[] next;
 
@@ -39,21 +40,23 @@ class SuperSplitQueue {
 
     final private ArrayList<SubSplitQueue> queueByIndex;
 
-
-    static SubSplitQueue instantiate(int universeSize) {
+    static SubSplitQueue instantiate(int universeSize)
+    {
         return (new SuperSplitQueue(universeSize, true)).queueByIndex.get(0);
     }
 
-    static SubSplitQueue instantiate(int universeSize, int[] sortedElements) {
+    static SubSplitQueue instantiate(int universeSize, int[] sortedElements)
+    {
         return new SuperSplitQueue(universeSize, sortedElements).queueByIndex.get(0);
     }
 
-
     /**
      * Returns a new empty SuperSplitQueue of size universeSize with one SubSplitQueue
+     * 
      * @param universeSize
      */
-    private SuperSplitQueue(int universeSize) {
+    private SuperSplitQueue(int universeSize)
+    {
         this.universeSize = universeSize;
 
         containedIn = new int[universeSize];
@@ -78,29 +81,33 @@ class SuperSplitQueue {
 
     /**
      * Returns a full supersplitqueue
+     * 
      * @param universeSize
      * @param isFull
      */
-    private SuperSplitQueue(int universeSize, boolean isFull) {
+    private SuperSplitQueue(int universeSize, boolean isFull)
+    {
         this(universeSize);
 
-        if (!isFull) {return;}
+        if (!isFull) {
+            return;
+        }
 
         for (int i = 0; i < universeSize; i++) {
             addLast(i, 0);
         }
     }
 
-
-    private SuperSplitQueue(int universeSize, int[] sortedElements) {
+    private SuperSplitQueue(int universeSize, int[] sortedElements)
+    {
         this(universeSize);
         for (int i : sortedElements) {
             addLast(i, 0);
         }
     }
 
-
-    private SubSplitQueue addNewSubSplitQueue() {
+    private SubSplitQueue addNewSubSplitQueue()
+    {
         SubSplitQueue result = new SubSplitQueue(amountQueues, this);
 
         firstOfQ.add(-1);
@@ -113,33 +120,33 @@ class SuperSplitQueue {
         return result;
     }
 
-
-    int peek(int queueIndex) {
-        if(isEmpty(queueIndex)) {
+    int peek(int queueIndex)
+    {
+        if (isEmpty(queueIndex)) {
             throw new NoSuchElementException();
         }
         return firstOfQ.get(queueIndex);
     }
 
-
-    int poll(int queueIndex) {
+    int poll(int queueIndex)
+    {
         int result = peek(queueIndex);
         remove(result, queueIndex);
         return result;
     }
 
-
-    boolean isEmpty(int queueIndex) {
+    boolean isEmpty(int queueIndex)
+    {
         return firstOfQ.get(queueIndex) == -1;
     }
 
-
     /**
-     * Removes the given element and keeps the data structure consistent
-     * Runs in constant time
+     * Removes the given element and keeps the data structure consistent Runs in constant time
+     * 
      * @param element the element to be removed
      */
-    void remove(int element, int queueIndex) {
+    void remove(int element, int queueIndex)
+    {
         inputChecker(element, queueIndex);
         if (containedIn[element] != queueIndex) {
             throw new NoSuchElementException("Element " + element + " not in specified queue");
@@ -171,19 +178,19 @@ class SuperSplitQueue {
         sizeOfQ.set(queueIndex, sizeOfQ.get(queueIndex) - 1);
     }
 
-
     /**
      * Splits this queue in two: Elements in splitters are removed and transferred to a new queue,
-     * the others stay.
-     * Run time:
+     * the others stay. Run time:
+     * 
      * @param splitters HAVE TO BE SORTED
      * @return the index of the new queue
      */
-    SubSplitQueue split(int[] splitters, int queue) {
+    SubSplitQueue split(int[] splitters, int queue)
+    {
         SubSplitQueue newQueue = addNewSubSplitQueue();
 
-        for (int i: splitters) {
-            if(containedIn[i] == queue) {
+        for (int i : splitters) {
+            if (containedIn[i] == queue) {
                 moveElementTo(i, queue, newQueue.getOwnIndex());
             }
         }
@@ -191,7 +198,8 @@ class SuperSplitQueue {
         return newQueue;
     }
 
-    private void addLast(int element, int queueIndex) {
+    private void addLast(int element, int queueIndex)
+    {
         inputChecker(element, queueIndex);
         if (containedIn[element] != -1) {
             throw new IllegalArgumentException();
@@ -203,7 +211,7 @@ class SuperSplitQueue {
         containedIn[element] = queueIndex;
         // adapt "pointers, last <-> i
         previous[element] = last;
-        if(last != -1) {
+        if (last != -1) {
             next[last] = element;
         }
         last = element;
@@ -217,21 +225,22 @@ class SuperSplitQueue {
         sizeOfQ.set(queueIndex, sizeOfQ.get(queueIndex) + 1);
     }
 
-
-    private void moveElementTo(int element, int oldQueue, int newQueue) {
+    private void moveElementTo(int element, int oldQueue, int newQueue)
+    {
         remove(element, oldQueue);
         addLast(element, newQueue);
     }
 
-
-    boolean contains(int element, int queueIndex) {
+    boolean contains(int element, int queueIndex)
+    {
         if (element < 0 || element >= universeSize) {
             return false;
         }
         return containedIn[element] == queueIndex;
     }
 
-    private void inputChecker(int element, int queueIndex) {
+    private void inputChecker(int element, int queueIndex)
+    {
         if (element < 0 || element >= universeSize) {
             throw new IllegalArgumentException("Element not suitable for this queue in general");
         }
@@ -240,18 +249,22 @@ class SuperSplitQueue {
         }
     }
 
-    Iterator<Integer> iterator(int ownIndex) {
-        return new Iterator<Integer>() {
+    Iterator<Integer> iterator(int ownIndex)
+    {
+        return new Iterator<Integer>()
+        {
             private int currentIndex = firstOfQ.get(ownIndex);
             private int previous = -1;
 
             @Override
-            public boolean hasNext() {
+            public boolean hasNext()
+            {
                 return currentIndex != -1;
             }
 
             @Override
-            public Integer next() {
+            public Integer next()
+            {
                 if (currentIndex == -1) {
                     throw new NoSuchElementException();
                 }
@@ -262,13 +275,15 @@ class SuperSplitQueue {
             }
 
             @Override
-            public void remove() {
+            public void remove()
+            {
                 SuperSplitQueue.this.remove(previous, ownIndex);
             }
         };
     }
 
-    int[] asArray(int queueIndex) {
+    int[] asArray(int queueIndex)
+    {
         int currentIndex = firstOfQ.get(queueIndex);
         int[] result = new int[getSize(queueIndex)];
         for (int i = 0; i < result.length; i++) {
@@ -279,7 +294,8 @@ class SuperSplitQueue {
         return result;
     }
 
-    int getSize(int queueIndex) {
+    int getSize(int queueIndex)
+    {
         return sizeOfQ.get(queueIndex);
     }
 }
