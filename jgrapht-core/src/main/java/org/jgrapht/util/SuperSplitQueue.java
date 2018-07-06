@@ -200,10 +200,6 @@ class SuperSplitQueue {
         int last = lastOfQ.get(queueIndex);
         int first = firstOfQ.get(queueIndex);
 
-        if (element <= last) {
-            throw new IllegalArgumentException("Input cannot be the last entry in the queue");
-        }
-
         containedIn[element] = queueIndex;
         // adapt "pointers, last <-> i
         previous[element] = last;
