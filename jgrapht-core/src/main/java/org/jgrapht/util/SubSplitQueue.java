@@ -1,21 +1,41 @@
+/*
+ * (C) Copyright 2003-2018, by Daniel Mock and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * This program and the accompanying materials are dual-licensed under
+ * either
+ *
+ * (a) the terms of the GNU Lesser General Public License version 2.1
+ * as published by the Free Software Foundation, or (at your option) any
+ * later version.
+ *
+ * or (per the licensee's choosing)
+ *
+ * (b) the terms of the Eclipse Public License v1.0 as published by
+ * the Eclipse Foundation.
+ */
 package org.jgrapht.util;
 
 import java.util.Iterator;
 import java.util.Optional;
 
+/**
+ * A queue on a bounded set of integers that is splittable.
+ * The order of the elements cannot be changed after instanciation.
+ * An element cannot be added after instanciation.
+ * @author Daniel Mock
+ */
 public class SubSplitQueue implements Iterable<Integer> {
     final private int ownIndex;
 
     final public SuperSplitQueue parent;
 
-    private Optional<SubSplitQueue> prev;
-    private Optional<SubSplitQueue> next;
-
     /**
      * Returns a SubSplitQueue with elements from 0 to universeSize - 1
      * Runs in O(universeSize)
-     * @param universeSize
-     * @return
+     * @param universeSize the size of the universe
+     * @return new SubSplitQueue
      */
     public static SubSplitQueue subSplitQueueFactory(int universeSize) {
         return SuperSplitQueue.instantiate(universeSize);
@@ -23,18 +43,18 @@ public class SubSplitQueue implements Iterable<Integer> {
 
     /**
      * Returns a SubSplitQueue with elements from sortedElements.
-     * SortedElements has to a subset of {0, ..., universeSize - 1}, sorted, and every entry should be unique
-     * @param universeSize
-     * @return
+     * SortedElements has to a subset of {0, ..., universeSize - 1}, sorted by desired order, and every entry should be unique
+     * @param universeSize the size of the universe
+     * @return new SubSplitQueue
      */
     public static SubSplitQueue subSplitQueueFactory(int universeSize, int[] sortedElements) {
         return SuperSplitQueue.instantiate(universeSize, sortedElements);
     }
 
     /**
-     *
-     * @param ownIndex
-     * @param parent
+     * Returns a new SubSplitQueue initialized with its index and its parent SuperSplitQueue
+     * @param ownIndex index for this queue
+     * @param parent parent
      */
     SubSplitQueue(int ownIndex, SuperSplitQueue parent) {
         this.ownIndex = ownIndex;
@@ -42,6 +62,10 @@ public class SubSplitQueue implements Iterable<Integer> {
     }
 
 
+    /**
+     * returns its own index
+     * @return index
+     */
     int getOwnIndex() {
         return ownIndex;
     }

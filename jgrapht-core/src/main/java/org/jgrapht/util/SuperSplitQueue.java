@@ -1,3 +1,20 @@
+/*
+ * (C) Copyright 2003-2018, by Daniel Mock and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * This program and the accompanying materials are dual-licensed under
+ * either
+ *
+ * (a) the terms of the GNU Lesser General Public License version 2.1
+ * as published by the Free Software Foundation, or (at your option) any
+ * later version.
+ *
+ * or (per the licensee's choosing)
+ *
+ * (b) the terms of the Eclipse Public License v1.0 as published by
+ * the Eclipse Foundation.
+ */
 package org.jgrapht.util;
 
 import java.util.ArrayList;
@@ -7,7 +24,8 @@ import java.util.NoSuchElementException;
 /**
  * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with
  * poll).
- *
+ * This class is not meant to be exposed
+ * @author Daniel Mock
  */
 class SuperSplitQueue
 {
@@ -80,10 +98,11 @@ class SuperSplitQueue
     }
 
     /**
-     * Returns a full supersplitqueue
+     * Returns a full supersplitqueue, ordered by the natural ordering if the isFull is true
+     * otherwise it is empty
      * 
-     * @param universeSize
-     * @param isFull
+     * @param universeSize size of the universe
+     * @param isFull true if the new SuperSplitQueue should be filled
      */
     private SuperSplitQueue(int universeSize, boolean isFull)
     {
@@ -98,6 +117,11 @@ class SuperSplitQueue
         }
     }
 
+    /**
+     * Initializes a SuperSplitQueue with the given ordering
+     * @param universeSize size of the universe
+     * @param sortedElements the ordering
+     */
     private SuperSplitQueue(int universeSize, int[] sortedElements)
     {
         this(universeSize);
@@ -106,6 +130,11 @@ class SuperSplitQueue
         }
     }
 
+
+    /**
+     * adds a new empty SubSplitQueue with consecutive index.
+     * @return new empty SubSplitQueue
+     */
     private SubSplitQueue addNewSubSplitQueue()
     {
         SubSplitQueue result = new SubSplitQueue(amountQueues, this);
@@ -120,6 +149,12 @@ class SuperSplitQueue
         return result;
     }
 
+    /**
+     * Returns the index with the lowest order in the SubSplitQueue with index queueIndex.
+     * This element won't be removed
+     * @param queueIndex the index of the SubSplitQueue
+     * @return first item in SubSplitQueue with index queueIndex
+     */
     int peek(int queueIndex)
     {
         if (isEmpty(queueIndex)) {
@@ -128,6 +163,11 @@ class SuperSplitQueue
         return firstOfQ.get(queueIndex);
     }
 
+    /**
+     * Returns and deletes the index with the lowest order in the SubSplitQueue with index queueIndex.
+     * @param queueIndex the index of the SubSplitQueue
+     * @return irst item in SubSplitQueue with index queueIndex
+     */
     int poll(int queueIndex)
     {
         int result = peek(queueIndex);
@@ -135,6 +175,11 @@ class SuperSplitQueue
         return result;
     }
 
+    /**
+     * Returns true IFF the given SubSplitQueue has no elements
+     * @param queueIndex Index of the SubSplitQueue
+     * @return Returns whether SubSplitQueue is empty
+     */
     boolean isEmpty(int queueIndex)
     {
         return firstOfQ.get(queueIndex) == -1;
@@ -180,7 +225,7 @@ class SuperSplitQueue
 
     /**
      * Splits this queue in two: Elements in splitters are removed and transferred to a new queue,
-     * the others stay. Run time:
+     * the others stay. Run time: splitters.length
      * 
      * @param splitters HAVE TO BE SORTED
      * @return the index of the new queue
@@ -198,6 +243,12 @@ class SuperSplitQueue
         return newQueue;
     }
 
+    /**
+     * adds the given element at the end of the queue.
+     * This element should come later in the ordering than the last element of the SubSplitQueue
+     * @param element element to add
+     * @param queueIndex index of SubSplitQueue
+     */
     private void addLast(int element, int queueIndex)
     {
         inputChecker(element, queueIndex);
@@ -225,12 +276,24 @@ class SuperSplitQueue
         sizeOfQ.set(queueIndex, sizeOfQ.get(queueIndex) + 1);
     }
 
+    /**
+     * moves the given element from oldQueue to newQueue
+     * @param element element to move
+     * @param oldQueue index of the queue where element should be removed
+     * @param newQueue index of the queue where element should be added
+     */
     private void moveElementTo(int element, int oldQueue, int newQueue)
     {
         remove(element, oldQueue);
         addLast(element, newQueue);
     }
 
+    /**
+     * Returns whether the SubSplitQueue with queueIndex contains the given element
+     * @param element the element to check
+     * @param queueIndex the index of the Queue
+     * @return
+     */
     boolean contains(int element, int queueIndex)
     {
         if (element < 0 || element >= universeSize) {
@@ -239,6 +302,11 @@ class SuperSplitQueue
         return containedIn[element] == queueIndex;
     }
 
+    /**
+     * Throws an IllegalArgumentException if the element or the queueIndex are not in universe/index range
+     * @param element element to be checked
+     * @param queueIndex index to be checked
+     */
     private void inputChecker(int element, int queueIndex)
     {
         if (element < 0 || element >= universeSize) {
@@ -249,6 +317,11 @@ class SuperSplitQueue
         }
     }
 
+    /**
+     * Returns an iterator which iterates over the given SubSplitQueue
+     * @param ownIndex the index of the iterated SubSplitQueue
+     * @return Iterator
+     */
     Iterator<Integer> iterator(int ownIndex)
     {
         return new Iterator<Integer>()
@@ -282,6 +355,11 @@ class SuperSplitQueue
         };
     }
 
+    /**
+     * Returns the elements contained in the SubSplitQueue as array in the given order
+     * @param queueIndex index of SubSplitQueue
+     * @return the array of elements
+     */
     int[] asArray(int queueIndex)
     {
         int currentIndex = firstOfQ.get(queueIndex);
@@ -294,6 +372,11 @@ class SuperSplitQueue
         return result;
     }
 
+    /**
+     * returns the amount of elements in the SubSplitQueue
+     * @param queueIndex index of SubSplitQueue
+     * @return the size
+     */
     int getSize(int queueIndex)
     {
         return sizeOfQ.get(queueIndex);
