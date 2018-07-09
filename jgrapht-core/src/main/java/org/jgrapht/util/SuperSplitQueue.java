@@ -23,8 +23,8 @@ import java.util.NoSuchElementException;
 
 /**
  * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with
- * poll).
- * This class is not meant to be exposed
+ * poll). This class is not meant to be exposed
+ * 
  * @author Daniel Mock
  */
 class SuperSplitQueue
@@ -119,6 +119,7 @@ class SuperSplitQueue
 
     /**
      * Initializes a SuperSplitQueue with the given ordering
+     * 
      * @param universeSize size of the universe
      * @param sortedElements the ordering
      */
@@ -130,9 +131,9 @@ class SuperSplitQueue
         }
     }
 
-
     /**
      * adds a new empty SubSplitQueue with consecutive index.
+     * 
      * @return new empty SubSplitQueue
      */
     private SubSplitQueue addNewSubSplitQueue()
@@ -150,8 +151,9 @@ class SuperSplitQueue
     }
 
     /**
-     * Returns the index with the lowest order in the SubSplitQueue with index queueIndex.
-     * This element won't be removed
+     * Returns the index with the lowest order in the SubSplitQueue with index queueIndex. This
+     * element won't be removed
+     * 
      * @param queueIndex the index of the SubSplitQueue
      * @return first item in SubSplitQueue with index queueIndex
      */
@@ -164,7 +166,9 @@ class SuperSplitQueue
     }
 
     /**
-     * Returns and deletes the index with the lowest order in the SubSplitQueue with index queueIndex.
+     * Returns and deletes the index with the lowest order in the SubSplitQueue with index
+     * queueIndex.
+     * 
      * @param queueIndex the index of the SubSplitQueue
      * @return irst item in SubSplitQueue with index queueIndex
      */
@@ -177,6 +181,7 @@ class SuperSplitQueue
 
     /**
      * Returns true IFF the given SubSplitQueue has no elements
+     * 
      * @param queueIndex Index of the SubSplitQueue
      * @return Returns whether SubSplitQueue is empty
      */
@@ -244,8 +249,9 @@ class SuperSplitQueue
     }
 
     /**
-     * adds the given element at the end of the queue.
-     * This element should come later in the ordering than the last element of the SubSplitQueue
+     * adds the given element at the end of the queue. This element should come later in the
+     * ordering than the last element of the SubSplitQueue
+     * 
      * @param element element to add
      * @param queueIndex index of SubSplitQueue
      */
@@ -278,6 +284,7 @@ class SuperSplitQueue
 
     /**
      * moves the given element from oldQueue to newQueue
+     * 
      * @param element element to move
      * @param oldQueue index of the queue where element should be removed
      * @param newQueue index of the queue where element should be added
@@ -290,6 +297,7 @@ class SuperSplitQueue
 
     /**
      * Returns whether the SubSplitQueue with queueIndex contains the given element
+     * 
      * @param element the element to check
      * @param queueIndex the index of the Queue
      * @return
@@ -303,7 +311,9 @@ class SuperSplitQueue
     }
 
     /**
-     * Throws an IllegalArgumentException if the element or the queueIndex are not in universe/index range
+     * Throws an IllegalArgumentException if the element or the queueIndex are not in universe/index
+     * range
+     * 
      * @param element element to be checked
      * @param queueIndex index to be checked
      */
@@ -319,6 +329,7 @@ class SuperSplitQueue
 
     /**
      * Returns an iterator which iterates over the given SubSplitQueue
+     * 
      * @param ownIndex the index of the iterated SubSplitQueue
      * @return Iterator
      */
@@ -357,6 +368,7 @@ class SuperSplitQueue
 
     /**
      * Returns the elements contained in the SubSplitQueue as array in the given order
+     * 
      * @param queueIndex index of SubSplitQueue
      * @return the array of elements
      */
@@ -374,6 +386,7 @@ class SuperSplitQueue
 
     /**
      * returns the amount of elements in the SubSplitQueue
+     * 
      * @param queueIndex index of SubSplitQueue
      * @return the size
      */
