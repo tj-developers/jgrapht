@@ -50,6 +50,7 @@ public class SubSplitQueue
      * {0, ..., universeSize - 1}, sorted by desired order, and every entry should be unique
      * 
      * @param universeSize the size of the universe
+     * @param sortedElements the elements to be stored (subject to the above-mentioned restrictions)
      * @return new SubSplitQueue
      */
     public static SubSplitQueue subSplitQueueFactory(int universeSize, int[] sortedElements)
@@ -126,7 +127,7 @@ public class SubSplitQueue
      * the others stay. Run time: O(queue size)
      * 
      * @param splitters HAVE TO BE SORTED
-     * @return
+     * @return a new SplitQueue holding the split off elements
      */
     public SubSplitQueue split(int[] splitters)
     {
@@ -135,7 +136,7 @@ public class SubSplitQueue
 
     /**
      * Returns true iff the queue contains element. Runs in constant time.
-     * 
+     * @param element the element to be checked
      * @return whether it contains element
      */
     public boolean contains(int element)
