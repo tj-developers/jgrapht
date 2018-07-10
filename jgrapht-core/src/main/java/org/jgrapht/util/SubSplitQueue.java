@@ -17,6 +17,7 @@
  */
 package org.jgrapht.util;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -33,6 +34,9 @@ public class SubSplitQueue
     final private int ownIndex;
 
     final public SuperSplitQueue parent;
+
+    private final int[] toInternal;
+    private final int[] toExternal;
 
     /**
      * Returns a SubSplitQueue with elements from 0 to universeSize - 1 Runs in O(universeSize)
@@ -64,10 +68,12 @@ public class SubSplitQueue
      * @param ownIndex index for this queue
      * @param parent parent
      */
-    SubSplitQueue(int ownIndex, SuperSplitQueue parent)
+    SubSplitQueue(int ownIndex, SuperSplitQueue parent, int[] toInternal, int[] toExternal)
     {
         this.ownIndex = ownIndex;
         this.parent = parent;
+        this.toInternal = toInternal;
+        this.toExternal = toExternal;
     }
 
     /**
@@ -88,7 +94,7 @@ public class SubSplitQueue
      */
     public int peek()
     {
-        return parent.peek(ownIndex);
+        return toExternal[parent.peek(ownIndex)];
     }
 
     /**
@@ -99,7 +105,7 @@ public class SubSplitQueue
      */
     public int poll()
     {
-        return parent.poll(ownIndex);
+        return toExternal[parent.poll(ownIndex)];
     }
 
     /**
@@ -119,7 +125,7 @@ public class SubSplitQueue
      */
     public void remove(int element)
     {
-        parent.remove(element, ownIndex);
+        parent.remove(toInternal[element], ownIndex);
     }
 
     /**
@@ -131,7 +137,11 @@ public class SubSplitQueue
      */
     public SubSplitQueue split(int[] splitters)
     {
-        return parent.split(splitters, ownIndex);
+        int[] internalSplitters = new int[splitters.length];
+        for (int i = 0; i < splitters.length; i++) {
+            internalSplitters[i] = toInternal[splitters[i]];
+        }
+        return parent.split(internalSplitters, ownIndex);
     }
 
     /**
@@ -141,7 +151,7 @@ public class SubSplitQueue
      */
     public boolean contains(int element)
     {
-        return parent.contains(element, ownIndex);
+        return parent.contains(toInternal[element], ownIndex);
     }
 
     /**
@@ -152,7 +162,17 @@ public class SubSplitQueue
     @Override
     public Iterator<Integer> iterator()
     {
-        return parent.iterator(ownIndex);
+        return new Iterator<Integer>() {
+            @Override
+            public boolean hasNext() {
+                return parent.iterator(ownIndex).hasNext();
+            }
+
+            @Override
+            public Integer next() {
+                return toExternal[parent.iterator(ownIndex).next()];
+            }
+        };
     }
 
     /**
@@ -162,7 +182,11 @@ public class SubSplitQueue
      */
     public int[] asArray()
     {
-        return parent.asArray(ownIndex);
+        int[] result = parent.asArray(ownIndex);
+        for (int i = 0; i < result.length; i++) {
+            result[i] = toExternal[result[i]];
+        }
+        return result;
     }
 
     /**

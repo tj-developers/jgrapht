@@ -18,6 +18,7 @@
 package org.jgrapht.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -58,6 +59,10 @@ class SuperSplitQueue
 
     final private ArrayList<SubSplitQueue> queueByIndex;
 
+    int[] toInternal;
+
+    int[] toExternal;
+
     static SubSplitQueue instantiate(int universeSize)
     {
         return (new SuperSplitQueue(universeSize, true)).queueByIndex.get(0);
@@ -95,6 +100,11 @@ class SuperSplitQueue
         }
 
         addNewSubSplitQueue();
+
+        this.toExternal = new int[universeSize];
+        for (int i = 0; i < universeSize; i++) {
+            toExternal[i] = i;
+        }
     }
 
     /**
@@ -129,6 +139,11 @@ class SuperSplitQueue
         for (int i : sortedElements) {
             addLast(i, 0);
         }
+        this.toExternal = Arrays.copyOf(sortedElements, universeSize);
+        this.toInternal = new int[universeSize];
+        for (int i = 0; i < universeSize; i++) {
+            toInternal[toExternal[i]] = i;
+        }
     }
 
     /**
@@ -138,7 +153,7 @@ class SuperSplitQueue
      */
     private SubSplitQueue addNewSubSplitQueue()
     {
-        SubSplitQueue result = new SubSplitQueue(amountQueues, this);
+        SubSplitQueue result = new SubSplitQueue(amountQueues, this, toInternal, toExternal);
 
         firstOfQ.add(-1);
         lastOfQ.add(-1);
