@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 
 /**
  * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with
- * poll). This class is not meant to be exposed
+ * poll). This class is not meant to be exposed.
  * 
  * @author Daniel Mock
  */

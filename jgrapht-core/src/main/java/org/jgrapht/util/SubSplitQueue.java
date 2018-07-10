@@ -17,13 +17,11 @@
  */
 package org.jgrapht.util;
 
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Optional;
 
 /**
  * A queue on a bounded set of integers that is splittable. The order of the elements cannot be
- * changed after instanciation. An element cannot be added after instanciation.
+ * changed after instantiation. An element cannot be added after instantiation.
  * 
  * @author Daniel Mock
  */
