@@ -117,13 +117,13 @@ class SuperSplitQueue
             containedIn[i] = -1;
         }
 
-        addNewSubSplitQueue();
-
         this.toExternal = new int[universeSize];
         for (int i = 0; i < universeSize; i++) {
             toExternal[i] = i;
         }
         this.toInternal = toExternal;
+
+        addNewSubSplitQueue();
     }
 
     /**
@@ -150,19 +150,24 @@ class SuperSplitQueue
      * Initializes a SuperSplitQueue with the given ordering
      * 
      * @param universeSize size of the universe
-     * @param sortedElements the ordering
+     * @param ordering the ordering
      */
-    private SuperSplitQueue(int universeSize, int[] sortedElements)
+    private SuperSplitQueue(int universeSize, int[] ordering)
     {
         this(universeSize);
-        for (int i : sortedElements) {
-            addLast(i, 0);
+
+        for (int i = 0; i < ordering.length; i++) {
+            toExternal[i] = ordering[i];
         }
-        this.toExternal = Arrays.copyOf(sortedElements, universeSize);
-        this.toInternal = new int[universeSize];
-        for (int i = 0; i < universeSize; i++) {
+        for (int i = 0; i < ordering.length; i++) {
             toInternal[toExternal[i]] = i;
         }
+
+        for (int i : ordering) {
+            addLast(toInternal[i], 0);
+        }
+
+
     }
 
     /**

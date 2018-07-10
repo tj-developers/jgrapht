@@ -36,14 +36,14 @@ public class SubSplitQueue
     /**
      * Maps the external elements to internal elements. The inverse mapping of toExternal.
      */
-    private final int[] toInternal;
+    public final int[] toInternal;
 
     /**
      * Maps the internal elements to the external elements. Is the same as sortedElements argument
      * in the static instantiation method. It equals the sortedElements array from the static
      * instantiation method
      */
-    private final int[] toExternal;
+    public final int[] toExternal;
 
     /**
      * Returns a SubSplitQueue with elements from 0 to universeSize - 1 Runs in O(universeSize) The
@@ -58,16 +58,16 @@ public class SubSplitQueue
     }
 
     /**
-     * Returns a SubSplitQueue with elements from sortedElements. SortedElements has to a subset of
+     * Returns a SubSplitQueue with elements from ordering. SortedElements has to a subset of
      * {0, ..., universeSize - 1}, sorted by desired order, and every entry should be unique
      * 
      * @param universeSize the size of the universe
-     * @param sortedElements the elements to be stored (subject to the above-mentioned restrictions)
+     * @param ordering the elements to be stored (subject to the above-mentioned restrictions)
      * @return new SubSplitQueue
      */
-    public static SubSplitQueue subSplitQueueFactory(int universeSize, int[] sortedElements)
+    public static SubSplitQueue subSplitQueueFactory(int universeSize, int[] ordering)
     {
-        return SuperSplitQueue.instantiate(universeSize, sortedElements);
+        return SuperSplitQueue.instantiate(universeSize, ordering);
     }
 
     /**
