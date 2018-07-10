@@ -35,12 +35,22 @@ public class SubSplitQueue
 
     final public SuperSplitQueue parent;
 
+    /**
+     * Maps the external elements to internal elements. The inverse mapping of toExternal.
+     */
     private final int[] toInternal;
+
+    /**
+     * Maps the internal elements to the external elements. Is the same as sortedElements argument
+     * in the static instantiation method. It equals the sortedElements array from the static
+     * instantiation method
+     */
     private final int[] toExternal;
 
     /**
-     * Returns a SubSplitQueue with elements from 0 to universeSize - 1 Runs in O(universeSize)
-     * 
+     * Returns a SubSplitQueue with elements from 0 to universeSize - 1 Runs in O(universeSize) The
+     * order is the natural order.
+     *
      * @param universeSize the size of the universe
      * @return new SubSplitQueue
      */
@@ -63,8 +73,9 @@ public class SubSplitQueue
     }
 
     /**
-     * Returns a new SubSplitQueue initialized with its index and its parent SuperSplitQueue
-     * 
+     * Returns a new SubSplitQueue initialized with its index and its parent SuperSplitQueue Not to
+     * be used externally.
+     *
      * @param ownIndex index for this queue
      * @param parent parent
      */
@@ -77,7 +88,7 @@ public class SubSplitQueue
     }
 
     /**
-     * returns its own index
+     * Returns its own index.
      * 
      * @return index
      */
@@ -87,8 +98,8 @@ public class SubSplitQueue
     }
 
     /**
-     * Returns the lowest element in the queue without side effects Throws NoSuchElementException if
-     * empty runs in constant time
+     * Returns the lowest element in the queue without side effects. Throws NoSuchElementException
+     * if it is empty. Runs in constant time.
      * 
      * @return the lowest element in the queue
      */
@@ -98,8 +109,8 @@ public class SubSplitQueue
     }
 
     /**
-     * Returns and removes the lowest element in the queue Throws NoSuchElementException if empty
-     * Runs in constant time
+     * Returns and removes the lowest element in the queue. Throws NoSuchElementException if it is
+     * empty. Runs in constant time.
      * 
      * @return the lowest element in the queue
      */
@@ -119,7 +130,7 @@ public class SubSplitQueue
     }
 
     /**
-     * Removes the given element and keeps the data structure consistent Runs in constant time
+     * Removes the given element and keeps the data structure consistent. Runs in constant time.
      * 
      * @param element the element to be removed
      */
@@ -130,9 +141,10 @@ public class SubSplitQueue
 
     /**
      * Splits this queue in two: Elements in splitters are removed and transferred to a new queue,
-     * the others stay. Run time: O(queue size)
+     * the others stay. Run time: O(splitters size).
      * 
-     * @param splitters HAVE TO BE SORTED
+     * @param splitters The elements which have to be transferred to the new returned SubSplitQueue.
+     *        They have to be sorted by the initial order.
      * @return a new SplitQueue holding the split off elements
      */
     public SubSplitQueue split(int[] splitters)
@@ -146,6 +158,7 @@ public class SubSplitQueue
 
     /**
      * Returns true iff the queue contains element. Runs in constant time.
+     * 
      * @param element the element to be checked
      * @return whether it contains element
      */
@@ -155,28 +168,32 @@ public class SubSplitQueue
     }
 
     /**
-     * Iterates over the contained elements Every iteration takes constant time.
+     * Iterates over the contained elements. Every iteration takes constant time.
      * 
      * @return the iterator
      */
     @Override
     public Iterator<Integer> iterator()
     {
-        return new Iterator<Integer>() {
+        return new Iterator<Integer>()
+        {
             @Override
-            public boolean hasNext() {
+            public boolean hasNext()
+            {
                 return parent.iterator(ownIndex).hasNext();
             }
 
             @Override
-            public Integer next() {
+            public Integer next()
+            {
                 return toExternal[parent.iterator(ownIndex).next()];
             }
         };
     }
 
     /**
-     * Runs in O(queue size)
+     * Returns the elements contained in this object as Array, ordered by the initial order. Runs in
+     * O(queue size).
      * 
      * @return an array containing the elements of this queue
      */
@@ -190,7 +207,7 @@ public class SubSplitQueue
     }
 
     /**
-     * Runs in constant time.
+     * Returns the number of elements in this object. Runs in constant time.
      * 
      * @return the amount of contained elements
      */

@@ -47,16 +47,34 @@ class SuperSplitQueue
      */
     final private int[] next;
 
+    /**
+     * Returns the first element of the queue with the given index.
+     */
     final private ArrayList<Integer> firstOfQ;
 
+    /**
+     * Returns the last element of the queue with the given index.
+     */
     final private ArrayList<Integer> lastOfQ;
 
+    /**
+     * Returns the size of the queue with the given index.
+     */
     final private ArrayList<Integer> sizeOfQ;
 
+    /**
+     * The size of the universe
+     */
     final private int universeSize;
 
+    /**
+     * The amount of queues. It equals the maximal queue index + 1.
+     */
     private int amountQueues;
 
+    /**
+     * Maps the index to the queues.
+     */
     final private ArrayList<SubSplitQueue> queueByIndex;
 
     int[] toInternal;
@@ -105,6 +123,7 @@ class SuperSplitQueue
         for (int i = 0; i < universeSize; i++) {
             toExternal[i] = i;
         }
+        this.toInternal = toExternal;
     }
 
     /**
