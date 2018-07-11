@@ -20,9 +20,7 @@ import java.util.Set;
  *
  * @author Christoph Grüne
  */
-public class IndividualizationRefinementIsomorphismInspector<V, E> extends RefinementAbstractIsomorphismInspector<V, E> implements Serializable {
-
-    private static final long serialVersionUID = -8774735383117487442L;
+public class IndividualizationRefinementIsomorphismInspector<V, E> extends RefinementAbstractIsomorphismInspector<V, E> {
 
     public IndividualizationRefinementIsomorphismInspector(Graph<V, E> graph1, Graph<V, E> graph2) {
         super(graph1, graph2);
@@ -35,13 +33,13 @@ public class IndividualizationRefinementIsomorphismInspector<V, E> extends Refin
      * Optional.empty if ut cannot be decided whether there is an isomorphism or not.
      */
     @Override
-    public Optional<Boolean> isomorphismExists() {
+    public boolean isomorphismExists() {
         if(isomorphismTestExecuted) {
-            return Optional.of(isIsomorphic);
+            return isIsomorphic;
         }
 
         if(graph1.vertexSet().size() != graph2.vertexSet().size()) {
-            return Optional.of(false);
+            return false;
         }
 
         IndividualizationRefinementAlgorithm<V, E> individualizationRefinementAlgorithm1
@@ -55,10 +53,11 @@ public class IndividualizationRefinementIsomorphismInspector<V, E> extends Refin
         VertexColoringAlgorithm.Coloring<V> coloring2 = individualizationRefinementAlgorithm2.getColoring();
 
         isIsomorphic = coarseColoringAreEqual(coloring1, coloring2);
-        return Optional.of(isIsomorphic);
+        return isIsomorphic;
     }
+
     /**
-     * checks whether two coarse colorings are equal. Furthermore, it sets <code>isColoringDiscrete</code> to true iff the colorings are discrete.
+     * checks whether two coarse colorings are equal.
      *
      * @param coloring1 the first coarse coloring
      * @param coloring2 the second coarse coloring
@@ -87,23 +86,29 @@ public class IndividualizationRefinementIsomorphismInspector<V, E> extends Refin
             Set<V> cur1 = it1.next();
             Set<V> cur2 = it2.next();
 
-            if(cur1.size() != cur2.size()) { // check if the size for the current color class are the same for both graphs.
+            // check if the size for the current color class are the same for both graphs.
+            if(cur1.size() != cur2.size()) {
                 return false;
             }
-            if(cur1.iterator().hasNext()) { // safety check whether the color class is not empty.
-                if(!coloring1.getColors().get(cur1.iterator().next()).equals(coloring2.getColors().get(cur2.iterator().next()))) { // check if the color are not the same (works as colors are integers).
-                    return false; // colors are not the same -> graphs are not isomorphic.
+            // safety check whether the color class is not empty.
+            if(cur1.iterator().hasNext()) {
+                // check if the color are not the same (works as colors are integers).
+                if(!coloring1.getColors().get(cur1.iterator().next()).equals(coloring2.getColors().get(cur2.iterator().next()))) {
+                    // colors are not the same -> graphs are not isomorphic.
+                    return false;
                 }
             }
         }
 
-        if(!it1.hasNext() && !it2.hasNext()) { // no more color classes for both colorings, that is, the graphs have the same coloring.
-            if(coloring1.getColorClasses().size() == graph1.vertexSet().size() && coloring2.getColorClasses().size() == graph2.vertexSet().size()) { // check if the colorings are discrete, that is, the color mapping is injective.
+        // no more color classes for both colorings, that is, the graphs have the same coloring.
+        if(!it1.hasNext() && !it2.hasNext()) {
+            // check if the colorings are discrete, that is, the color mapping is injective.
+            if(coloring1.getColorClasses().size() == graph1.vertexSet().size() && coloring2.getColorClasses().size() == graph2.vertexSet().size()) {
                 calculateGraphMapping(coloring1, coloring2);
                 return true;
             }
             return false;
-        } else { // just a safety check. The program should not go into that branch as we checked that the size of the sets of all color classes is the same. Nevertheless, the graphs are not isomorphic if this case occurs.
+        } else {
             return false;
         }
     }

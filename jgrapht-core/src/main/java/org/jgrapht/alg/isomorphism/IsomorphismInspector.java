@@ -31,18 +31,19 @@ public interface IsomorphismInspector<V, E>
 {
     /**
      * Get an iterator over all calculated (isomorphic) mappings between two graphs.
-     * 
+     *
      * @return an iterator over all calculated (isomorphic) mappings between two graphs
+     * @throws IsomorphismUndecidableException
      */
     Iterator<GraphMapping<V, E>> getMappings();
 
     /**
      * Check if an isomorphism exists.
-     * 
-     * @return Optional.of(true) if there is an isomorphism, Optional.of(false) if there is no isomorphism,
-     * Optional.empty if ut cannot be decided whether there is an isomorphism or not.
+     *
+     * @return true if there is an isomorphism, false if there is no isomorphism
+     * @throws IsomorphismUndecidableException
      */
-    Optional<Boolean> isomorphismExists();
+    boolean isomorphismExists();
 }
 
 // End IsomorphismInspector.java

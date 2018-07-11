@@ -85,6 +85,10 @@ public abstract class RefinementAbstractIsomorphismInspector<V, E> implements Is
 
         this.graph1 = graph1;
         this.graph2 = graph2;
+
+        this.isomorphicGraphMapping = null;
+        this.isIsomorphic = null;
+        this.isomorphismTestExecuted = false;
     }
 
     @Override
@@ -102,7 +106,7 @@ public abstract class RefinementAbstractIsomorphismInspector<V, E> implements Is
     }
 
     @Override
-    public abstract Optional<Boolean> isomorphismExists();
+    public abstract boolean isomorphismExists();
 
     /**
      * sorts a list of color classes by the size and the color (integer representation of the color) and
