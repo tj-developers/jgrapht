@@ -25,6 +25,7 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.AsSubgraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 import java.util.*;
 
@@ -58,26 +59,40 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
     /**
      * the input graph.
      */
-    private Graph<V, E> graph;
+    private final Graph<V, E> graph;
 
     /**
      * the designated root of the CMST.
      */
-    private V root;
+    private final V root;
 
     /**
      * the maximal capacity for each subtree.
      */
-    private double capacity;
+    private final double capacity;
+
+    /**
+     * the weight function over all vertices.
+     */
+    private final Map<V, Double> weights;
 
     /**
      * the maximal length of the cycle in the neighborhood
      */
-    private int lengthBound;
+    private final int lengthBound;
 
-    public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, int lengthBound) {
-        this.graph = graph;
-        this.root = root;
+    /**
+     * the number of the most profitable operations considered in the GRASP procedure for the initial solution.
+     */
+    private final int numberOfOperationsParameter;
+
+    public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> weights, int lengthBound, int numberOfOperationsParameter) {
+        this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
+        this.root = Objects.requireNonNull(root, "Root cannot be null");
+        this.capacity = capacity;
+        this.weights = Objects.requireNonNull(weights, "Weight cannot be null");
+        this.lengthBound = lengthBound;
+        this.numberOfOperationsParameter = numberOfOperationsParameter;
     }
 
     @Override
@@ -87,9 +102,82 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
          * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
          * in the input graph: the vertex indicating the vertex itself and the vertex indicating the subtree.
          */
-        Map<Pair<V, Integer>, Integer> labels = new HashMap<>();
+        Map<V, Integer> labels = new HashMap<>();
+        /*
+         * this map manages pointers to Map<V, Integer> labels such that the local cycle augmentation algorithm can use
+         * it, whereby this map only supports read access to the implemented methods.
+         */
+        Map<Pair<V, Integer>, Integer> cycleAugmentationLabels = new Map<Pair<V, Integer>, Integer>() {
+            @Override
+            public int size() {
+                return 2*labels.size();
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return labels.isEmpty();
+            }
+
+            @Override
+            public boolean containsKey(Object key) {
+                if(key instanceof Pair) {
+                    return labels.containsKey(((Pair) key).getFirst());
+                }
+                return false;
+            }
+
+            @Override
+            public boolean containsValue(Object value) {
+                return labels.containsValue(value);
+            }
+
+            @Override
+            public Integer get(Object key) {
+                if(key instanceof Pair) {
+                    return labels.get(((Pair) key).getFirst());
+                }
+                return null;
+            }
+
+            @Override
+            public Integer put(Pair<V, Integer> key, Integer value) {
+                throw new RuntimeException("This method is not implemented.");
+            }
+
+            @Override
+            public Integer remove(Object key) {
+                throw new RuntimeException("This method is not implemented.");
+            }
+
+            @Override
+            public void putAll(Map<? extends Pair<V, Integer>, ? extends Integer> m) {
+                throw new RuntimeException("This method is not implemented.");
+            }
+
+            @Override
+            public void clear() {
+                throw new RuntimeException("This method is not implemented.");
+            }
+
+            @Override
+            public Set<Pair<V, Integer>> keySet() {
+                throw new RuntimeException("This method is not implemented.");
+            }
+
+            @Override
+            public Collection<Integer> values() {
+                throw new RuntimeException("This method is not implemented.");
+            }
+
+            @Override
+            public Set<Entry<Pair<V, Integer>, Integer>> entrySet() {
+                throw new RuntimeException("This method is not implemented.");
+            }
+        };
         // the implicit partition defined by the subtrees
-        Map<Integer, Set<V>> partition = new HashMap<>();
+        Map<Integer, Pair<Set<V>, Double>> partition = new HashMap<>();
+
+        Map<V, Pair<Set<V>, Double>> subtrees = calculateSubtrees(labels, partition);
 
         // calculates initial solution on which we base the local search
         getInitialPartition(labels, partition);
@@ -99,28 +187,30 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
         // do local improvement steps
         do {
 
-            Graph<Pair<V, Integer>, DefaultWeightedEdge> improvementGraph = buildImprovementGraph(labels, partition);
+            Graph<Pair<V, Integer>, DefaultWeightedEdge> improvementGraph = buildImprovementGraph(labels, partition, subtrees);
 
             AhujaOrlinSharmaCyclicExchangeLocalAugmentation<Pair<V, Integer>, DefaultWeightedEdge> ahujaOrlinSharmaCyclicExchangeLocalAugmentation
-                    = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(improvementGraph, lengthBound, labels);
+                    = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(improvementGraph, lengthBound, cycleAugmentationLabels);
 
             AhujaOrlinSharmaCyclicExchangeLocalAugmentation.LabeledPath<Pair<V, Integer>> cycle = ahujaOrlinSharmaCyclicExchangeLocalAugmentation.getLocalAugmentationCycle();
             currentCost = cycle.getCost();
 
-            executeNeighborhoodOperation(labels, partition, cycle);
+            executeNeighborhoodOperation(labels, partition, subtrees, cycle);
 
         } while(currentCost < 0);
 
         return calculateResultingSpanningTree(partition);
     }
 
-    private void getInitialPartition(Map<Pair<V, Integer>, Integer> labels, Map<Integer, Set<V>> partition) {
-        for(V v : graph.vertexSet()) {
-            // TODO
-        }
+    private void getInitialPartition(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
+        Pair<Map<V, Integer>, Map<Integer, Pair<Set<V>, Double>>> initialPartition
+                = new EsauWilliamsGRASPCapacitatedMinimumSpanningTree<>(graph, root, capacity, weights, numberOfOperationsParameter).getPartition();
+
+        labels = initialPartition.getFirst();
+        partition = initialPartition.getSecond();
     }
 
-    private Graph<Pair<V, Integer>, DefaultWeightedEdge> buildImprovementGraph(Map<Pair<V, Integer>, Integer> labels, Map<Integer, Set<V>> partition) {
+    private Graph<Pair<V, Integer>, DefaultWeightedEdge> buildImprovementGraph(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition, Map<V, Pair<Set<V>, Double>> subtrees) {
         Graph<Pair<V, Integer>, DefaultWeightedEdge> improvementGraph = new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
 
         for(V v : graph.vertexSet()) {
@@ -130,7 +220,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
 
         Map<Integer, Set<V>> modifiablePartition = new HashMap<>();
         for(Integer i : modifiablePartition.keySet()) {
-            modifiablePartition.put(i, new HashSet<>(partition.get(i)));
+            modifiablePartition.put(i, new HashSet<>(partition.get(i).getFirst()));
         }
 
         for(V v1 : graph.vertexSet()) {
@@ -140,54 +230,63 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
 
             for(Integer i : partition.keySet()) {
 
-                if(!i.equals(labels.get(improvementGraphVertexOfV))) {
+                if(!i.equals(labels.get(v1))) {
 
                     // TODO kanten, die nicht zu einer zulässigen lösung beitragen, müssen noch entfernt werden!!!
+                    // TODO kanten brauchen gewichte
 
                     modifiablePartition.get(i).add(v1);
 
-                    for(V v2 : partition.get(i)) {
+                    for(V v2 : partition.get(i).getFirst()) {
 
                         /*
                          * edge for v1 vertex replacing v2 vertex
                          */
-                        improvementGraph.addEdge(improvementGraphVertexOfV, new Pair<>(v2, 0));
-                        modifiablePartition.get(i).remove(v2);
-                        new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
-                        modifiablePartition.get(i).add(v2);
+                        if(partition.get(labels.get(v2)).getSecond() + weights.get(v1) - weights.get(v2) < capacity) {
+                            DefaultWeightedEdge edge = improvementGraph.addEdge(improvementGraphVertexOfV, new Pair<>(v2, 0));
+                            modifiablePartition.get(i).remove(v2);
+                            new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
+                            modifiablePartition.get(i).add(v2);
+                        }
 
                         /*
                          * edge for v1 vertex replacing v2 subtree
                          */
-                        improvementGraph.addEdge(improvementGraphVertexOfVTree, new Pair<>(v2, 0));
-                        modifiablePartition.get(i).removeAll(subtree(v2));
-                        new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
-                        modifiablePartition.get(i).addAll(subtree(v2));
+                        if(partition.get(labels.get(v2)).getSecond() + weights.get(v1) - subtrees.get(v2).getSecond() < capacity) {
+                            DefaultWeightedEdge edge = improvementGraph.addEdge(improvementGraphVertexOfVTree, new Pair<>(v2, 0));
+                            modifiablePartition.get(i).removeAll(subtrees.get(v2).getFirst());
+                            new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
+                            modifiablePartition.get(i).addAll(subtrees.get(v2).getFirst());
+                        }
                     }
 
                     modifiablePartition.get(i).remove(v1);
 
-                    modifiablePartition.get(i).addAll(subtree(v1));
+                    modifiablePartition.get(i).addAll(subtrees.get(v1).getFirst());
 
-                    for(V v2 : partition.get(i)) {
+                    for(V v2 : partition.get(i).getFirst()) {
                         /*
                          * edge for v1 subtree replacing v2 vertex
                          */
-                        improvementGraph.addEdge(improvementGraphVertexOfV, new Pair<>(v2, 1));
-                        modifiablePartition.get(i).remove(v2);
-                        new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
-                        modifiablePartition.get(i).add(v2);
+                        if(partition.get(labels.get(v2)).getSecond() + subtrees.get(v1).getSecond() - weights.get(v2) < capacity) {
+                            DefaultWeightedEdge edge = improvementGraph.addEdge(improvementGraphVertexOfV, new Pair<>(v2, 1));
+                            modifiablePartition.get(i).remove(v2);
+                            new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
+                            modifiablePartition.get(i).add(v2);
+                        }
 
                         /*
                          * edge for v1 subtree replacing v2 subtree
                          */
-                        improvementGraph.addEdge(improvementGraphVertexOfVTree, new Pair<>(v2, 1));
-                        modifiablePartition.get(i).removeAll(subtree(v2));
-                        new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
-                        modifiablePartition.get(i).addAll(subtree(v2));
+                        if(partition.get(labels.get(v2)).getSecond() + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond() < capacity) {
+                            DefaultWeightedEdge edge = improvementGraph.addEdge(improvementGraphVertexOfVTree, new Pair<>(v2, 1));
+                            modifiablePartition.get(i).removeAll(subtrees.get(v2).getFirst());
+                            new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiablePartition.get(i))).getSpanningTree().getWeight();
+                            modifiablePartition.get(i).addAll(subtrees.get(v2).getFirst());
+                        }
                     }
 
-                    modifiablePartition.get(i).removeAll(subtree(v1));
+                    modifiablePartition.get(i).removeAll(subtrees.get(v1).getFirst());
 
                 }
             }
@@ -196,20 +295,38 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
         return improvementGraph;
     }
 
-    private void executeNeighborhoodOperation(Map<Pair<V, Integer>, Integer> labels, Map<Integer, Set<V>> partition, AhujaOrlinSharmaCyclicExchangeLocalAugmentation.LabeledPath<Pair<V, Integer>> cycle) {
+    private void executeNeighborhoodOperation(Map<V, Integer> labels,
+                                              Map<Integer, Pair<Set<V>, Double>> partition,
+                                              Map<V, Pair<Set<V>, Double>> subtrees,
+                                              AhujaOrlinSharmaCyclicExchangeLocalAugmentation.LabeledPath<Pair<V, Integer>> cycle) {
         Iterator<Pair<V, Integer>> it = cycle.getVertices().iterator();
         if(it.hasNext()) {
-            Pair<V, Integer> cur = it.next();
+            V cur = it.next().getFirst();
             if(it.hasNext()) {
                 while (it.hasNext()) {
-                    Pair<V, Integer> next = it.next();
+                    V next = it.next().getFirst();
 
-                    if (cur.getSecond().equals(0)) {
+                    if (cur.equals(0)) {
                         labels.put(cur, labels.get(next));
-                        partition.get(labels.get(cur)).remove(cur.getFirst());
-                        partition.get(labels.get(next)).add(cur.getFirst());
+                        partition.get(labels.get(cur)).getFirst().remove(cur);
+                        partition.get(labels.get(next)).getFirst().add(cur);
                     } else {
-                        // TODO
+                        //TODO update weight of tree
+
+                        // get the whole subtree that has to be moved
+                        Pair<Set<V>, Double> subtreeToMove = subtrees.get(cur);
+                        // update tree by merging both trees
+                        partition.get(labels.get(next)).getFirst().addAll(subtreeToMove.getFirst());
+                        Pair<Set<V>, Double> newSubtree = Pair.of(partition.get(labels.get(next)).getFirst(), partition.get(labels.get(next)).getSecond() + subtreeToMove.getSecond());
+                        partition.put(labels.get(next), newSubtree);
+                        // update labels
+                        for(V v : subtreeToMove.getFirst()) {
+                            labels.put(v, labels.get(next));
+                        }
+                        // remove merged part from partition
+                        if(partition.get(labels.get(cur)).getFirst().isEmpty()) {
+                            partition.remove(labels.get(cur));
+                        }
                     }
 
                     cur = next;
@@ -218,20 +335,67 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> implements Spa
         }
     }
 
-    private Set<V> subtree(V v) {
-        // TODO
-        return new HashSet<>();
+    private Map<V, Pair<Set<V>, Double>> calculateSubtrees(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
+        Map<Integer, SpanningTree<E>> partitionSpanningTree = new HashMap<>();
+        for(Map.Entry<Integer, Pair<Set<V>, Double>> entry : partition.entrySet()) {
+            partitionSpanningTree.put(entry.getKey(), new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, entry.getValue().getFirst())).getSpanningTree());
+        }
+
+        Map<V, Pair<Set<V>, Double>> subtrees = new HashMap<>();
+        for(V v : graph.vertexSet()) {
+            Pair<Set<V>, Double> currentSubtree = subtree(v, labels, partition, partitionSpanningTree);
+            subtrees.put(v, currentSubtree);
+        }
+        return subtrees;
     }
 
-    private SpanningTree<E> calculateResultingSpanningTree(Map<Integer, Set<V>> partition) {
+    private Pair<Set<V>, Double> subtree(V v, Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition, Map<Integer, SpanningTree<E>> partitionSpanningTree) {
+        Set<V> partVertices = partition.get(labels.get(v)).getFirst();
+        SpanningTree<E> partSpanningTree = partitionSpanningTree.get(labels.get(v));
+        Graph<V, E> spanningTree = new AsSubgraph<>(graph, partVertices, partSpanningTree.getEdges());
+
+        Set<V> subtree = new HashSet<>();
+        double subtreeWeight = 0;
+
+        Iterator<V> depthFirstIterator = new DepthFirstIterator<>(spanningTree, v);
+        Set<V> currentPath = new HashSet<>();
+        double currentWeight = 0;
+
+        boolean storeCurrentPath = true;
+        while(depthFirstIterator.hasNext()) {
+            V next = depthFirstIterator.next();
+            if(spanningTree.containsEdge(next, v)) {
+                storeCurrentPath = true;
+
+                subtree.addAll(currentPath);
+                subtreeWeight += currentWeight;
+
+                currentPath = new HashSet<>();
+                currentWeight = 0;
+            }
+            if(next == root) {
+                storeCurrentPath = false;
+
+                currentPath = new HashSet<>();
+                currentWeight = 0;
+            }
+            if(storeCurrentPath) {
+                currentPath.add(next);
+                currentWeight += weights.get(next);
+            }
+        }
+        return Pair.of(subtree, subtreeWeight);
+    }
+
+    private SpanningTree<E> calculateResultingSpanningTree(Map<Integer, Pair<Set<V>, Double>> partition) {
         Set<E> spanningTreeEdges = new HashSet<>();
         double weight = 0;
 
-        for(Set<V> set : partition.values()) {
+        for(Pair<Set<V>, Double> part : partition.values()) {
+            Set<V> set = part.getFirst();
             SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
             E minimalEdgeToRoot = null;
             for(E e : graph.outgoingEdgesOf(root)) {
-                V opposite = Graphs.getOppositeVertex(graph, e, root);
                 if(minimalEdgeToRoot == null || graph.getEdgeWeight(minimalEdgeToRoot) < graph.getEdgeWeight(e)) {
                     minimalEdgeToRoot = e;
                 }
