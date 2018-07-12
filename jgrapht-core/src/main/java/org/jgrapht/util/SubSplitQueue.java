@@ -36,14 +36,14 @@ public class SubSplitQueue
     /**
      * Maps the external elements to internal elements. The inverse mapping of toExternal.
      */
-    public final int[] toInternal;
+    //public final int[] toInternal;
 
     /**
      * Maps the internal elements to the external elements. Is the same as sortedElements argument
      * in the static instantiation method. It equals the sortedElements array from the static
      * instantiation method
      */
-    public final int[] toExternal;
+    //public final int[] toExternal;
 
     /**
      * Returns a SubSplitQueue with elements from 0 to universeSize - 1 Runs in O(universeSize) The
@@ -77,12 +77,12 @@ public class SubSplitQueue
      * @param ownIndex index for this queue
      * @param parent parent
      */
-    SubSplitQueue(int ownIndex, SuperSplitQueue parent, int[] toInternal, int[] toExternal)
+    SubSplitQueue(int ownIndex, SuperSplitQueue parent)
     {
         this.ownIndex = ownIndex;
         this.parent = parent;
-        this.toInternal = toInternal;
-        this.toExternal = toExternal;
+        //this.toInternal = toInternal;
+        //this.toExternal = toExternal;
     }
 
     /**
@@ -103,7 +103,7 @@ public class SubSplitQueue
      */
     public int peek()
     {
-        return toExternal[parent.peek(ownIndex)];
+        return parent.peek(ownIndex);
     }
 
     /**
@@ -114,7 +114,7 @@ public class SubSplitQueue
      */
     public int poll()
     {
-        return toExternal[parent.poll(ownIndex)];
+        return parent.poll(ownIndex);
     }
 
     /**
@@ -134,7 +134,7 @@ public class SubSplitQueue
      */
     public void remove(int element)
     {
-        parent.remove(toInternal[element], ownIndex);
+        parent.remove(element, ownIndex);
     }
 
     /**
@@ -147,11 +147,7 @@ public class SubSplitQueue
      */
     public SubSplitQueue split(int[] splitters)
     {
-        int[] internalSplitters = new int[splitters.length];
-        for (int i = 0; i < splitters.length; i++) {
-            internalSplitters[i] = toInternal[splitters[i]];
-        }
-        return parent.split(internalSplitters, ownIndex);
+        return parent.split(splitters, ownIndex);
     }
 
     /**
@@ -162,7 +158,7 @@ public class SubSplitQueue
      */
     public boolean contains(int element)
     {
-        return parent.contains(toInternal[element], ownIndex);
+        return parent.contains(element, ownIndex);
     }
 
     /**
@@ -173,20 +169,7 @@ public class SubSplitQueue
     @Override
     public Iterator<Integer> iterator()
     {
-        return new Iterator<Integer>()
-        {
-            @Override
-            public boolean hasNext()
-            {
-                return parent.iterator(ownIndex).hasNext();
-            }
-
-            @Override
-            public Integer next()
-            {
-                return toExternal[parent.iterator(ownIndex).next()];
-            }
-        };
+        return parent.iterator(ownIndex);
     }
 
     /**
@@ -197,11 +180,7 @@ public class SubSplitQueue
      */
     public int[] asArray()
     {
-        int[] result = parent.asArray(ownIndex);
-        for (int i = 0; i < result.length; i++) {
-            result[i] = toExternal[result[i]];
-        }
-        return result;
+        return parent.asArray(ownIndex);
     }
 
     /**

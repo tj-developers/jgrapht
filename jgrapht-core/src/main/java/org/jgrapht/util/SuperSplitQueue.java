@@ -77,9 +77,9 @@ class SuperSplitQueue
      */
     final private ArrayList<SubSplitQueue> queueByIndex;
 
-    int[] toInternal;
+    //int[] toInternal;
 
-    int[] toExternal;
+    //int[] toExternal;
 
     static SubSplitQueue instantiate(int universeSize)
     {
@@ -117,11 +117,11 @@ class SuperSplitQueue
             containedIn[i] = -1;
         }
 
-        this.toExternal = new int[universeSize];
-        for (int i = 0; i < universeSize; i++) {
-            toExternal[i] = i;
-        }
-        this.toInternal = toExternal;
+//        this.toExternal = new int[universeSize];
+//        for (int i = 0; i < universeSize; i++) {
+//            toExternal[i] = i;
+//        }
+//        this.toInternal = toExternal;
 
         addNewSubSplitQueue();
     }
@@ -156,15 +156,15 @@ class SuperSplitQueue
     {
         this(universeSize);
 
-        for (int i = 0; i < ordering.length; i++) {
-            toExternal[i] = ordering[i];
-        }
-        for (int i = 0; i < ordering.length; i++) {
-            toInternal[toExternal[i]] = i;
-        }
+//        for (int i = 0; i < ordering.length; i++) {
+//            toExternal[i] = ordering[i];
+//        }
+//        for (int i = 0; i < ordering.length; i++) {
+//            toInternal[toExternal[i]] = i;
+//        }
 
         for (int i : ordering) {
-            addLast(toInternal[i], 0);
+            addLast(i, 0);
         }
 
 
@@ -177,7 +177,7 @@ class SuperSplitQueue
      */
     private SubSplitQueue addNewSubSplitQueue()
     {
-        SubSplitQueue result = new SubSplitQueue(amountQueues, this, toInternal, toExternal);
+        SubSplitQueue result = new SubSplitQueue(amountQueues, this);
 
         firstOfQ.add(-1);
         lastOfQ.add(-1);
