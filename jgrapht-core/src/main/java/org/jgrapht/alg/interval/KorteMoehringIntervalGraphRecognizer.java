@@ -1,10 +1,6 @@
 package org.jgrapht.alg.interval;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
@@ -30,9 +26,9 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     
     ChordalityInspector<V, E> chorInspec;
 
-    private MPQNode treeRoot;
+    private MPQTreeNode treeRoot;
     
-    private HashMap<V,Set<MPQNodeSetElement>> vertexToListPositionMap;
+    // private HashMap<V,Set<MPQTreeNodeSetElement>> vertexToListPositionMap;
     
     private boolean isIntervalGraph;
     private boolean isChordal;
@@ -41,11 +37,10 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * Constructor for the algorithm
      * @param graph the graph which should be recognized
      */
-    public KorteMoehringIntervalGraphRecognizer(Graph<V, E> graph)
-    {
+    public KorteMoehringIntervalGraphRecognizer(Graph<V, E> graph) {
         this.graph = graph;
         chorInspec = new ChordalityInspector<>(graph);
-        treeRoot = new PNode(null,null);
+        treeRoot = new PNode(null);
     }
 
     /**
@@ -82,7 +77,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             // labeling phase: 
             // 1 if one but not all vertices in a PQNode is a predecessor
             // 2/inf if all vertices in a PQNode is a predecessor
-            Map<MPQNode,Integer> positiveLabels = labelTree(predecessors);
+            Map<MPQTreeNode,Integer> positiveLabels = labelTree(predecessors);
             
             // test phase:
             // check for path of positive labels
@@ -97,13 +92,13 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             
             // update phase:
             // generate the path
-            List<MPQNode> path = getPath(positiveLabels.keySet());
+            List<MPQTreeNode> path = getPath(positiveLabels.keySet());
             
             //get lowest positive node in path
-            MPQNode Nsmall = getNSmall(path, positiveLabels);
+            MPQTreeNode Nsmall = getNSmall(path, positiveLabels);
             
             //get highest non-inf node in path
-            MPQNode Nbig = getNBig(path, positiveLabels);
+            MPQTreeNode Nbig = getNBig(path, positiveLabels);
             
             //update MPQ Tree
             if(Nsmall.equals(Nbig))
@@ -113,11 +108,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
         }
     }
-    
-    
-    
-    
-    
+
     /**
      * Returns the predecessors of {@code vertex} in the order defined by {@code map}. More
      * precisely, returns those of {@code vertex}, whose mapped index in {@code map} is less then
@@ -160,21 +151,19 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         }
         return vertexInOrder;
     }
-    
-    
+
     /**
      * Changed the MPQ Tree if u has no predecessors.
      * Adds a new leaf node with the bag of this vertex to the root.
      * 
      * @param u the vertex to be added to the MPQ Tree
      */
-    private void addEmptyPredecessors(V u)
-    {
-        MPQNodeSetElement bag = new MPQNodeSetElement(u);
-        MPQNode leaf = new PNode(null,bag);
-        treeRoot.add(leaf);
+    private void addEmptyPredecessors(V u) {
+        List<V> elements = new ArrayList<>();  // to be implemented by the doubly linked circular list
+        elements.add(u);
+        MPQTreeNode leaf = new PNode(elements);
+        treeRoot.addChild(leaf);
         leaf.parent = treeRoot;
-            
     }
     
     /**
@@ -184,7 +173,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param predecessors the predecessors which are used to label the vertices in the tree
      * @return the labeling of all positive labeled vertices
      */
-    private Map<MPQNode,Integer> labelTree(Set<V> predecessors)
+    private Map<MPQTreeNode,Integer> labelTree(Set<V> predecessors)
     {
         // TODO Auto-generated method stub
         return null;
@@ -197,7 +186,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param positiveLabels the vertices which should form a path
      * @return true iff it forms a path
      */
-    private boolean testPath(Set<MPQNode> positiveLabels)
+    private boolean testPath(Set<MPQTreeNode> positiveLabels)
     {
         // TODO Auto-generated method stub
         return false;
@@ -211,7 +200,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param predecessors the predecessors of u
      * @return true iff it fulfills the condition
      */
-    private boolean testOuterSectionsOfQNodes(Set<MPQNode> positiveLabels, Set<V> predecessors)
+    private boolean testOuterSectionsOfQNodes(Set<MPQTreeNode> positiveLabels, Set<V> predecessors)
     {
         // TODO Auto-generated method stub
         return false;
@@ -224,7 +213,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param positiveLabels the vertices which forms a path
      * @return the path from root to a leaf
      */
-    private List<MPQNode> getPath(Set<MPQNode> positiveLabels)
+    private List<MPQTreeNode> getPath(Set<MPQTreeNode> positiveLabels)
     {
         // TODO Auto-generated method stub
         return null;
@@ -238,7 +227,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param positiveLabels the map from nodes to positive labels
      * @return smalles vertex N with positive label
      */
-    private MPQNode getNSmall(List<MPQNode> path, Map<MPQNode, Integer> positiveLabels)
+    private MPQTreeNode getNSmall(List<MPQTreeNode> path, Map<MPQTreeNode, Integer> positiveLabels)
     {
         // TODO Auto-generated method stub
         return null;
@@ -252,7 +241,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param positiveLabels the map from nodes to positive labels
      * @return highest non-empty, non-inf vertex N
      */
-    private MPQNode getNBig(List<MPQNode> path, Map<MPQNode, Integer> positiveLabels)
+    private MPQTreeNode getNBig(List<MPQTreeNode> path, Map<MPQTreeNode, Integer> positiveLabels)
     {
         // TODO Auto-generated method stub
         return null;
@@ -265,7 +254,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param u the vertex to be added
      * @param path the path of the leaf
      */
-    private void addVertexToLeaf(V u, List<MPQNode> path)
+    private void addVertexToLeaf(V u, List<MPQTreeNode> path)
     {
         // TODO Auto-generated method stub
         
@@ -280,16 +269,12 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @param nSmall the smalles positive node in path
      * @param nBig the highest non-empty, non-inf node in path
      */
-    private void changedPathToTemplates(V u, List<MPQNode> path, MPQNode nSmall, MPQNode nBig)
+    private void changedPathToTemplates(V u, List<MPQTreeNode> path, MPQTreeNode nSmall, MPQTreeNode nBig)
     {
         // TODO Auto-generated method stub
         
     }
 
-    
-    
-    
-    
     @Override
     public boolean isIntervalGraph()
     {
@@ -339,96 +324,175 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         // TODO implement
         return null;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    private abstract class MPQNode
-    {
-        MPQNode left;
-        MPQNode right;
-        MPQNode parent;
-        
-        MPQNodeSetElement bag;
-        
-        MPQNode(MPQNodeSetElement bag) {
-            this.bag = bag;
+
+    /**
+     * A node of a modified PQ-tree
+     */
+    private abstract class MPQTreeNode {
+
+        /**
+         * The parent of the current node
+         */
+        MPQTreeNode parent;
+
+        /**
+         * Both P node and Q node must keep track of the left most and right most child
+         */
+        MPQTreeNode leftmostChild;
+        MPQTreeNode rightmostChild;
+
+        /**
+         * The graph vertices associated with the current tree node
+         *
+         * The associated set of vertices is given by a doubly linked circular list
+         */
+        List<V> elements = null; // TODO: replace with doubly linked circular list on the LHS
+
+        /**
+         * The label of the current tree node
+         */
+        Label label;
+
+        /**
+         * Instantiate a tree node associating with no graph vertex
+         */
+        MPQTreeNode() { }
+
+        /**
+         * Instantiate a tree node associating with a set of graph vertices
+         * TODO: replace this with an addElement method later
+         *
+         * @param elements a set of graph vertices associated with this tree node
+         */
+        MPQTreeNode(List<V> elements) {
+            this.elements = elements;
         }
-        
-        abstract void add(MPQNode newChild);
+
+        /**
+         * Add child to the current tree node
+         *
+         * @param newChild the child node to be added
+         */
+        abstract void addChild(MPQTreeNode newChild);
+
     }
-    
-    private class PNode extends MPQNode
-    {
-        MPQNode children;
-        
-        PNode(MPQNode child, MPQNodeSetElement bag) {
-            super(bag);
-            this.children = child;
+
+    /**
+     * A P-node of a modified PQ-tree
+     */
+    private class PNode extends MPQTreeNode {
+
+        /**
+         * P node must keep track of every child
+         *
+         * The children of a P-node are stored with a doubly linked circular list
+         */
+        List<MPQTreeNode> children; // TODO: replace with doubly linked circular list on the LHS
+
+        /**
+         * Instantiate a P node associating with a set of graph vertices
+         *
+         * @param elements a set of graph vertices associated with this P node
+         */
+        PNode(List<V> elements) {
+            super(elements);
         }
-        
-        void add(MPQNode child) {
-            child.parent = this;
-            if(this.children == null)
-            {
-                child.left = child;
-                child.right = child;
-                this.children = child;
-            }else {
-                child.left = this.children;
-                child.right = this.children.left;
-                this.children.left.right = child;
-                this.children.left = child;
-            }
+
+        /**
+         * add child for the current P-node
+         *
+         * @param child the child node to be added
+         */
+        void addChild(MPQTreeNode child) {
+            // TODO: add child according to the template operations
+        }
+
+    }
+
+    /**
+     * A Q-node of a modified PQ-tree
+     */
+    private class QNode extends MPQTreeNode {
+
+        /**
+         * Instantiate a Q node associating with a set of graph vertices
+         */
+        QNode(QSectionNode section) {
+            super(null); // elements of Q-node are currently stored in the corresponding section nodes, make this null here
+            this.leftmostChild = section;
+            this.rightmostChild = section;
+        }
+
+        /**
+         * add child for the current Q-node
+         *
+         * @param child the child node to be added
+         */
+        void addChild(MPQTreeNode child) {
+            // TODO: add child according to the template operations
+        }
+
+    }
+
+    /**
+     * A section node of a Q-node
+     */
+    private class QSectionNode extends MPQTreeNode {
+
+        /**
+         * The child of the current Q section node
+         *
+         * Each section has a pointer to its son
+         */
+        MPQTreeNode child;
+
+        /**
+         * The sections have a pointer to their neighbor sections
+         * <p>
+         * For the left most section, the left sibling is null
+         * For the right most section, the right sibling is null
+         */
+        QSectionNode leftSibling;
+        QSectionNode rightSibling;
+
+        QSectionNode(List<V> elements) {
+            super(elements);
+        }
+
+        @Override
+        void addChild(MPQTreeNode child) {
+            // TODO: add child according to the template operations
+        }
+
+    }
+
+    /**
+     * A leaf node of a modified PQ-tree
+     */
+    private class Leaf extends MPQTreeNode {
+
+        Leaf(List<V> elements) {
+            this.elements = elements;
+        }
+
+        @Override
+        void addChild(MPQTreeNode newChild) {
+            throw new UnsupportedOperationException("Unable to add child for a leaf node.");
         }
     }
-    
-    private class QNode extends MPQNode
-    {
-        MPQNode leftestSection;
-        MPQNode rightestSection;
-        
-        QNode(MPQNode section, MPQNodeSetElement bag) {
-            super(bag);
-            this.leftestSection = section;
-            this.rightestSection = section;
-        }
-        
-        void add(MPQNode child) {
-            //TODO
-        }
-        
-    }
-    
-    private class QSectionNode extends MPQNode
-    {
-        MPQNode child;
-        
-        QSectionNode(MPQNode child, MPQNodeSetElement bag) {
-            super(bag);
-            
-        }
-        
-        void add(MPQNode child) {
-            throw new UnsupportedOperationException();
+
+    /**
+     * the label of a node N or a section S of a Q-node
+     */
+    private enum Label {
+
+        ALL(2), SOME(1), NONE(0);
+
+        private int value;
+
+        Label(int value) {
+            this.value = value;
         }
     }
-    
-    private class MPQNodeSetElement
-    {
-        V vertex;
-        MPQNodeSetElement left;
-        MPQNodeSetElement right;
-        MPQNode owner;
-        
-        MPQNodeSetElement(V vertex) {
-            this.vertex = vertex;
-        }
-    }
+
 }
