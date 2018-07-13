@@ -77,10 +77,6 @@ class SuperSplitQueue
      */
     final private ArrayList<SubSplitQueue> queueByIndex;
 
-    //int[] toInternal;
-
-    //int[] toExternal;
-
     static SubSplitQueue instantiate(int universeSize)
     {
         return (new SuperSplitQueue(universeSize, true)).queueByIndex.get(0);
@@ -117,11 +113,11 @@ class SuperSplitQueue
             containedIn[i] = -1;
         }
 
-//        this.toExternal = new int[universeSize];
-//        for (int i = 0; i < universeSize; i++) {
-//            toExternal[i] = i;
-//        }
-//        this.toInternal = toExternal;
+        // this.toExternal = new int[universeSize];
+        // for (int i = 0; i < universeSize; i++) {
+        // toExternal[i] = i;
+        // }
+        // this.toInternal = toExternal;
 
         addNewSubSplitQueue();
     }
@@ -156,17 +152,16 @@ class SuperSplitQueue
     {
         this(universeSize);
 
-//        for (int i = 0; i < ordering.length; i++) {
-//            toExternal[i] = ordering[i];
-//        }
-//        for (int i = 0; i < ordering.length; i++) {
-//            toInternal[toExternal[i]] = i;
-//        }
+        // for (int i = 0; i < ordering.length; i++) {
+        // toExternal[i] = ordering[i];
+        // }
+        // for (int i = 0; i < ordering.length; i++) {
+        // toInternal[toExternal[i]] = i;
+        // }
 
         for (int i : ordering) {
             addLast(i, 0);
         }
-
 
     }
 
@@ -240,10 +235,11 @@ class SuperSplitQueue
         if (containedIn[element] != queueIndex) {
             throw new NoSuchElementException("Element " + element + " not in specified queue");
         }
-        // for h <-> element <-> j, where h = previous[element] and j = next[element]
-        // we want h <-> j
 
-        // set h -> j
+        // we want to remove the element, so the we have to connect the links between the
+        // predecessor and successor of element
+
+        // adapt the link from the previous to the next element
         if (previous[element] != -1) { // nothing to update if it is the first element
             next[previous[element]] = next[element];
         } else if (firstOfQ.get(queueIndex) == element) {
@@ -252,7 +248,7 @@ class SuperSplitQueue
             throw new RuntimeException();
         }
 
-        // set h <- j
+        // adapt the link from the next to the previous element
         if (next[element] != -1) { // nothing to update if it is the last element
             previous[next[element]] = previous[element];
         } else if (lastOfQ.get(queueIndex) == element) {
@@ -339,7 +335,7 @@ class SuperSplitQueue
      * 
      * @param element the element to check
      * @param queueIndex the index of the Queue
-     * @return
+     * @return whether the element is contained
      */
     boolean contains(int element, int queueIndex)
     {
