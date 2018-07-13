@@ -1,11 +1,13 @@
 package org.jgrapht.alg.interval;
 
+import org.jgrapht.graph.interval.Interval;
+import org.jgrapht.graph.interval.IntervalVertexPair;
+
 import java.util.List;
 import java.util.Map;
 
-import org.jgrapht.graph.interval.*;
 /**
- * An Interface for IntervalGraph Recongizing algorithms
+ * An Interface for IntervalGraph Recognizing algorithms
  * @author Ira Justus Fesefeldt (PhoenixIra)
  *
  * @param <V> vertex type of the graph
@@ -17,8 +19,8 @@ public interface IntervalGraphRecognizerInterface<V>
      *
      * @return <tt>true</tt> if the graph is an interval graph, otherwise false.
      */
-    public boolean isIntervalGraph();
-    
+    boolean isIntervalGraph();
+
     /**
      * Returns the list of all intervals sorted by starting point, or null, if the graph was not an
      * interval graph.
@@ -26,19 +28,19 @@ public interface IntervalGraphRecognizerInterface<V>
      * @return The list of all intervals sorted by starting point, or null, if the graph was not an
      *         interval graph.
      */
-    public List<Interval<Integer>> getIntervalsSortedByStartingPoint();
+    List<Interval<Integer>> getIntervalsSortedByStartingPoint();
     
     /**
      * Returns a mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
      *
      * @return A mapping of the constructed intervals to the vertices of the original graph, or null, if the graph was not an interval graph.
      */
-    public Map<Interval<Integer>, V> getIntervalToVertexMap();
+    Map<Interval<Integer>, V> getIntervalToVertexMap();
 
     /**
      * Returns a mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
      *
      * @return A mapping of the vertices of the original graph to the constructed intervals, or null, if the graph was not an interval graph.
      */
-    public Map<V, IntervalVertexPair<V, Integer>> getVertexToIntervalMap();
+    Map<V, IntervalVertexPair<V, Integer>> getVertexToIntervalMap();
 }
