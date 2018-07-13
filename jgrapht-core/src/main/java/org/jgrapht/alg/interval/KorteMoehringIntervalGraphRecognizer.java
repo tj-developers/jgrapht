@@ -6,8 +6,6 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.ChordalityInspector;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.interval.*;
 
 /**
@@ -336,22 +334,11 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         MPQTreeNode parent;
 
         /**
-         * Both P node and Q node must keep track of the left most and right most child
-         */
-        MPQTreeNode leftmostChild;
-        MPQTreeNode rightmostChild;
-
-        /**
          * The graph vertices associated with the current tree node
          *
          * The associated set of vertices is given by a doubly linked circular list
          */
-        List<V> elements = null; // TODO: replace with doubly linked circular list on the LHS
-
-        /**
-         * The label of the current tree node
-         */
-        Label label;
+        HashSet<V> elements = null;
 
         /**
          * Instantiate a tree node associating with no graph vertex
@@ -364,16 +351,9 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
          *
          * @param elements a set of graph vertices associated with this tree node
          */
-        MPQTreeNode(List<V> elements) {
+        MPQTreeNode(HashSet<V> elements) {
             this.elements = elements;
         }
-
-        /**
-         * Add child to the current tree node
-         *
-         * @param newChild the child node to be added
-         */
-        abstract void addChild(MPQTreeNode newChild);
 
     }
 
@@ -383,18 +363,18 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     private class PNode extends MPQTreeNode {
 
         /**
-         * P node must keep track of every child
-         *
          * The children of a P-node are stored with a doubly linked circular list
+         * <p>
+         * P-node has a pointer of the current child as the entrance to this list
          */
-        List<MPQTreeNode> children; // TODO: replace with doubly linked circular list on the LHS
+        MPQTreeNode currentChild;
 
         /**
          * Instantiate a P node associating with a set of graph vertices
          *
          * @param elements a set of graph vertices associated with this P node
          */
-        PNode(List<V> elements) {
+        PNode(HashSet<V> elements) {
             super(elements);
         }
 
@@ -415,21 +395,20 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     private class QNode extends MPQTreeNode {
 
         /**
+         * The children of a Q-node are stored with a doubly linked list
+         * <p>
+         * Q-node has two pointers of the outermost sections as the entrances to this list
+         */
+        QSectionNode leftmostSection;
+        QSectionNode rightmostSection;
+
+        /**
          * Instantiate a Q node associating with a set of graph vertices
          */
         QNode(QSectionNode section) {
             super(null); // elements of Q-node are currently stored in the corresponding section nodes, make this null here
-            this.leftmostChild = section;
-            this.rightmostChild = section;
-        }
-
-        /**
-         * add child for the current Q-node
-         *
-         * @param child the child node to be added
-         */
-        void addChild(MPQTreeNode child) {
-            // TODO: add child according to the template operations
+            this.leftmostSection = section;
+            this.rightmostSection = section;
         }
 
     }
@@ -455,13 +434,8 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         QSectionNode leftSibling;
         QSectionNode rightSibling;
 
-        QSectionNode(List<V> elements) {
+        QSectionNode(HashSet<V> elements) {
             super(elements);
-        }
-
-        @Override
-        void addChild(MPQTreeNode child) {
-            // TODO: add child according to the template operations
         }
 
     }
@@ -471,14 +445,10 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      */
     private class Leaf extends MPQTreeNode {
 
-        Leaf(List<V> elements) {
+        Leaf(HashSet<V> elements) {
             this.elements = elements;
         }
-
-        @Override
-        void addChild(MPQTreeNode newChild) {
-            throw new UnsupportedOperationException("Unable to add child for a leaf node.");
-        }
+        
     }
 
     /**
