@@ -30,19 +30,19 @@ import java.util.NoSuchElementException;
 class SuperSplitQueue
 {
     /**
-     * containedIn[i] == k IFF i is contained in queue k init with 0
+     * containedIn[i] == k if and only if i is contained in queue k init with 0
      */
     final private int[] containedIn;
 
     /**
-     * previous[i] = j IFF i and j are in the same queue and j is the direct predecessor of i or -1
-     * if it is not contained in any queue or i is the first element in a queue
+     * previous[i] = j if and only if i and j are in the same queue and j is the direct predecessor
+     * of i or -1 if it is not contained in any queue or i is the first element in a queue
      */
     final private int[] previous;
 
     /**
-     * next[i] = j IFF IFF i and j are in the same queue and j is the direct successor of i or -1 if
-     * i is not contained in the queue or i is the last element in a queue
+     * next[i] = j if and only if if and only if i and j are in the same queue and j is the direct
+     * successor of i or -1 if i is not contained in the queue or i is the last element in a queue
      */
     final private int[] next;
 
@@ -152,7 +152,7 @@ class SuperSplitQueue
     }
 
     /**
-     * adds a new empty SubSplitQueue with consecutive index.
+     * Adds a new empty SubSplitQueue with consecutive index.
      * 
      * @return new empty SubSplitQueue
      */
@@ -200,7 +200,7 @@ class SuperSplitQueue
     }
 
     /**
-     * Returns true IFF the given SubSplitQueue has no elements
+     * Returns true if and only if the given SubSplitQueue has no elements
      * 
      * @param queueIndex Index of the SubSplitQueue
      * @return Returns whether SubSplitQueue is empty
@@ -270,7 +270,7 @@ class SuperSplitQueue
     }
 
     /**
-     * adds the given element at the end of the queue. This element should come later in the
+     * Adds the given element at the end of the queue. This element should come later in the
      * ordering than the last element of the SubSplitQueue
      * 
      * @param element element to add
@@ -304,7 +304,7 @@ class SuperSplitQueue
     }
 
     /**
-     * moves the given element from oldQueue to newQueue
+     * Moves the given element from oldQueue to newQueue
      * 
      * @param element element to move
      * @param oldQueue index of the queue where element should be removed
@@ -406,7 +406,7 @@ class SuperSplitQueue
     }
 
     /**
-     * returns the amount of elements in the SubSplitQueue
+     * Returns the amount of elements in the SubSplitQueue
      * 
      * @param queueIndex index of SubSplitQueue
      * @return the size

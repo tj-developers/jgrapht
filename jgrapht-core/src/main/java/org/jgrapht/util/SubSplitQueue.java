@@ -46,8 +46,8 @@ public class SubSplitQueue
     }
 
     /**
-     * Returns a SubSplitQueue with elements from ordering. SortedElements has to a subset of
-     * {0, ..., universeSize - 1}, sorted by desired order, and every entry should be unique
+     * Returns a SubSplitQueue with elements from ordering. SortedElements has to a subset of {0,
+     * ..., universeSize - 1}, sorted by desired order, and every entry should be unique
      * 
      * @param universeSize the size of the universe
      * @param ordering the elements to be stored (subject to the above-mentioned restrictions)
@@ -69,8 +69,8 @@ public class SubSplitQueue
     {
         this.ownIndex = ownIndex;
         this.parent = parent;
-        //this.toInternal = toInternal;
-        //this.toExternal = toExternal;
+        // this.toInternal = toInternal;
+        // this.toExternal = toExternal;
     }
 
     /**
