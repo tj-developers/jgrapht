@@ -34,18 +34,6 @@ public class SubSplitQueue
     final public SuperSplitQueue parent;
 
     /**
-     * Maps the external elements to internal elements. The inverse mapping of toExternal.
-     */
-    //public final int[] toInternal;
-
-    /**
-     * Maps the internal elements to the external elements. Is the same as sortedElements argument
-     * in the static instantiation method. It equals the sortedElements array from the static
-     * instantiation method
-     */
-    //public final int[] toExternal;
-
-    /**
      * Returns a SubSplitQueue with elements from 0 to universeSize - 1 Runs in O(universeSize) The
      * order is the natural order.
      *
