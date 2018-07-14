@@ -113,12 +113,6 @@ class SuperSplitQueue
             containedIn[i] = -1;
         }
 
-        // this.toExternal = new int[universeSize];
-        // for (int i = 0; i < universeSize; i++) {
-        // toExternal[i] = i;
-        // }
-        // this.toInternal = toExternal;
-
         addNewSubSplitQueue();
     }
 
@@ -151,13 +145,6 @@ class SuperSplitQueue
     private SuperSplitQueue(int universeSize, int[] ordering)
     {
         this(universeSize);
-
-        // for (int i = 0; i < ordering.length; i++) {
-        // toExternal[i] = ordering[i];
-        // }
-        // for (int i = 0; i < ordering.length; i++) {
-        // toInternal[toExternal[i]] = i;
-        // }
 
         for (int i : ordering) {
             addLast(i, 0);
@@ -301,7 +288,7 @@ class SuperSplitQueue
         int first = firstOfQ.get(queueIndex);
 
         containedIn[element] = queueIndex;
-        // adapt "pointers, last <-> i
+        // adapt the entries for this element
         previous[element] = last;
         if (last != -1) {
             next[last] = element;
