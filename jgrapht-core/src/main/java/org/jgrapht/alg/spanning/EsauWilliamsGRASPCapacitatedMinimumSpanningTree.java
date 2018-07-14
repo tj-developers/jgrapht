@@ -1,10 +1,24 @@
+/*
+ * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * This program and the accompanying materials are dual-licensed under
+ * either
+ *
+ * (a) the terms of the GNU Lesser General Public License version 2.1
+ * as published by the Free Software Foundation, or (at your option) any
+ * later version.
+ *
+ * or (per the licensee's choosing)
+ *
+ * (b) the terms of the Eclipse Public License v1.0 as published by
+ * the Eclipse Foundation.
+ */
 package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
-import org.jgrapht.Graphs;
-import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
-import org.jgrapht.graph.AsSubgraph;
 
 import java.util.*;
 
@@ -20,58 +34,60 @@ import java.util.*;
  * Ahuja, Ravindra K., Orlin, James B., and Sharma, Dushyant, (1998).
  * New neighborhood search structures for the capacitated minimum spanning tree problem, No WP 4040-98.
  * Working papers, Massachusetts Institute of Technology (MIT), Sloan School of Management.
- * This version runs in pseudo polynomial time as it is dependent on the number of operations
- * <code>numberOfOperationsParameter (denoted by p)</code>, such that it is in O(n^3 + p*n^2).
+ *
+ * This version runs in polynomial time dependent on the number of considered operations per iteration
+ * <code>numberOfOperationsParameter</code> (denoted by p), such that it is in O(n^3 + p*n).
  *
  * The <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum Spanning Tree</a>
  * (CMST) problem is a rooted minimal cost spanning tree that statisfies the capacity
  * constrained on all trees that are connected by the designated root. The problem is NP-hard.
  * The hard part of the problem is the implicit partition defined by the subtrees.
  * If one can find the correct partition, the MSTs can be calculated in polynomial time.
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ *
+ * @author Christoph Grüne
+ * @since July 12, 2018
  */
-public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> implements SpanningTreeAlgorithm<E> {
-    /**
-     * the input graph.
-     */
-    private final Graph<V, E> graph;
+public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends AbstractCapacitatedMinimumSpanningTree<V, E> {
 
     /**
-     * the designated root of the CMST.
-     */
-    private final V root;
-
-    /**
-     * the maximal capacity for each subtree.
-     */
-    private final double capacity;
-
-    /**
-     * the weight function over all vertices.
-     */
-    private final Map<V, Double> weights;
-
-    /**
-     * the number of the most profitable operations considered in the GRASP procedure.
+     * the number of the most profitable operations for every iteration considered in the GRASP procedure.
      */
     private final int numberOfOperationsParameter;
 
+    /**
+     * Constructs an Esau-Williams GRASP algorithm instance.
+     *
+     * @param graph the graph
+     * @param root the root of the CMST
+     * @param capacity the capacity constraint of the CMST
+     * @param weights the weights of the vertices
+     * @param numberOfOperationsParameter the parameter how many best vertices are considered in the GRASP procedure
+     */
     public EsauWilliamsGRASPCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> weights, int numberOfOperationsParameter) {
-        this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
-        this.root = Objects.requireNonNull(root, "Root cannot be null");
-        this.capacity = capacity;
-        this.weights = Objects.requireNonNull(weights, "Weight cannot be null");
+        super(graph, root, capacity, weights);
         this.numberOfOperationsParameter = numberOfOperationsParameter;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Returns a capacitated spanning tree computed by the Esau-Williams algorithm.
+     */
     @Override
     public SpanningTree<E> getSpanningTree() {
-
-        Pair<Map<V, Integer>, Map<Integer, Pair<Set<V>, Double>>> partition = getPartition();
-
-        return calculateResultingSpanningTree(partition.getSecond());
+        return getSolution().calculateResultingSpanningTree();
     }
 
-    Pair<Map<V, Integer>, Map<Integer, Pair<Set<V>, Double>>> getPartition() {
+    /**
+     * Calculates a partition representation of the capacitated spanning tree. With that, it is possible to calculate a
+     * capacitated miniumum spanning tree in polynomial time.
+     *
+     * @return a representation of the partition of the capacitated spanning tree.
+     */
+    protected SolutionRepresentation getSolution() {
         /*
          * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
          * in the input graph: the vertex indicating the vertex itself and the vertex indicating the subtree.
@@ -80,6 +96,9 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> implements Sp
         // the implicit partition defined by the subtrees
         Map<Integer, Pair<Set<V>, Double>> partition = new HashMap<>();
 
+        /*
+         * initialize labels and partitions by assigning every vertex to a new part and create solution representation
+         */
         int counter = 0;
         for(V v : graph.vertexSet()) {
             labels.put(v, counter);
@@ -88,107 +107,133 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> implements Sp
             partition.put(counter, Pair.of(currentPart, weights.get(v)));
             counter++;
         }
+        solutionRepresentation = new SolutionRepresentation(labels, partition);
+
+        Map<V, Double> savings = new HashMap<>();
+        Map<V, V> closestVertex = new HashMap<>();
+        Map<V, Set<Integer>> restriction = new HashMap<>();
+
+        Set<V> vertices = new HashSet<>(graph.vertexSet());
+        vertices.remove(root);
 
         while(true) {
-            Map<V, Double> tradeOffFunction = new HashMap<>();
-            Map<V, V> closestVertex = new HashMap<>();
+            for(Iterator<V> it = vertices.iterator(); it.hasNext();) {
 
+                V v = it.next();
 
-            for(V v1 : graph.vertexSet()) {
+                V closestVertexToV = calculateClosestVertex(v, restriction.get(v));
 
-                V closestVertexToV1 = null;
-                double minDistance = Double.MAX_VALUE;
-
-                // calculate closest vertex to v1
-                for(Pair<Set<V>, Double> part : partition.values()) {
-                    for (V v2 : part.getFirst()) {
-                        if (!part.getFirst().contains(v1) && root != v2 && graph.containsEdge(v1, v2)) {
-                            double currentEdgeWeight = graph.getEdgeWeight(graph.getEdge(v1, v2));
-                            if (closestVertexToV1 == null || currentEdgeWeight < minDistance) {
-                                closestVertexToV1 = v2;
-                                minDistance = currentEdgeWeight;
-                            }
-                        }
-                    }
+                if(closestVertexToV == null) {
+                    // there is not valid closest vertex to connect with, i.e. v will not be connected to any vertex
+                    it.remove();
+                    savings.remove(v);
+                    continue;
                 }
 
                 // store closest vertex to v1
-                closestVertex.put(v1, closestVertexToV1);
+                closestVertex.put(v, closestVertexToV);
                 // store the maximum trade off and the corresponding vertex
-                tradeOffFunction.put(v1, graph.getEdgeWeight(graph.getEdge(v1, root)) - minDistance);
+                savings.put(v, graph.getEdgeWeight(graph.getEdge(v, root)) - graph.getEdgeWeight(graph.getEdge(v, closestVertexToV)));
             }
 
-            // manage list of best operations
-            LinkedList<V> tradeOffMaximumVertexList = new LinkedList<>();
-            for(Map.Entry<V, Double> entry : tradeOffFunction.entrySet()) {
-                // check if capacity constraint is not violated
-                if(partition.get(labels.get(entry.getKey())).getSecond() + partition.get(labels.get(closestVertex.get(entry.getKey()))).getSecond() <= capacity) {
-                    /*
-                     * insert current tradeOffFunction entry at the position such that the list is order by the tradeOff
-                     * and the size of the list is at most numberOfOperationsParameter
-                     */
-                    int position = 0;
-                    for(V v : tradeOffMaximumVertexList) {
-                        if(tradeOffFunction.get(v) > entry.getValue()) {
-                            break;
-                        }
-                        position++;
-                    }
-                    if(tradeOffMaximumVertexList.size() == numberOfOperationsParameter) {
-                        tradeOffMaximumVertexList.removeLast();
-                    }
-                    tradeOffMaximumVertexList.add(position, entry.getKey());
-                }
-            }
+            // calculate list of best operations
+            ArrayList<V> bestVertices = getListOfBestOptions(savings);
 
-            if(!tradeOffMaximumVertexList.isEmpty()) {
-                // get improvement
-                V tradeOffMaximumVertex = tradeOffMaximumVertexList.get((int) (Math.random() * tradeOffMaximumVertexList.size()));
+            if(!bestVertices.isEmpty()) {
+                V vertexToMove = bestVertices.get((int) (Math.random() * bestVertices.size()));
+                solutionRepresentation.moveVertex(vertexToMove, solutionRepresentation.getLabelOfVertex(vertexToMove), solutionRepresentation.getLabelOfVertex(closestVertex.get(vertexToMove)));
 
-                // get the whole subtree that has to be moved
-                Pair<Set<V>, Double> subtreeToMove = partition.get(labels.get(closestVertex.get(tradeOffMaximumVertex)));
-                // update tree by merging both trees
-                partition.get(labels.get(tradeOffMaximumVertex)).getFirst().addAll(subtreeToMove.getFirst());
-                Pair<Set<V>, Double> newSubtree = Pair.of(partition.get(labels.get(tradeOffMaximumVertex)).getFirst(), partition.get(labels.get(tradeOffMaximumVertex)).getSecond() + subtreeToMove.getSecond());
-                partition.put(labels.get(tradeOffMaximumVertex), newSubtree);
-                // update labels
-                for(V v : subtreeToMove.getFirst()) {
-                    labels.put(v, labels.get(tradeOffMaximumVertex));
+                // delete last connected vertices from vertices
+                vertices.remove(vertexToMove);
+                vertices.remove(closestVertex.get(vertexToMove));
+
+                // delete last connected vertices from savings to save time
+                savings.remove(vertexToMove);
+                savings.remove(closestVertex.get(vertexToMove));
+
+                // delete positive savings from vertices and savings, they will never be included
+                for(V v : savings.keySet()) {
+                    if(savings.get(v) >= 0) {
+                        vertices.remove(v);
+                        savings.remove(v);
+                    }
                 }
-                // remove merged part from partition
-                partition.remove(labels.get(closestVertex.get(tradeOffMaximumVertex)));
             } else {
                 break;
             }
         }
 
-        return Pair.of(labels, partition);
+        return new SolutionRepresentation(labels, partition);
     }
 
-    private SpanningTree<E> calculateResultingSpanningTree(Map<Integer, Pair<Set<V>, Double>> partition) {
-        Set<E> spanningTreeEdges = new HashSet<>();
-        double weight = 0;
+    /**
+     * Returns the list of the best options as stored in <code>savings</code>.
+     *
+     * @param savings the savings calculated in the algorithm (see getSolution())
+     *
+     * @return the list of the <code>numberOfOperationsParameter</code> best options
+     */
+    private ArrayList<V> getListOfBestOptions(Map<V, Double> savings) {
+        ArrayList<V> bestVertices = new ArrayList<>();
 
-        for(Pair<Set<V>, Double> part : partition.values()) {
-            Set<V> set = part.getFirst();
-            SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
-            E minimalEdgeToRoot = null;
-            for(E e : graph.outgoingEdgesOf(root)) {
-                V opposite = Graphs.getOppositeVertex(graph, e, root);
-                if(minimalEdgeToRoot == null || graph.getEdgeWeight(minimalEdgeToRoot) < graph.getEdgeWeight(e)) {
-                    minimalEdgeToRoot = e;
+        for (Map.Entry<V, Double> entry : savings.entrySet()) {
+            /*
+             * insert current tradeOffFunction entry at the position such that the list is order by the tradeOff
+             * and the size of the list is at most numberOfOperationsParameter
+             */
+            int position = 0;
+            for (V v : bestVertices) {
+                if (savings.get(v) > entry.getValue()) {
+                    break;
                 }
+                position++;
             }
-            if(minimalEdgeToRoot == null) {
-                throw new IllegalStateException("There is no edge from the root to a subtree. This is impossible. This is a bug.");
+            if (bestVertices.size() == numberOfOperationsParameter) {
+                bestVertices.remove(bestVertices.size() - 1);
             }
+            bestVertices.add(position, entry.getKey());
 
-            spanningTreeEdges.addAll(subtree.getEdges());
-            weight += subtree.getWeight();
-            spanningTreeEdges.add(minimalEdgeToRoot);
-            weight += graph.getEdgeWeight(minimalEdgeToRoot);
         }
 
-        return new SpanningTreeImpl<>(spanningTreeEdges, weight);
+        return bestVertices;
+    }
+
+    /**
+     * Calculates the closest vertex to <code>vertex</code> such that the connection of <code>vertex</code> to the
+     * subtree of the closest vertex does not violate the cpacity constraint and the savings are negative.
+     *
+     * @param vertex the vertex to find a valid closest vertex for
+     * @param restriction the set of labels of sets of the partition, in which the capacity constraint is violated.
+     *
+     * @return the closest valid vertex.
+     */
+    private V calculateClosestVertex(V vertex, Set<Integer> restriction) {
+        V closestVertexToV1 = null;
+        double minDistance = 0;
+
+        // calculate closest vertex to v1
+        for(Integer label : solutionRepresentation.getLabels()) {
+            if(!restriction.contains(label)) {
+                Set<V> part = solutionRepresentation.getPartitionSet(label);
+                if(!part.contains(vertex)) {
+                    for (V v2 : part) {
+                        if (graph.containsEdge(vertex, v2)) {
+                            if(solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabelOfVertex(vertex))
+                                + weights.get(v2) > capacity) {
+                                double currentEdgeWeight = graph.getEdgeWeight(graph.getEdge(vertex, v2));
+                                if (currentEdgeWeight < minDistance) {
+                                    closestVertexToV1 = v2;
+                                    minDistance = currentEdgeWeight;
+                                }
+                            } else {
+                                restriction.add(solutionRepresentation.getLabelOfVertex(v2));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return closestVertexToV1;
     }
 }
