@@ -99,7 +99,7 @@ public final class IntervalGraphRecognizer<V, E>
         // Output - the result of current sweep alpha, further last vertex a visited by current
         // sweep
         HashMap<V, Integer> sweepAlpha =
-            lexBreadthFirstSearch(graph, randomElementOf(graph.vertexSet()));
+            lexBreadthFirstSearch(graph);
 
         // Step 2 - LBFS+ from the last vertex of the previous sweep
         // Input - the result of previous sweep alpha, vertex a
@@ -235,26 +235,6 @@ public final class IntervalGraphRecognizer<V, E>
 
         // No missing edge found
         return true;
-    }
-
-    /**
-     * return a random element of the given set
-     *
-     * @param set The input set.
-     * @param <V> the generic type representing vertices
-     * @return A random element of the set
-     */
-    private static <V> V randomElementOf(Set<V> set) {
-        if (set == null) {
-            throw new IllegalArgumentException("Set parameter cannot be null.");
-        }
-
-        int index = new Random().nextInt(set.size());
-        Iterator<V> iterator = set.iterator();
-        for (int i = 0; i < index; i++) {
-            iterator.next();
-        }
-        return iterator.next();
     }
 
     /**

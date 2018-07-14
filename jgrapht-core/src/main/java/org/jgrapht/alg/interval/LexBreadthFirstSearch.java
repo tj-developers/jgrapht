@@ -38,10 +38,10 @@ final class LexBreadthFirstSearch
      * @param startingVertex the starting vertex of the LBFS
      * @return an array of vertices representing the order in which the vertices were found
      */
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex)
+    static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph)
     {
        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
-       LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph, startingVertex);
+       LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
        
        for(int i = 0; i < graph.vertexSet().size(); i++) {
            result.put(lbfIterator.next(), i);
