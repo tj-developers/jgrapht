@@ -18,7 +18,6 @@
 package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.AsSubgraph;
@@ -70,10 +69,14 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
 
         protected void moveVertex(V vertex, Integer fromLabel, Integer toLabel) {
             labels.put(vertex, toLabel);
-            partition.get(fromLabel).getFirst().remove(vertex);
-            Set<V> part = partition.get(toLabel).getFirst();
-            part.add(vertex);
-            partition.put(toLabel, Pair.of(part, partition.get(toLabel).getSecond() + weights.get(vertex)));
+
+            Set<V> oldPart = partition.get(fromLabel).getFirst();
+            oldPart.remove(vertex);
+            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weights.get(vertex)));
+
+            Set<V> newPart = partition.get(toLabel).getFirst();
+            newPart.add(vertex);
+            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + weights.get(vertex)));
 
             // remove merged part from partition if empty
             if(partition.get(fromLabel).getFirst().isEmpty()) {
@@ -82,44 +85,34 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
         }
 
         protected void moveVertices(Set<V> vertices, Integer fromLabel, Integer toLabel) {
-            // update labels and partition
+            // update labels and calculate weight change
+            double weightOfVertices = 0;
             for(V v : vertices) {
-                moveVertex(v, fromLabel, toLabel);
+                weightOfVertices += weights.get(v);
+                labels.put(v, toLabel);
+            }
+
+            // update partition
+            Set<V> newPart = partition.get(toLabel).getFirst();
+            newPart.addAll(vertices);
+            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + weightOfVertices));
+
+            Set<V> oldPart = partition.get(fromLabel).getFirst();
+            oldPart.removeAll(vertices);
+            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weightOfVertices));
+
+            // remove merged part from partition if empty
+            if(partition.get(fromLabel).getFirst().isEmpty()) {
+                partition.remove(fromLabel);
             }
         }
 
-        protected Integer getLabelOfVertex(V vertex) {
+        protected Integer getLabel(V vertex) {
             return labels.get(vertex);
         }
 
         protected Set<Integer> getLabels() {
             return partition.keySet();
-        }
-
-        protected int sizeOfLabel() {
-            return 2 * labels.size();
-        }
-
-        protected boolean isLabelEmpty() {
-            return labels.isEmpty();
-        }
-
-        protected boolean containsLabelKey(Object key) {
-            if(key instanceof Pair) {
-                return labels.containsKey(((Pair) key).getFirst());
-            }
-            return false;
-        }
-
-        protected boolean containsLabelValue(Object value) {
-            return labels.containsValue(value);
-        }
-
-        protected Integer getLabel(Object key) {
-            if(key instanceof Pair) {
-                return labels.get(((Pair) key).getFirst());
-            }
-            return null;
         }
 
         protected Set<V> getPartitionSet(Integer label) {

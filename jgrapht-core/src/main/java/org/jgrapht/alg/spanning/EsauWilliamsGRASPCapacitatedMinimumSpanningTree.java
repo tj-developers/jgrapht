@@ -101,27 +101,34 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
          */
         int counter = 0;
         for(V v : graph.vertexSet()) {
-            labels.put(v, counter);
-            Set<V> currentPart = new HashSet<>();
-            currentPart.add(v);
-            partition.put(counter, Pair.of(currentPart, weights.get(v)));
-            counter++;
+            if(v != root) {
+                labels.put(v, counter);
+                Set<V> currentPart = new HashSet<>();
+                currentPart.add(v);
+                partition.put(counter, Pair.of(currentPart, weights.get(v)));
+                counter++;
+            }
         }
         solutionRepresentation = new SolutionRepresentation(labels, partition);
 
         Map<V, Double> savings = new HashMap<>();
         Map<V, V> closestVertex = new HashMap<>();
         Map<V, Set<Integer>> restriction = new HashMap<>();
+        Map<Integer, V> shortestGate = new HashMap<>();
 
         Set<V> vertices = new HashSet<>(graph.vertexSet());
         vertices.remove(root);
+
+        for(V v : vertices) {
+            restriction.put(v, new HashSet<>());
+        }
 
         while(true) {
             for(Iterator<V> it = vertices.iterator(); it.hasNext();) {
 
                 V v = it.next();
 
-                V closestVertexToV = calculateClosestVertex(v, restriction.get(v));
+                V closestVertexToV = calculateClosestVertex(v, restriction.get(v), shortestGate);
 
                 if(closestVertexToV == null) {
                     // there is not valid closest vertex to connect with, i.e. v will not be connected to any vertex
@@ -132,30 +139,29 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
 
                 // store closest vertex to v1
                 closestVertex.put(v, closestVertexToV);
-                // store the maximum trade off and the corresponding vertex
-                savings.put(v, graph.getEdgeWeight(graph.getEdge(v, root)) - graph.getEdgeWeight(graph.getEdge(v, closestVertexToV)));
+                // store the maximum saving and the corresponding vertex
+                savings.put(v, graph.getEdgeWeight(graph.getEdge(shortestGate.getOrDefault(solutionRepresentation.getLabel(v), v), root)) - graph.getEdgeWeight(graph.getEdge(v, closestVertexToV)));
             }
 
             // calculate list of best operations
-            ArrayList<V> bestVertices = getListOfBestOptions(savings);
+            LinkedList<V> bestVertices = getListOfBestOptions(savings);
 
             if(!bestVertices.isEmpty()) {
                 V vertexToMove = bestVertices.get((int) (Math.random() * bestVertices.size()));
-                solutionRepresentation.moveVertex(vertexToMove, solutionRepresentation.getLabelOfVertex(vertexToMove), solutionRepresentation.getLabelOfVertex(closestVertex.get(vertexToMove)));
+                solutionRepresentation.moveVertices(
+                        solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(vertexToMove)),
+                        solutionRepresentation.getLabel(vertexToMove),
+                        solutionRepresentation.getLabel(closestVertex.get(vertexToMove))
+                );
 
-                // delete last connected vertices from vertices
-                vertices.remove(vertexToMove);
-                vertices.remove(closestVertex.get(vertexToMove));
+                shortestGate.put(solutionRepresentation.getLabel(vertexToMove), closestVertex.get(vertexToMove));
 
-                // delete last connected vertices from savings to save time
-                savings.remove(vertexToMove);
-                savings.remove(closestVertex.get(vertexToMove));
-
-                // delete positive savings from vertices and savings, they will never be included
-                for(V v : savings.keySet()) {
-                    if(savings.get(v) >= 0) {
+                // delete non-positive savings from vertices and savings, they will never be included
+                for(Iterator<V> it = savings.keySet().iterator(); it.hasNext();) {
+                    V v = it.next();
+                    if(savings.get(v) <= 0) {
                         vertices.remove(v);
-                        savings.remove(v);
+                        it.remove();
                     }
                 }
             } else {
@@ -173,8 +179,8 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
      *
      * @return the list of the <code>numberOfOperationsParameter</code> best options
      */
-    private ArrayList<V> getListOfBestOptions(Map<V, Double> savings) {
-        ArrayList<V> bestVertices = new ArrayList<>();
+    private LinkedList<V> getListOfBestOptions(Map<V, Double> savings) {
+        LinkedList<V> bestVertices = new LinkedList<>();
 
         for (Map.Entry<V, Double> entry : savings.entrySet()) {
             /*
@@ -183,16 +189,19 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
              */
             int position = 0;
             for (V v : bestVertices) {
-                if (savings.get(v) > entry.getValue()) {
+                if (savings.get(v) < entry.getValue()) {
                     break;
                 }
                 position++;
             }
-            if (bestVertices.size() == numberOfOperationsParameter) {
-                bestVertices.remove(bestVertices.size() - 1);
+            if(bestVertices.size() == numberOfOperationsParameter) {
+                if(position < bestVertices.size()) {
+                    bestVertices.removeLast();
+                    bestVertices.add(position, entry.getKey());
+                }
+            } else {
+                bestVertices.addLast(entry.getKey());
             }
-            bestVertices.add(position, entry.getKey());
-
         }
 
         return bestVertices;
@@ -207,9 +216,16 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
      *
      * @return the closest valid vertex.
      */
-    private V calculateClosestVertex(V vertex, Set<Integer> restriction) {
+    private V calculateClosestVertex(V vertex, Set<Integer> restriction, Map<Integer, V> shortestGate) {
         V closestVertexToV1 = null;
-        double minDistance = 0;
+
+        double distanceToRoot;
+        V shortestGateOfV = shortestGate.get(solutionRepresentation.getLabel(vertex));
+        if(shortestGateOfV != null) {
+            distanceToRoot = graph.getEdgeWeight(graph.getEdge(shortestGateOfV, root));
+        } else {
+            distanceToRoot = graph.getEdgeWeight(graph.getEdge(vertex, root));
+        }
 
         // calculate closest vertex to v1
         for(Integer label : solutionRepresentation.getLabels()) {
@@ -218,15 +234,15 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
                 if(!part.contains(vertex)) {
                     for (V v2 : part) {
                         if (graph.containsEdge(vertex, v2)) {
-                            if(solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabelOfVertex(vertex))
-                                + weights.get(v2) > capacity) {
+                            double newWeight = solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(vertex));
+                            if(newWeight <= capacity) {
                                 double currentEdgeWeight = graph.getEdgeWeight(graph.getEdge(vertex, v2));
-                                if (currentEdgeWeight < minDistance) {
+                                if (currentEdgeWeight < distanceToRoot) {
                                     closestVertexToV1 = v2;
-                                    minDistance = currentEdgeWeight;
+                                    distanceToRoot = currentEdgeWeight;
                                 }
                             } else {
-                                restriction.add(solutionRepresentation.getLabelOfVertex(v2));
+                                restriction.add(solutionRepresentation.getLabel(v2));
                             }
                         }
                     }
