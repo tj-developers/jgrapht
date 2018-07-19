@@ -155,15 +155,6 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
                 );
 
                 shortestGate.put(solutionRepresentation.getLabel(vertexToMove), closestVertex.get(vertexToMove));
-
-                // delete non-positive savings from vertices and savings, they will never be included
-                for(Iterator<V> it = savings.keySet().iterator(); it.hasNext();) {
-                    V v = it.next();
-                    if(savings.get(v) <= 0) {
-                        vertices.remove(v);
-                        it.remove();
-                    }
-                }
             } else {
                 break;
             }
@@ -209,12 +200,13 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTree<V, E> extends Abstr
 
     /**
      * Calculates the closest vertex to <code>vertex</code> such that the connection of <code>vertex</code> to the
-     * subtree of the closest vertex does not violate the cpacity constraint and the savings are negative.
+     * subtree of the closest vertex does not violate the capacity constraint and the savings are positive.
+     * Otherwise null is returned.
      *
      * @param vertex the vertex to find a valid closest vertex for
      * @param restriction the set of labels of sets of the partition, in which the capacity constraint is violated.
      *
-     * @return the closest valid vertex.
+     * @return the closest valid vertex and null, if no valid vertex exists
      */
     private V calculateClosestVertex(V vertex, Set<Integer> restriction, Map<Integer, V> shortestGate) {
         V closestVertexToV1 = null;
