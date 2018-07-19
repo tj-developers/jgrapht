@@ -75,4 +75,54 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTreeTest {
             );
         }
     }
+
+    @Test
+    public void testInstance2() {
+        Graph<Integer, DefaultWeightedEdge> graph = new DefaultUndirectedWeightedGraph<Integer, DefaultWeightedEdge>(DefaultWeightedEdge.class);
+
+        for(int i = 0; i < 6; ++i) {
+            graph.addVertex(i);
+        }
+        for(int i = 0; i < 6; ++i) {
+            for(int j = i + 1; j < 6; ++j) {
+                graph.addEdge(i, j);
+            }
+        }
+        graph.setEdgeWeight(graph.getEdge(0, 1), 7);
+        graph.setEdgeWeight(graph.getEdge(0, 2), 5);
+        graph.setEdgeWeight(graph.getEdge(0, 3), 1);
+        graph.setEdgeWeight(graph.getEdge(0, 4), 2);
+        graph.setEdgeWeight(graph.getEdge(0, 5), 8);
+        graph.setEdgeWeight(graph.getEdge(1, 2), 8);
+        graph.setEdgeWeight(graph.getEdge(1, 3), 5);
+        graph.setEdgeWeight(graph.getEdge(1, 4), 2);
+        graph.setEdgeWeight(graph.getEdge(1, 5), 2);
+        graph.setEdgeWeight(graph.getEdge(2, 3), 2);
+        graph.setEdgeWeight(graph.getEdge(2, 4), 5);
+        graph.setEdgeWeight(graph.getEdge(2, 5), 6);
+        graph.setEdgeWeight(graph.getEdge(3, 4), 9);
+        graph.setEdgeWeight(graph.getEdge(3, 5), 5);
+        graph.setEdgeWeight(graph.getEdge(4, 5), 1);
+
+        Map<Integer, Double> weights = new HashMap<>();
+        weights.put(1, 2.0);
+        weights.put(2, 1.0);
+        weights.put(3, 2.0);
+        weights.put(4, 3.0);
+        weights.put(5, 2.0);
+
+        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsGRASPCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 1).getSpanningTree();
+
+        assertNotNull(cmst);
+        assertEquals(14.0, cmst.getWeight(), 0.0000001);
+        for(DefaultWeightedEdge e : cmst.getEdges()) {
+            assertTrue(
+                    e == graph.getEdge(0, 1)
+                            || e == graph.getEdge(0, 3)
+                            || e == graph.getEdge(0, 4)
+                            || e == graph.getEdge(1, 5)
+                            || e == graph.getEdge(3, 2)
+            );
+        }
+    }
 }
