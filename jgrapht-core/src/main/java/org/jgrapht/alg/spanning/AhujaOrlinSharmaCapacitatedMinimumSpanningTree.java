@@ -23,6 +23,7 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.AsSubgraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.GraphWalk;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import java.util.*;
@@ -74,7 +75,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
 
         Map<Pair<Integer, ImprovementGraphVertexType>, Integer> cycleAugmentationLabels;
 
-        Map<Pair<Integer, ImprovementGraphVertexType>, V> improvementGraphVertexMapping;
+        Map<Integer, V> improvementGraphVertexMapping;
         Map<V, Integer> initialVertexMapping;
         Map<Integer, Pair<Integer, ImprovementGraphVertexType>> pseudoVertexMapping;
         Map<Pair<Integer, ImprovementGraphVertexType>, Integer> pathExchangeVertexMapping;
@@ -159,11 +160,11 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
 
             for(V v : graph.vertexSet()) {
                 Pair<Integer, ImprovementGraphVertexType> singleVertex = new Pair<>(counter, ImprovementGraphVertexType.SINGLE);
-                improvementGraphVertexMapping.put(singleVertex, v);
+                improvementGraphVertexMapping.put(counter, v);
                 improvementGraph.addVertex(singleVertex);
 
                 Pair<Integer, ImprovementGraphVertexType> subtreeVertex = new Pair<>(counter, ImprovementGraphVertexType.SUBTREE);
-                improvementGraphVertexMapping.put(subtreeVertex, v);
+                improvementGraphVertexMapping.put(counter, v);
                 improvementGraph.addVertex(subtreeVertex);
 
                 counter++;
@@ -359,28 +360,31 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         // calculates initial solution on which we base the local search
         solutionRepresentation = getInitialSolution();
 
-        //calculates all spanning trees of the current partition
-        Map<Integer, SpanningTree<E>> partitionSpanningTrees;
-        // calculates the subtrees of all vertices
-        Map<V, Pair<Set<V>, Double>> subtrees;
+        // map that contains all spanning trees of the current partition
+        Map<Integer, SpanningTree<E>> partitionSpanningTrees = new HashMap<>();
+        // map that contains the subtrees of all vertices
+        Map<V, Pair<Set<V>, Double>> subtrees = new HashMap<>();
+        // set that contains all part of the partition that were affected by an exchange operation
+        Set<Integer> affectedParts = solutionRepresentation.getLabels();
+
 
         double currentCost;
 
         // do local improvement steps
         do {
 
-            partitionSpanningTrees = calculateSpanningTrees();
-            subtrees = calculateSubtrees(partitionSpanningTrees);
+            partitionSpanningTrees = calculateSpanningTrees(partitionSpanningTrees, affectedParts);
+            subtrees = calculateSubtrees(subtrees, partitionSpanningTrees, affectedParts);
 
             ImprovementGraph improvementGraph = new ImprovementGraph();
 
-            AhujaOrlinSharmaCyclicExchangeLocalAugmentation<> ahujaOrlinSharmaCyclicExchangeLocalAugmentation
+            AhujaOrlinSharmaCyclicExchangeLocalAugmentation<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> ahujaOrlinSharmaCyclicExchangeLocalAugmentation
                     = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(improvementGraph.improvementGraph, lengthBound, improvementGraph.cycleAugmentationLabels);
 
-            AhujaOrlinSharmaCyclicExchangeLocalAugmentation.LabeledPath<Pair<V, Integer>> cycle = ahujaOrlinSharmaCyclicExchangeLocalAugmentation.getLocalAugmentationCycle();
-            currentCost = cycle.getCost();
+            GraphWalk<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> cycle = ahujaOrlinSharmaCyclicExchangeLocalAugmentation.getLocalAugmentationCycle();
+            currentCost = cycle.getWeight();
 
-            executeNeighborhoodOperation(subtrees, cycle);
+            affectedParts = executeNeighborhoodOperation(improvementGraph.improvementGraphVertexMapping, improvementGraph.pathExchangeVertexMapping, subtrees, cycle);
 
         } while(currentCost < 0);
 
@@ -391,31 +395,85 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         return new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, root, capacity, weights, numberOfOperationsParameter).getSolution();
     }
 
-    private void executeNeighborhoodOperation(Map<V, Pair<Set<V>, Double>> subtrees,
-                                              AhujaOrlinSharmaCyclicExchangeLocalAugmentation.LabeledPath<Pair<V, Integer>> cycle) {
-        Iterator<Pair<V, Integer>> it = cycle.getVertices().iterator();
+    private Set<Integer> executeNeighborhoodOperation(
+            Map<Integer, V> improvementGraphVertexMapping,
+            Map<Pair<Integer, ImprovementGraphVertexType>, Integer> pathExchangeVertexMapping,
+            Map<V, Pair<Set<V>, Double>> subtrees,
+            GraphWalk<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> cycle
+    ) {
+        Set<Integer> affectedLabels = new HashSet<>();
+
+        Iterator<Pair<Integer, ImprovementGraphVertexType>> it = cycle.getVertexList().iterator();
         if(it.hasNext()) {
-            V cur = it.next().getFirst();
+            Pair<Integer, ImprovementGraphVertexType> cur = it.next();
             if(it.hasNext()) {
                 while (it.hasNext()) {
-                    V next = it.next().getFirst();
+                    Pair<Integer, ImprovementGraphVertexType> next = it.next();
 
-                    if (cur.equals(0)) {
-                        solutionRepresentation.moveVertex(cur, solutionRepresentation.getLabel(cur), solutionRepresentation.getLabel(next));
-                    } else {
-                        // get the whole subtree that has to be moved
-                        Set<V> subtreeToMove = subtrees.get(cur).getFirst();
-                        solutionRepresentation.moveVertices(subtreeToMove, solutionRepresentation.getLabel(cur), solutionRepresentation.getLabel(next));
+                    switch(cur.getSecond()) {
+                        /*
+                         * A vertex is moved form the part of cur to the part of next. Therefore, both parts are affected.
+                         * We only consider the label of cur to be affected for now, the label of next will be add to the affected set in the next iteration.
+                         */
+                        case SINGLE: {
+                            V curVertex = improvementGraphVertexMapping.get(cur.getFirst());
+                            Integer curLabel = solutionRepresentation.getLabel(curVertex);
+
+                            affectedLabels.add(curLabel);
+
+                            solutionRepresentation.moveVertex(
+                                    curVertex,
+                                    curLabel,
+                                    solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()))
+                            );
+                            break;
+                        }
+                        /*
+                         * A subtree is moved from the part of cur to the part of next. Therefore, the part of cur is affected.
+                         */
+                        case SUBTREE: {
+                            V curVertex = improvementGraphVertexMapping.get(cur.getFirst());
+                            Integer curLabel = solutionRepresentation.getLabel(curVertex);
+
+                            affectedLabels.add(curLabel);
+
+                            // get the whole subtree that has to be moved
+                            Set<V> subtreeToMove = subtrees.get(curVertex).getFirst();
+                            solutionRepresentation.moveVertices(
+                                    subtreeToMove,
+                                    curLabel,
+                                    solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()))
+                            );
+                            break;
+                        }
+                        /*
+                         * cur is the end of a path exchange. Thus, the part of cur is affected because vertices were inserted.
+                         */
+                        case PSEUDO: {
+                            Integer curLabel = pathExchangeVertexMapping.get(cur);
+                            affectedLabels.add(curLabel);
+                            break;
+                        }
+                        /*
+                         * This is the beginning of a path exchange. We have nothing to do.
+                         */
+                        case ORIGIN: {
+
+                            break;
+                        }
+                        default: throw new IllegalStateException("This is a bug. There are invalid types of vertices in the cycle.");
                     }
+
                     cur = next;
                 }
             }
         }
+
+        return affectedLabels;
     }
 
-    private Map<Integer, SpanningTree<E>> calculateSpanningTrees() {
-        Map<Integer, SpanningTree<E>> partitionSpanningTrees = new HashMap<>();
-        for(Integer label : solutionRepresentation.getLabels()) {
+    private Map<Integer, SpanningTree<E>> calculateSpanningTrees(Map<Integer, SpanningTree<E>> partitionSpanningTrees, Set<Integer> affectedLabels) {
+        for(Integer label : affectedLabels) {
             Set<V> set = solutionRepresentation.getPartitionSet(label);
             solutionRepresentation.getPartitionSet(label).add(root);
             partitionSpanningTrees.put(label, new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree());
@@ -424,11 +482,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         return partitionSpanningTrees;
     }
 
-    private Map<V, Pair<Set<V>, Double>> calculateSubtrees(Map<Integer, SpanningTree<E>> partitionSpanningTree) {
-        Map<V, Pair<Set<V>, Double>> subtrees = new HashMap<>();
-        for(V v : graph.vertexSet()) {
-            Pair<Set<V>, Double> currentSubtree = subtree(v, partitionSpanningTree);
-            subtrees.put(v, currentSubtree);
+    private Map<V, Pair<Set<V>, Double>> calculateSubtrees(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTree<E>> partitionSpanningTree, Set<Integer> affectedLabels) {
+        for(Integer label : affectedLabels) {
+            for (V v : solutionRepresentation.getPartitionSet(label)) {
+                Pair<Set<V>, Double> currentSubtree = subtree(v, partitionSpanningTree);
+                subtrees.put(v, currentSubtree);
+            }
         }
         return subtrees;
     }
