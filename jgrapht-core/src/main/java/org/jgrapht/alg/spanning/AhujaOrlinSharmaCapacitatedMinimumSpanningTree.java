@@ -365,7 +365,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         Map<V, Pair<Set<V>, Double>> subtrees;
 
         double currentCost;
-/*
+
         // do local improvement steps
         do {
 
@@ -383,12 +383,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             executeNeighborhoodOperation(subtrees, cycle);
 
         } while(currentCost < 0);
-*/
+
         return solutionRepresentation.calculateResultingSpanningTree();
     }
 
     private SolutionRepresentation getInitialSolution() {
-        return new EsauWilliamsGRASPCapacitatedMinimumSpanningTree<>(graph, root, capacity, weights, numberOfOperationsParameter).getSolution();
+        return new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, root, capacity, weights, numberOfOperationsParameter).getSolution();
     }
 
     private void executeNeighborhoodOperation(Map<V, Pair<Set<V>, Double>> subtrees,

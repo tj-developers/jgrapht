@@ -151,6 +151,9 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
 
     protected AbstractCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> weights) {
         this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
+        if (!graph.getType().isUndirected()) {
+            throw new IllegalArgumentException("Graph must be undirected");
+        }
         this.root = Objects.requireNonNull(root, "Root cannot be null");
         this.capacity = capacity;
         this.weights = Objects.requireNonNull(weights, "Weight cannot be null");

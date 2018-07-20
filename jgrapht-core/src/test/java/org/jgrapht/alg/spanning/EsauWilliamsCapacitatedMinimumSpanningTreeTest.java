@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class EsauWilliamsGRASPCapacitatedMinimumSpanningTreeTest {
+public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
 
     /**
      * This example is presented here: http://www.pitt.edu/~dtipper/2110/CMST_example.pdf
@@ -60,7 +60,7 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTreeTest {
         weights.put(5, 1.0);
         weights.put(6, 1.0);
 
-        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsGRASPCapacitatedMinimumSpanningTree<>(graph, 0, 3, weights, 1).getSpanningTree();
+        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 3, weights, 1).getSpanningTree();
 
         assertNotNull(cmst);
         assertEquals(42.0, cmst.getWeight(), 0.0000001);
@@ -111,7 +111,7 @@ public class EsauWilliamsGRASPCapacitatedMinimumSpanningTreeTest {
         weights.put(4, 3.0);
         weights.put(5, 2.0);
 
-        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsGRASPCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 1).getSpanningTree();
+        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 1).getSpanningTree();
 
         assertNotNull(cmst);
         assertEquals(14.0, cmst.getWeight(), 0.0000001);
