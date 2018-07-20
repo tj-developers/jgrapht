@@ -2,6 +2,7 @@ package org.jgrapht.alg.decompostion;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.*;
 import java.util.Map.*;
@@ -23,19 +24,23 @@ public final class NiceDecompositionBuilderTestUtil
      */
     public static <V,E,W> void testNiceDecomposition(Graph<V,E> decomposition, Map<V,Set<W>> map, V root){
         
+        //empty graph
+        if(decomposition.vertexSet().isEmpty())
+            return;
+        
         Queue<V> queue = new LinkedList<V>();
         
         //test and add root
         assertTrue(root+" is no valid root"
                 + "\n in decomposition "+decomposition
-                + "\n and map"+map, map.get(root).isEmpty());
+                + "\n and map"+map, map.get(root).size() == 1);
        queue.add(root);
         
         while(!queue.isEmpty())
         {
             V current = queue.poll();
             List<V> successor = Graphs.successorListOf(decomposition, current);
-            if(successor.size() == 0 && map.get(current).isEmpty()) continue; //leaf node
+            if(successor.size() == 0 && map.get(current).size() == 1) continue; //leaf node
             if(successor.size() == 1) //forget or introduce
             {
                 V next = successor.get(0);
@@ -62,11 +67,10 @@ public final class NiceDecompositionBuilderTestUtil
                 && union.size() == map.get(second).size()) 
                     continue; //join node!
             }
-            assertFalse("Vertex Set "+current+" is not a valid node for a nice decomposition"
+            fail("Vertex Set "+current+" is not a valid node for a nice decomposition"
                 + "\nin decomposition "+decomposition
-                + "\nwith map "+map, true); //no valid node!
+                + "\nwith map "+map); //no valid node!
         }
-        assertTrue(true);
     }
     
     /**

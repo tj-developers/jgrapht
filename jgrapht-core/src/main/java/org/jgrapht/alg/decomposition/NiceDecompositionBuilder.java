@@ -27,17 +27,18 @@ import org.jgrapht.graph.*;
  * An abstract builder class for nice tree decompositions, which builds the tree decomposition in a
  * top-down manner.
  * <p>
- * A tree decomposition of a graph $G$ is a tree $T$ and a map $b:V(T) \rightarrow Set&lt;V(G)&gt;$,
- * which satisfies the properties:
+* A tree-decomposition of a graph $G = (V, E)$ is a pair $(X, T) = (\{X_i\ |\ i\in I\}, (I, F))$ where
+ * $X = \{X_i\ |\ i \in I \}$ is a family of subsets of $V$, and $T = (I, F)$ is a tree, such that
  * <ul>
- * <li>for every edge $e \in E(G)$, there is a node $t \in V(T)$ with $e \subseteq b(v)$</li>
- * <li>for all vertices $v \in V(G)$ the set $\{t \in V(T) | v \in b(t)\}$ is non-empty and
- * connected in $T$</li>
+ * <li>Union of the sets $X_i$ equals to $V$</li>
+ * <li>for every edge $e = (u,v)$ there exists a set $X_i$ such that $u \in X_i$ and $v \in X_i$</li>
+ * <li>if both $X_i$ and $X_j$ contain a vertex $v$ then every set $X_k$ on the simple path from $X_i$ to $X_j$
+ * contains vertex $v$.</li>
  * </ul>
  * <br>
  * A nice tree decomposition is a special tree decomposition, which satisfies the properties:
  * <ul>
- * <li>for root $r \in V(T)$ and leaf $l \in V(T): b(r)=b(t)=\emptyset$</li>
+ * <li>for root $r \in V(T)$ and leaf $l \in V(T): |b(r)|=|b(t)|=1$</li>
  * <li>every non-leaf node $t \in V(T)$ is of one of the following three types:
  * <ul>
  * <li>forget node: $t$ has exactly one child $d$ and $b(t) \cup \{ w\} = b(d)$ for some $w \in
@@ -79,24 +80,40 @@ abstract public class NiceDecompositionBuilder<V>
     protected NiceDecompositionBuilder()
     {
         // creating objects
-        decomposition = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
-        decompositionMap = new HashMap<Integer, Set<V>>();
-
-        // create root
-        root = 0;
-        nextInteger = 1;
-        decompositionMap.put(root, new HashSet<V>());
-        decomposition.addVertex(root);
+        decomposition = new DefaultDirectedGraph<>(DefaultEdge.class);
+        decompositionMap = new HashMap<>();
+        nextInteger = 0;
     }
 
     /**
-     * Getter for the next free Integer. Supplies the add vertex methods with new vertices
+     * Getter for the next free Integer. Supplies the add vertex methods with new vertices.
      * 
      * @return unused integer
      */
     private Integer getNextInteger()
     {
         return nextInteger++;
+    }
+    
+    /**
+     * Method for adding a root node. This method should be called at the start of every computation.
+     * It creates a single node with the bag containing {@code rootElement}.
+     * Calling this method twice will result in an UnsupportedOperationException.
+     * 
+     * @param rootElement the content of the bag of the root
+     * @return the root node
+     */
+    protected Integer addRoot(V rootElement)
+    {
+        if(!decomposition.vertexSet().isEmpty())
+            throw new UnsupportedOperationException("A root can not be created twice");
+        
+        root = getNextInteger();
+        Set<V> bag = new HashSet<>();
+        bag.add(rootElement);
+        decompositionMap.put(root, bag);
+        decomposition.addVertex(root);
+        return root;
     }
 
     /**
@@ -215,11 +232,13 @@ abstract public class NiceDecompositionBuilder<V>
             if (Graphs.vertexHasSuccessors(decomposition, leaf))
                 continue;
 
-            // otherwise add nodes until empty set
+            // otherwise add nodes until one element
             Set<V> vertexSet = decompositionMap.get(leaf);
             Integer current = leaf;
             for (V forget : vertexSet) {
-                current = addIntroduce(forget, current);
+                if(decompositionMap.get(current).size()>1) {
+                    current = addIntroduce(forget, current);
+                }
             }
         }
     }

@@ -75,20 +75,20 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * @param graph the chordal graph for which a decomposition should be created
      * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
-    public static <V, E> ChordalNiceDecompositionBuilder<V, E> create(Graph<V, E> graph)
+    public ChordalNiceDecompositionBuilder(Graph<V, E> graph)
     {
+        super();
         ChordalityInspector<V, E> inspec = new ChordalityInspector<V, E>(graph);
         if (!inspec.isChordal())
-            return null;
-        ChordalNiceDecompositionBuilder<V, E> builder =
-            new ChordalNiceDecompositionBuilder<>(graph, inspec.getPerfectEliminationOrder());
-        builder.computeNiceDecomposition();
-        return builder;
-
+            throw new IllegalArgumentException("The given graph is not chordal.");
+        this.graph = graph;
+        this.perfectOrder = inspec.getPerfectEliminationOrder();
+        vertexInOrder = getVertexInOrder();
+        computeNiceDecomposition();
     }
 
     /**
-     * Factory method for the nice decomposition builder of chordal graphs. This method needs the
+     * Constructor for the nice decomposition builder of chordal graphs. This method needs the
      * perfect elimination order. It does not check whether the order is correct. This method may
      * behave arbitrary if the perfect elimination order is incorrect.
      * 
@@ -98,28 +98,12 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * @param perfectEliminationOrder the perfect elimination order of the graph
      * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
-    public static <V, E> ChordalNiceDecompositionBuilder<V, E> create(
-        Graph<V, E> graph, List<V> perfectEliminationOrder)
-    {
-        ChordalNiceDecompositionBuilder<V, E> builder =
-            new ChordalNiceDecompositionBuilder<>(graph, perfectEliminationOrder);
-        builder.computeNiceDecomposition();
-        return builder;
-
-    }
-
-    /**
-     * Creates a nice decomposition builder for chordal graphs.
-     * 
-     * @param graph the chordal graph
-     * @param perfectOrder the perfect elimination order of graph
-     */
-    private ChordalNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectOrder)
+    public ChordalNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectEliminationOrder)
     {
         super();
         this.graph = graph;
-        this.perfectOrder = perfectOrder;
-        vertexInOrder = getVertexInOrder();
+        this.perfectOrder = perfectEliminationOrder;
+        computeNiceDecomposition();
     }
 
     /**
@@ -134,14 +118,23 @@ public class ChordalNiceDecompositionBuilder<V, E>
         // predecessors
         Map<V, Integer> forgetNodeMap = new HashMap<V, Integer>(graph.vertexSet().size());
 
+        //iterate over the perfect order
+        Iterator<V> iterator = perfectOrder.iterator();
+        
+        //empty graph
+        if(!iterator.hasNext())
+            return;
+        
         // set current node to the root
-        Integer decompNode = getRoot();
+        V element = iterator.next();
+        Integer decompNode = addRoot(element);
+        forgetNodeMap.put(element, decompNode);
 
         // iterate over the perfect elimination order
-        for (V vertex : perfectOrder) {
-
+        while (iterator.hasNext()) {
+            V vertex = iterator.next();
             // get the predecessors regarding the perfect elimination order
-            Set<V> predecessors = getOrderPredecessors(vertexInOrder, vertex);
+            List<V> predecessors = getOrderPredecessors(vertexInOrder, vertex);
 
             // calculate nearest successors according to perfect elimination order
             V lastVertex = null;
@@ -185,7 +178,6 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * Returns a map containing vertices from the {@code vertexOrder} mapped to their indices in
      * {@code vertexOrder}.
      *
-     * @param vertexOrder a list with vertices.
      * @return a mapping of vertices from {@code vertexOrder} to their indices in
      *         {@code vertexOrder}.
      */
@@ -208,9 +200,9 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * @param vertex the vertex whose predecessors in order are to be returned.
      * @return the predecessors of {@code vertex} in order defines by {@code map}.
      */
-    private Set<V> getOrderPredecessors(Map<V, Integer> map, V vertex)
+    private List<V> getOrderPredecessors(Map<V, Integer> map, V vertex)
     {
-        Set<V> predecessors = new HashSet<>();
+        List<V> predecessors = new ArrayList<>();
         Integer vertexPosition = map.get(vertex);
         Set<E> edges = graph.edgesOf(vertex);
         for (E edge : edges) {

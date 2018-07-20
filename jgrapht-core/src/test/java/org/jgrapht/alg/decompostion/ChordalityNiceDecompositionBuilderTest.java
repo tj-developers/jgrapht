@@ -1,10 +1,8 @@
 package org.jgrapht.alg.decompostion;
 
-import java.util.function.Supplier;
 
 import org.jgrapht.*;
 import org.jgrapht.alg.decomposition.*;
-import org.jgrapht.alg.util.*;
 import org.jgrapht.generate.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.builder.*;
@@ -30,7 +28,7 @@ public class ChordalityNiceDecompositionBuilderTest
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeCompleteGraph(i);
             ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalNiceDecompositionBuilder.create(graph);
+                new ChordalNiceDecompositionBuilder<>(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(
@@ -65,7 +63,7 @@ public class ChordalityNiceDecompositionBuilderTest
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeGraphsWithTriangles(i);
             ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalNiceDecompositionBuilder.create(graph);
+                new ChordalNiceDecompositionBuilder<>(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(
@@ -73,7 +71,7 @@ public class ChordalityNiceDecompositionBuilderTest
         }
     }
 
-    private Graph<Integer, DefaultEdge> makeUnconnectedGraph(int n)
+    private Graph<Integer, DefaultEdge> makeDisconnectedGraph(int n)
     {
         Graph<Integer, DefaultEdge> graph = new SimpleGraph<>(SupplierUtil.createIntegerSupplier(), 
                                                               SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
@@ -83,12 +81,12 @@ public class ChordalityNiceDecompositionBuilderTest
     }
 
     @Test
-    public void testUnconnectedGraph()
+    public void testDisconnectedGraph()
     {
         for (int i = 0; i < 10; i++) {
-            Graph<Integer, DefaultEdge> graph = makeUnconnectedGraph(i);
+            Graph<Integer, DefaultEdge> graph = makeDisconnectedGraph(i);
             ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalNiceDecompositionBuilder.create(graph);
+                new ChordalNiceDecompositionBuilder<>(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(
@@ -119,7 +117,7 @@ public class ChordalityNiceDecompositionBuilderTest
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
             ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                ChordalNiceDecompositionBuilder.create(graph);
+                new ChordalNiceDecompositionBuilder<>(graph);
             NiceDecompositionBuilderTestUtil
                 .testDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap());
             NiceDecompositionBuilderTestUtil.testNiceDecomposition(

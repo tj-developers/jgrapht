@@ -214,7 +214,7 @@ public class ChordalityInspector<V, E>
         if (graphVertices.size() == vertexOrder.size() && graphVertices.containsAll(vertexOrder)) {
             Map<V, Integer> vertexInOrder = getVertexInOrder(vertexOrder);
             for (V vertex : vertexOrder) {
-                Set<V> predecessors = getPredecessors(vertexInOrder, vertex);
+                List<V> predecessors = getPredecessors(vertexInOrder, vertex);
                 if (predecessors.size() > 0) {
                     V maxPredecessor =
                         Collections.max(predecessors, Comparator.comparingInt(vertexInOrder::get));
@@ -374,9 +374,9 @@ public class ChordalityInspector<V, E>
      * @param vertex the vertex whose predecessors in order are to be returned.
      * @return the predecessors of {@code vertex} in order defines by {@code map}.
      */
-    private Set<V> getPredecessors(Map<V, Integer> vertexInOrder, V vertex)
+    private List<V> getPredecessors(Map<V, Integer> vertexInOrder, V vertex)
     {
-        Set<V> predecessors = new HashSet<>();
+        List<V> predecessors = new ArrayList<>();
         Integer vertexPosition = vertexInOrder.get(vertex);
         Set<E> edges = graph.edgesOf(vertex);
         for (E edge : edges) {
