@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -37,8 +37,8 @@ import java.util.*;
  * https://doi.org/10.1016/S0167-6377(02)00236-5. (http://www.sciencedirect.com/science/article/pii/S0167637702002365)
  *
  * The <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum Spanning Tree</a>
- * (CMST) problem is a rooted minimal cost spanning tree that statisfies the capacity
- * constrained on all trees that are connected by the designated root. The problem is NP-hard.
+ * (CMST) problem is a rooted minimal cost spanning tree that satisfies the capacity
+ * constrained on all trees that are connected to the designated root. The problem is NP-hard.
  * The hard part of the problem is the implicit partition defined by the subtrees.
  * If one can find the correct partition, the MSTs can be calculated in polynomial time.
  *
@@ -64,6 +64,11 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * the number of the most profitable operations considered in the GRASP procedure for the initial solution.
      */
     private final int numberOfOperationsParameter;
+
+    /**
+     *
+     */
+    private SpanningTree<E> initialSolution;
 
     private enum ImprovementGraphVertexType {
         SINGLE, SUBTREE, PSEUDO, ORIGIN
@@ -354,6 +359,11 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         this.numberOfOperationsParameter = numberOfOperationsParameter;
     }
 
+    public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(SpanningTree<E> initialSolution, Graph<V, E> graph, V root, double capacity, Map<V, Double> weights, int lengthBound, int numberOfOperationsParameter) {
+        this(graph, root, capacity, weights, lengthBound, numberOfOperationsParameter);
+        this.initialSolution = initialSolution;
+    }
+
     @Override
     public SpanningTree<E> getSpanningTree() {
 
@@ -392,6 +402,33 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
     }
 
     private SolutionRepresentation getInitialSolution() {
+        if(initialSolution != null) {
+            Map<V, Integer> labels = new HashMap<>();
+            Map<Integer, Pair<Set<V>, Double>> partition = new HashMap<>();
+
+            DepthFirstIterator<V, E> depthFirstIterator = new DepthFirstIterator<>(new AsSubgraph<>(graph, graph.vertexSet(), initialSolution.getEdges()), root);
+
+            int labelcounter = 0;
+            Set<V> currentPart = new HashSet<>();
+            double currentPartWeight = 0.0;
+
+            while(depthFirstIterator.hasNext()) {
+
+                V next = depthFirstIterator.next();
+                if(next == root) {
+                    partition.put(labelcounter, Pair.of(currentPart, currentPartWeight));
+                    currentPart = new HashSet<>();
+                    currentPartWeight = 0.0;
+                    labelcounter++;
+                    continue;
+                }
+                currentPartWeight += weights.get(next);
+                currentPart.add(next);
+                labels.put(next, labelcounter);
+            }
+
+            return new SolutionRepresentation(labels, partition);
+        }
         return new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, root, capacity, weights, numberOfOperationsParameter).getSolution();
     }
 

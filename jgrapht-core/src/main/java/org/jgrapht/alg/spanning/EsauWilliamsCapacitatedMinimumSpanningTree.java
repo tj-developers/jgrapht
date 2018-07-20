@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -36,13 +36,11 @@ import java.util.*;
  * Working papers, Massachusetts Institute of Technology (MIT), Sloan School of Management.
  *
  * This version runs in polynomial time dependent on the number of considered operations per iteration
- * <code>numberOfOperationsParameter</code> (denoted by p), such that it is in O(n^3 + p*n).
+ * <code>numberOfOperationsParameter</code> (denoted by p), such that runs is in O(|V|^3 + p*|V|).
  *
  * The <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum Spanning Tree</a>
  * (CMST) problem is a rooted minimal cost spanning tree that satisfies the capacity
- * constrained on all trees that are connected by the designated root. The problem is NP-hard.
- * The hard part of the problem is the implicit partition defined by the subtrees.
- * If one can find the correct partition, the MSTs can be calculated in polynomial time.
+ * constrained on all trees that are connected to the designated root. The problem is NP-hard.
  *
  * @param <V> the vertex type
  * @param <E> the edge type
