@@ -67,13 +67,11 @@ public class ChordalNiceDecompositionBuilder<V, E>
     Map<V, Integer> vertexInOrder;
 
     /**
-     * Factory method for the nice decomposition builder of chordal graphs. Returns null, if the
-     * graph is not chordal.
+     * Constructor for the nice decomposition builder of chordal graphs. The constructor
+     * already computes the decomposition.
      * 
-     * @param <V> the vertex type of graph
-     * @param <E> the edge type of graph
+     * @throws IllegalArgumentException if the graph is not chordal.
      * @param graph the chordal graph for which a decomposition should be created
-     * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
     public ChordalNiceDecompositionBuilder(Graph<V, E> graph)
     {
@@ -92,11 +90,8 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * perfect elimination order. It does not check whether the order is correct. This method may
      * behave arbitrary if the perfect elimination order is incorrect.
      * 
-     * @param <V> the vertex type of graph
-     * @param <E> the edge type of graph
      * @param graph the chordal graph for which a decomposition should be created
      * @param perfectEliminationOrder the perfect elimination order of the graph
-     * @return a nice decomposition builder for the graph if the graph was chordal, else null
      */
     public ChordalNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectEliminationOrder)
     {
