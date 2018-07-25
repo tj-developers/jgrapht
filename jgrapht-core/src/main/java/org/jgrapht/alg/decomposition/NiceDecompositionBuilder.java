@@ -198,7 +198,7 @@ abstract public class NiceDecompositionBuilder<V>
      * {@code introducedElement}.<br>
      * The time complexity of this method is in $\mathcal{O}(|b(node)|)$.
      * 
-     * @throws IllegalArgumentExceptionif either {@code introducedElement} is not in b({@code node}) 
+     * @throws IllegalArgumentException if either {@code introducedElement} is not in b({@code node}) 
      * or {@code node} is not a leaf.
      * @param introducedElement the element, which is introduced
      * @param node the node, which becomes an introduce node
