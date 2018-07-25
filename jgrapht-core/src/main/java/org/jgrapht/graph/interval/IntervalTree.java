@@ -15,10 +15,8 @@
  * (b) the terms of the Eclipse Public License v1.0 as published by
  * the Eclipse Foundation.
  */
-package org.jgrapht.alg.interfaces;
+package org.jgrapht.graph.interval;
 
-import org.jgrapht.graph.interval.Interval;
-import org.jgrapht.graph.interval.IntervalTreeNodeValue;
 import org.jgrapht.util.BinarySearchTree;
 
 import java.util.List;
@@ -36,7 +34,7 @@ import java.util.List;
  * @author Christoph Grüne (christophgruene)
  * @since Apr 26, 2018
  */
-public interface IntervalTreeInterface
+interface IntervalTree
         <K, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>, T extends Comparable<T>>
         extends BinarySearchTree<K, NodeValue> {
 

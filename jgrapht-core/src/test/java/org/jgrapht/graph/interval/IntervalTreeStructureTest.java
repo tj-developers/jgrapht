@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Daniel Mock and Contributors.
+ * (C) Copyright 2018-2018, by Daniel Mock and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -17,7 +17,6 @@
  */
 package org.jgrapht.graph.interval;
 
-import org.jgrapht.alg.interfaces.IntervalStructureInterface;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 public class IntervalTreeStructureTest {
 
     private List<Interval<Integer>> sorted = new LinkedList<>();
-    private IntervalStructureInterface<Integer> tree = new IntervalTreeStructure<>();
+    private IntervalIndex<Integer> tree = new IntervalTreeStructure<>();
 
     @Before
     public void setUp() throws Exception {
@@ -46,15 +45,15 @@ public class IntervalTreeStructureTest {
     @Test
     public void test1() {
         for (int i = 3; i < 20; i++) {
-            assertEquals("loop " + i, 4, tree.overlapsWithPoint(i).size());
+            assertEquals("loop " + i, 4, tree.findOverlappingIntervals(i).size());
         }
     }
 
     @Test
     public void testIntervalOverlap() {
-        assertEquals(4, tree.overlapsWith(new Interval<Integer>(0, 3)).size());
-        assertEquals(1, tree.overlapsWith(new Interval<Integer>(0, 0)).size());
-        assertEquals(0, tree.overlapsWith(new Interval<Integer>(-3, -1)).size());
-        assertEquals(20, tree.overlapsWith(new Interval<Integer>(-5, 20)).size());
+        assertEquals(4, tree.findOverlappingIntervals(new Interval<Integer>(0, 3)).size());
+        assertEquals(1, tree.findOverlappingIntervals(new Interval<Integer>(0, 0)).size());
+        assertEquals(0, tree.findOverlappingIntervals(new Interval<Integer>(-3, -1)).size());
+        assertEquals(20, tree.findOverlappingIntervals(new Interval<Integer>(-5, 20)).size());
     }
 }

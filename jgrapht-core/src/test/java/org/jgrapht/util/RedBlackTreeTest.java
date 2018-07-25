@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Jiong Fu, Daniel Mock and Contributors.
+ * (C) Copyright 2018-2018, by Jiong Fu, Daniel Mock and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *

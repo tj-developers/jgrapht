@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne, Daniel Mock and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne, Daniel Mock and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -56,7 +56,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     private int size;
 
     /**
-     * constructs a node object
+     * Constructs a node object.
      *
      * @param key the key of the node
      * @param val the value of the node
@@ -71,7 +71,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * sets a new left child of the node
+     * Sets a new left child of the node.
      *
      * @param leftChild the node that should be new left child
      */
@@ -80,7 +80,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * sets a new right child of the node
+     * Sets a new right child of the node.
      *
      * @param rightChild the node that should be new right child
      */
@@ -89,7 +89,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * sets the color for the node
+     * Sets the color for the node.
      *
      * @param red red: true, black: false
      */
@@ -98,21 +98,21 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * sets the color of the node to red
+     * Sets the color of the node to red.
      */
     protected void setRed() {
         this.red = true;
     }
 
     /**
-     * sets the color of the node to black
+     * Sets the color of the node to black.
      */
     protected void setBlack() {
         this.red = false;
     }
 
     /**
-     * sets a new size for the sub tree rooted at this node
+     * Sets a new size for the sub tree rooted at this node.
      *
      * @param size the size of the sub tree rooted at this node
      */
@@ -121,7 +121,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * returns whether node is red or black
+     * Returns whether node is red or black.
      *
      * @return red:true, black:false
      */
@@ -130,7 +130,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * Getter for <code>key</code>
+     * Getter for <code>key</code>.
      *
      * @return the key of the node
      */
@@ -139,7 +139,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * Getter for <code>val</code>
+     * Getter for <code>val</code>.
      *
      * @return the value of the node
      */
@@ -148,7 +148,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * Setter for <code>val</code>
+     * Setter for <code>val</code>.
      *
      * @param val the new value of the node
      */
@@ -157,7 +157,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * Getter for <code>leftChild</code>
+     * Getter for <code>leftChild</code>.
      *
      * @return the left child of the node
      */
@@ -166,7 +166,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * Getter for <code>rightChild</code>
+     * Getter for <code>rightChild</code>.
      *
      * @return the right child of the node
      */
@@ -175,7 +175,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * Getter for <code>size</code>
+     * Getter for <code>size</code>.
      *
      * @return the size of the sub tree rooted at the node, if maintained
      */
@@ -184,7 +184,7 @@ public class RedBlackTreeNode<K, V> implements Serializable {
     }
 
     /**
-     * sets a new key element for this node
+     * Sets a new key element for this node.
      *
      * @param key the new key of the node
      */
