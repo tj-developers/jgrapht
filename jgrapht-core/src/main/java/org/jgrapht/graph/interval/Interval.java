@@ -123,15 +123,15 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      */
     @Override
     public int compareTo(Interval<T> o) {
-        int isLeft = end.compareTo(o.getStart()); // < 0 if this ends before other starts
-        int isRight = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
+        int left = end.compareTo(o.getStart()); // < 0 if this ends before other starts
+        int right = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
 
-        if (isLeft >= 0 && isRight <= 0) {
+        if (left >= 0 && right <= 0) {
             return 0;
-        } else if (isLeft < 0) {
-            return isLeft;
+        } else if (left < 0) {
+            return left;
         } else {
-            return isRight;
+            return right;
         }
     }
 
