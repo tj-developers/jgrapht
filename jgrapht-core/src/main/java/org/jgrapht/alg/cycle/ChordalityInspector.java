@@ -376,9 +376,9 @@ public class ChordalityInspector<V, E>
      */
     private List<V> getPredecessors(Map<V, Integer> vertexInOrder, V vertex)
     {
-        List<V> predecessors = new ArrayList<>();
-        Integer vertexPosition = vertexInOrder.get(vertex);
         Set<E> edges = graph.edgesOf(vertex);
+        List<V> predecessors = new ArrayList<>(edges.size());
+        Integer vertexPosition = vertexInOrder.get(vertex);
         for (E edge : edges) {
             V oppositeVertex = Graphs.getOppositeVertex(graph, edge, vertex);
             Integer destPosition = vertexInOrder.get(oppositeVertex);

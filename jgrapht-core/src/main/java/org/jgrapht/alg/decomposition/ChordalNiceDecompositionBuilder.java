@@ -58,13 +58,13 @@ public class ChordalNiceDecompositionBuilder<V, E>
     NiceDecompositionBuilder<V>
 {
     // the chordal graph
-    Graph<V, E> graph;
+    private Graph<V, E> graph;
 
     // the perfect elimination order of graph
-    List<V> perfectOrder;
+    private List<V> perfectOrder;
 
     // another representation of the perfect elimination order of graph
-    Map<V, Integer> vertexInOrder;
+    private Map<V, Integer> vertexInOrder;
 
     /**
      * Constructor for the nice decomposition builder of chordal graphs. The constructor
@@ -76,7 +76,7 @@ public class ChordalNiceDecompositionBuilder<V, E>
     public ChordalNiceDecompositionBuilder(Graph<V, E> graph)
     {
         super();
-        ChordalityInspector<V, E> inspec = new ChordalityInspector<V, E>(graph);
+        ChordalityInspector<V, E> inspec = new ChordalityInspector<>(graph);
         if (!inspec.isChordal())
             throw new IllegalArgumentException("The given graph is not chordal.");
         this.graph = graph;
@@ -86,9 +86,10 @@ public class ChordalNiceDecompositionBuilder<V, E>
     }
 
     /**
-     * Constructor for the nice decomposition builder of chordal graphs. This method needs the
-     * perfect elimination order. It does not check whether the order is correct. This method may
-     * behave arbitrary if the perfect elimination order is incorrect.
+     * Constructor for the nice decomposition builder of chordal graphs. 
+     * This method needs the perfect elimination order. The constructor
+     * already computes the decomposition.<p>
+     * Note: This method does NOT check whether the order is correct.
      * 
      * @param graph the chordal graph for which a decomposition should be created
      * @param perfectEliminationOrder the perfect elimination order of the graph
@@ -108,10 +109,9 @@ public class ChordalNiceDecompositionBuilder<V, E>
      */
     private void computeNiceDecomposition()
     {
-
         // map from vertices to decomposition-nodes where the decomposition-node has all its
         // predecessors
-        Map<V, Integer> forgetNodeMap = new HashMap<V, Integer>(graph.vertexSet().size());
+        Map<V, Integer> forgetNodeMap = new HashMap<>(graph.vertexSet().size());
 
         //iterate over the perfect order
         Iterator<V> iterator = perfectOrder.iterator();
@@ -122,7 +122,7 @@ public class ChordalNiceDecompositionBuilder<V, E>
         
         // set current node to the root
         V element = iterator.next();
-        Integer decompNode = addRoot(element);
+        int decompNode = addRootNode(element);
         forgetNodeMap.put(element, decompNode);
 
         // iterate over the perfect elimination order
@@ -146,27 +146,25 @@ public class ChordalNiceDecompositionBuilder<V, E>
 
             // if this node is not a leaf node, create a join node
             if (Graphs.vertexHasSuccessors(decomposition, decompNode)) {
-                decompNode = addJoin(decompNode).getFirst();
+                decompNode = addJoinNode(decompNode).getFirst();
             }
 
             // calculate vertices of nearest successor, which needs to be handled
-            Set<V> clique = new HashSet<V>(predecessors);
-            clique.add(vertex);
-            Set<V> toIntroduce = new HashSet<V>(decompositionMap.get(decompNode));
-            toIntroduce.removeAll(clique);
+            Set<V> toIntroduce = new HashSet<>(decompositionMap.get(decompNode));
+            toIntroduce.removeAll(predecessors);
+            toIntroduce.remove(vertex);
 
             // first remove unnecessary nodes
             for (V introduce : toIntroduce) {
-                decompNode = addIntroduce(introduce, decompNode);
+                decompNode = addIntroduceNode(introduce, decompNode);
             }
             // now add new node!
-            decompNode = addForget(vertex, decompNode);
+            decompNode = addForgetNode(vertex, decompNode);
             forgetNodeMap.put(vertex, decompNode);
 
         }
         //finish all unfinished paths
         leafClosure();
-
     }
 
     /**
@@ -197,12 +195,12 @@ public class ChordalNiceDecompositionBuilder<V, E>
      */
     private List<V> getOrderPredecessors(Map<V, Integer> map, V vertex)
     {
-        List<V> predecessors = new ArrayList<>();
-        Integer vertexPosition = map.get(vertex);
         Set<E> edges = graph.edgesOf(vertex);
+        List<V> predecessors = new ArrayList<>(edges.size());
+        int vertexPosition = map.get(vertex);
         for (E edge : edges) {
             V oppositeVertex = Graphs.getOppositeVertex(graph, edge, vertex);
-            Integer destPosition = map.get(oppositeVertex);
+            int destPosition = map.get(oppositeVertex);
             if (destPosition < vertexPosition) {
                 predecessors.add(oppositeVertex);
             }
