@@ -28,23 +28,22 @@ import java.util.*;
  * The original version can be found in
  * L. R. Esau and K. C. Williams. 1966. On teleprocessing system design: part II a method for approximating the optimal network.
  * IBM Syst. J. 5, 3 (September 1966), 142-147. DOI=http://dx.doi.org/10.1147/sj.53.0142
- * This implementation runs in polynomial time O(n^3).
- *
+ * This implementation runs in polynomial time O(|V|^3).
+ * <p>
  * This implementation is a randomized version described in
  * Ahuja, Ravindra K., Orlin, James B., and Sharma, Dushyant, (1998).
  * New neighborhood search structures for the capacitated minimum spanning tree problem, No WP 4040-98.
  * Working papers, Massachusetts Institute of Technology (MIT), Sloan School of Management.
- *
+ * <p>
  * This version runs in polynomial time dependent on the number of considered operations per iteration
- * <code>numberOfOperationsParameter</code> (denoted by p), such that runs is in O(|V|^3 + p*|V|).
- *
- * The <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum Spanning Tree</a>
- * (CMST) problem is a rooted minimal cost spanning tree that satisfies the capacity
+ * <code>numberOfOperationsParameter</code> (denoted by p), such that runs is in O(|V|^3 + p*|V|) = O(|V|^3) since p <= |V|.
+ * <p>
+ * A <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum Spanning Tree</a>
+ * (CMST) is a rooted minimal cost spanning tree that satisfies the capacity
  * constrained on all trees that are connected to the designated root. The problem is NP-hard.
  *
  * @param <V> the vertex type
  * @param <E> the edge type
- *
  * @author Christoph Grüne
  * @since July 12, 2018
  */
@@ -58,10 +57,10 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
     /**
      * Constructs an Esau-Williams GRASP algorithm instance.
      *
-     * @param graph the graph
-     * @param root the root of the CMST
-     * @param capacity the capacity constraint of the CMST
-     * @param weights the weights of the vertices
+     * @param graph                       the graph
+     * @param root                        the root of the CMST
+     * @param capacity                    the capacity constraint of the CMST
+     * @param weights                     the weights of the vertices
      * @param numberOfOperationsParameter the parameter how many best vertices are considered in the procedure
      */
     public EsauWilliamsCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> weights, int numberOfOperationsParameter) {
@@ -71,11 +70,11 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a capacitated spanning tree computed by the Esau-Williams algorithm.
      */
     @Override
-    public SpanningTree<E> getSpanningTree() {
+    public CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree() {
         return getSolution().calculateResultingSpanningTree();
     }
 
@@ -100,12 +99,12 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
          * initialize labels and partitions by assigning every vertex to a new part and create solution representation
          */
         int counter = 0;
-        for(V v : graph.vertexSet()) {
-            if(v != root) {
+        for (V v : graph.vertexSet()) {
+            if (v != root) {
                 labels.put(v, counter);
                 Set<V> currentPart = new HashSet<>();
                 currentPart.add(v);
-                partition.put(counter, Pair.of(currentPart, weights.get(v)));
+                partition.put(counter, Pair.of(currentPart, demands.get(v)));
                 counter++;
             }
         }
@@ -136,14 +135,15 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         Set<V> vertices = new HashSet<>(graph.vertexSet());
         vertices.remove(root);
 
-        while(true) {
-            for(Iterator<V> it = vertices.iterator(); it.hasNext();) {
+        while (true) {
+
+            for (Iterator<V> it = vertices.iterator(); it.hasNext(); ) {
 
                 V v = it.next();
 
                 V closestVertexToV = calculateClosestVertex(v, restrictionMap, shortestGate);
 
-                if(closestVertexToV == null) {
+                if (closestVertexToV == null) {
                     // there is not valid closest vertex to connect with, i.e. v will not be connected to any vertex
                     it.remove();
                     savings.remove(v);
@@ -159,25 +159,50 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
             // calculate list of best operations
             LinkedList<V> bestVertices = getListOfBestOptions(savings);
 
-            if(!bestVertices.isEmpty()) {
+            if (!bestVertices.isEmpty()) {
                 V vertexToMove = bestVertices.get((int) (Math.random() * bestVertices.size()));
 
                 // update shortestGate
                 Integer labelOfVertexToMove = solutionRepresentation.getLabel(vertexToMove);
-                V shortestGate1 = shortestGate.get(labelOfVertexToMove);
-                V shortestGate2 = shortestGate.get(solutionRepresentation.getLabel(closestVertex.get(vertexToMove)));
-                if(graph.getEdgeWeight(graph.getEdge(shortestGate1, root)) < graph.getEdgeWeight(graph.getEdge(shortestGate2, root))) {
-                    shortestGate.put(labelOfVertexToMove, shortestGate1);
+                V closestMoveVertex = closestVertex.get(vertexToMove);
+                Integer labelOfClosestMoveVertex = solutionRepresentation.getLabel(closestMoveVertex);
+
+                V shortestGate1 = shortestGate.getOrDefault(labelOfVertexToMove, vertexToMove);
+                V shortestGate2 = shortestGate.getOrDefault(labelOfClosestMoveVertex, closestMoveVertex);
+
+                /*
+                 * Do improving move.
+                 * The case distinction is important such that the the restriction map uses minimal space.
+                 * If the restriction map contains the label of the part with bigger weight, i.e. the vertex cannot be
+                 * connected to this part, the label is still correct and is not the label of the old part,
+                 * which will be deleted by the move operation.
+                 */
+                if (solutionRepresentation.getPartitionWeight(labelOfVertexToMove) < solutionRepresentation.getPartitionWeight(labelOfClosestMoveVertex)) {
+                    solutionRepresentation.moveVertices(
+                            solutionRepresentation.getPartitionSet(labelOfVertexToMove),
+                            labelOfVertexToMove,
+                            labelOfClosestMoveVertex
+                    );
+
+                    if (graph.getEdgeWeight(graph.getEdge(shortestGate1, root)) < graph.getEdgeWeight(graph.getEdge(shortestGate2, root))) {
+                        shortestGate.put(labelOfClosestMoveVertex, shortestGate1);
+                    } else {
+                        shortestGate.put(labelOfClosestMoveVertex, shortestGate2);
+                    }
                 } else {
-                    shortestGate.put(labelOfVertexToMove, shortestGate2);
+                    solutionRepresentation.moveVertices(
+                            solutionRepresentation.getPartitionSet(labelOfClosestMoveVertex),
+                            labelOfClosestMoveVertex,
+                            labelOfVertexToMove
+                    );
+
+                    if (graph.getEdgeWeight(graph.getEdge(shortestGate1, root)) < graph.getEdgeWeight(graph.getEdge(shortestGate2, root))) {
+                        shortestGate.put(labelOfVertexToMove, shortestGate1);
+                    } else {
+                        shortestGate.put(labelOfVertexToMove, shortestGate2);
+                    }
                 }
 
-                // do improving move
-                solutionRepresentation.moveVertices(
-                        solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(vertexToMove)),
-                        solutionRepresentation.getLabel(vertexToMove),
-                        solutionRepresentation.getLabel(closestVertex.get(vertexToMove))
-                );
             } else {
                 break;
             }
@@ -186,11 +211,11 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         return new SolutionRepresentation(labels, partition);
     }
 
+
     /**
      * Returns the list of the best options as stored in <code>savings</code>.
      *
      * @param savings the savings calculated in the algorithm (see getSolution())
-     *
      * @return the list of the <code>numberOfOperationsParameter</code> best options
      */
     private LinkedList<V> getListOfBestOptions(Map<V, Double> savings) {
@@ -208,8 +233,8 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
                 }
                 position++;
             }
-            if(bestVertices.size() == numberOfOperationsParameter) {
-                if(position < bestVertices.size()) {
+            if (bestVertices.size() == numberOfOperationsParameter) {
+                if (position < bestVertices.size()) {
                     bestVertices.removeLast();
                     bestVertices.add(position, entry.getKey());
                 }
@@ -226,9 +251,8 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
      * subtree of the closest vertex does not violate the capacity constraint and the savings are positive.
      * Otherwise null is returned.
      *
-     * @param vertex the vertex to find a valid closest vertex for
+     * @param vertex         the vertex to find a valid closest vertex for
      * @param restrictionMap the set of labels of sets of the partition, in which the capacity constraint is violated.
-     *
      * @return the closest valid vertex and null, if no valid vertex exists
      */
     private V calculateClosestVertex(V vertex, Map<V, Set<Integer>> restrictionMap, Map<Integer, V> shortestGate) {
@@ -236,21 +260,22 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
 
         double distanceToRoot;
         V shortestGateOfV = shortestGate.get(solutionRepresentation.getLabel(vertex));
-        if(shortestGateOfV != null) {
+        if (shortestGateOfV != null) {
             distanceToRoot = graph.getEdgeWeight(graph.getEdge(shortestGateOfV, root));
         } else {
             distanceToRoot = graph.getEdgeWeight(graph.getEdge(vertex, root));
         }
 
         // calculate closest vertex to v1
-        for(Integer label : solutionRepresentation.getLabels()) {
-            if(!restrictionMap.get(vertex).contains(label)) {
+        for (Integer label : solutionRepresentation.getLabels()) {
+            Set<Integer> restrictionSet = restrictionMap.get(vertex);
+            if (restrictionSet == null || !restrictionSet.contains(label)) {
                 Set<V> part = solutionRepresentation.getPartitionSet(label);
-                if(!part.contains(vertex)) {
+                if (!part.contains(vertex)) {
                     for (V v2 : part) {
                         if (graph.containsEdge(vertex, v2)) {
                             double newWeight = solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(vertex));
-                            if(newWeight <= capacity) {
+                            if (newWeight <= capacity) {
                                 double currentEdgeWeight = graph.getEdgeWeight(graph.getEdge(vertex, v2));
                                 if (currentEdgeWeight < distanceToRoot) {
                                     closestVertexToV1 = v2;
@@ -260,11 +285,9 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
                                 /*
                                  * the capacity would be exceeded if the vertex would be assigned to this part, so add the part to the restricted parts
                                  */
-                                Set<Integer> restriction = restrictionMap.get(vertex);
-                                if(restriction == null) {
-                                    restriction = new HashSet<>();
-                                }
+                                Set<Integer> restriction = restrictionMap.computeIfAbsent(vertex, k -> new HashSet<>());
                                 restriction.add(solutionRepresentation.getLabel(v2));
+                                break;
                             }
                         }
                     }

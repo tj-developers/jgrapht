@@ -18,13 +18,14 @@
 package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
+import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.AsSubgraph;
 
 import java.util.*;
 
-public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements SpanningTreeAlgorithm<E> {
+public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements CapacitatedSpanningTreeAlgorithm<V, E> {
 
     protected class SolutionRepresentation {
 
@@ -48,7 +49,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
             this.partition = partition;
         }
 
-        protected SpanningTree<E> calculateResultingSpanningTree() {
+        protected CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<V, E> calculateResultingSpanningTree() {
             Set<E> spanningTreeEdges = new HashSet<>();
             double weight = 0;
 
@@ -56,7 +57,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
                 // get spanning tree on the part inclusive the root vertex
                 Set<V> set = part.getFirst();
                 set.add(root);
-                SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
+                SpanningTreeAlgorithm.SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
                 set.remove(root);
 
                 // add the partial solution to the overall solution
@@ -64,7 +65,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
                 weight += subtree.getWeight();
             }
 
-            return new SpanningTreeImpl<>(spanningTreeEdges, weight);
+            return new CapacitatedSpanningTreeImpl<>(root, capacity, demands, labels, partition, spanningTreeEdges, weight);
         }
 
         protected void moveVertex(V vertex, Integer fromLabel, Integer toLabel) {
@@ -72,11 +73,11 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
 
             Set<V> oldPart = partition.get(fromLabel).getFirst();
             oldPart.remove(vertex);
-            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weights.get(vertex)));
+            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - demands.get(vertex)));
 
             Set<V> newPart = partition.get(toLabel).getFirst();
             newPart.add(vertex);
-            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + weights.get(vertex)));
+            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + demands.get(vertex)));
 
             // remove merged part from partition if empty
             if(partition.get(fromLabel).getFirst().isEmpty()) {
@@ -88,7 +89,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
             // update labels and calculate weight change
             double weightOfVertices = 0;
             for(V v : vertices) {
-                weightOfVertices += weights.get(v);
+                weightOfVertices += demands.get(v);
                 labels.put(v, toLabel);
             }
 
@@ -140,27 +141,27 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Sp
     protected final double capacity;
 
     /**
-     * the weight function over all vertices.
+     * the demand function over all vertices.
      */
-    protected final Map<V, Double> weights;
+    protected final Map<V, Double> demands;
 
     /**
      * representation of the solution
      */
     protected SolutionRepresentation solutionRepresentation;
 
-    protected AbstractCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> weights) {
+    protected AbstractCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> demands) {
         this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
         if (!graph.getType().isUndirected()) {
             throw new IllegalArgumentException("Graph must be undirected");
         }
         this.root = Objects.requireNonNull(root, "Root cannot be null");
         this.capacity = capacity;
-        this.weights = Objects.requireNonNull(weights, "Weight cannot be null");
+        this.demands = Objects.requireNonNull(demands, "Demands cannot be null");
 
         this.solutionRepresentation = new SolutionRepresentation();
     }
 
     @Override
-    public abstract SpanningTree<E> getSpanningTree();
+    public abstract CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree();
 }
