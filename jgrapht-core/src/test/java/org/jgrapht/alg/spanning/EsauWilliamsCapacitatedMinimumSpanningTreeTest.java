@@ -18,17 +18,16 @@
 package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
+import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
+import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
 
@@ -77,10 +76,26 @@ public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
         weights.put(5, 1.0);
         weights.put(6, 1.0);
 
-        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 3, weights, 1).getSpanningTree();
+        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 3, weights, 1).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
         assertEquals(42.0, cmst.getWeight(), 0.0000001);
+        assertEquals(0, cmst.getRoot(), 0);
+        assertEquals(3.0, cmst.getCapacity(), 0.00000001);
+        assertEquals(weights, cmst.getDemands());
+
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(1)), Pair.of(new HashSet<>(Arrays.asList(1, 4)), 2.0));
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(2)), Pair.of(new HashSet<>(Arrays.asList(2, 5, 6)), 3.0));
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(3)), Pair.of(new HashSet<>(Collections.singletonList(3)), 2.0));
+
+        assertEquals(cmst.getLabels().get(1), cmst.getLabels().get(4), 0);
+        assertEquals(cmst.getLabels().get(2), cmst.getLabels().get(5), 0);
+        assertEquals(cmst.getLabels().get(2), cmst.getLabels().get(6), 0);
+        assertNotEquals(cmst.getLabels().get(1), cmst.getLabels().get(2));
+        assertNotEquals(cmst.getLabels().get(1), cmst.getLabels().get(3));
+        assertNotEquals(cmst.getLabels().get(2), cmst.getLabels().get(1));
+        assertNotEquals(cmst.getLabels().get(2), cmst.getLabels().get(3));
+
         for(DefaultWeightedEdge e : cmst.getEdges()) {
             assertTrue(
                     e == graph.getEdge(0, 1)
@@ -128,10 +143,24 @@ public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
         weights.put(4, 3.0);
         weights.put(5, 2.0);
 
-        SpanningTreeAlgorithm.SpanningTree<DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 1).getSpanningTree();
+        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 1).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
         assertEquals(14.0, cmst.getWeight(), 0.0000001);
+        assertEquals(0, cmst.getRoot(), 0);
+        assertEquals(4.0, cmst.getCapacity(), 0.00000001);
+        assertEquals(weights, cmst.getDemands());
+
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(1)), Pair.of(new HashSet<>(Arrays.asList(1, 5)), 4.0));
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(2)), Pair.of(new HashSet<>(Arrays.asList(2, 3)), 3.0));
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(4)), Pair.of(new HashSet<>(Collections.singletonList(4)), 3.0));
+
+        assertEquals(cmst.getLabels().get(1), cmst.getLabels().get(5), 0);
+        assertEquals(cmst.getLabels().get(2), cmst.getLabels().get(3), 0);
+        assertNotEquals(cmst.getLabels().get(1), cmst.getLabels().get(3));
+        assertNotEquals(cmst.getLabels().get(1), cmst.getLabels().get(4));
+        assertNotEquals(cmst.getLabels().get(3), cmst.getLabels().get(4));
+
         for(DefaultWeightedEdge e : cmst.getEdges()) {
             assertTrue(
                     e == graph.getEdge(0, 1)
