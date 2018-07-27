@@ -40,15 +40,40 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
          */
         private Map<Integer, Pair<Set<V>, Double>> partition;
 
+        /**
+         * Constructs a new solution representation for the CMST problem.
+         */
         protected SolutionRepresentation() {
             this(new HashMap<>(), new HashMap<>());
         }
 
+        /**
+         * Constructs a new solution representation for the CMST problem based on <code>labels</code> and <code>partition</code>.
+         * All labels have to be positive.
+         *
+         * @param labels the labels of the subsets in the partition
+         * @param partition the partition map
+         */
         protected SolutionRepresentation(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
+            for(Integer i : labels.values()) {
+                if(i < 0) {
+                    throw new IllegalArgumentException("Labels are not non-negative");
+                }
+            }
+            for(Integer i : partition.keySet()) {
+                if(i < 0) {
+                    throw new IllegalArgumentException("Labels are not non-negative");
+                }
+            }
             this.labels = labels;
             this.partition = partition;
         }
 
+        /**
+         * Calculates the resulting spanning tree based on this solution representation.
+         *
+         * @return the resulting spanning tree based on this solution representation
+         */
         protected CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<V, E> calculateResultingSpanningTree() {
             Set<E> spanningTreeEdges = new HashSet<>();
             double weight = 0;
@@ -68,6 +93,13 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             return new CapacitatedSpanningTreeImpl<>(root, capacity, demands, labels, partition, spanningTreeEdges, weight);
         }
 
+        /**
+         * Moves <code>vertex</code> from the subset represented by <code>fromLabel</code> to the subset represented by <code>toLabel</code>.
+         *
+         * @param vertex the vertex to move
+         * @param fromLabel the subset to move the vertex from
+         * @param toLabel the subset to move the vertex to
+         */
         protected void moveVertex(V vertex, Integer fromLabel, Integer toLabel) {
             labels.put(vertex, toLabel);
 
@@ -85,6 +117,13 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             }
         }
 
+        /**
+         * Moves all vertices in <code>vertices</code> from the subset represented by <code>fromLabel</code> to the subset represented by <code>toLabel</code>.
+         *
+         * @param vertices the vertices to move
+         * @param fromLabel the subset to move the vertices from
+         * @param toLabel the subset to move the vertices to
+         */
         protected void moveVertices(Set<V> vertices, Integer fromLabel, Integer toLabel) {
             // update labels and calculate weight change
             double weightOfVertices = 0;
@@ -108,18 +147,44 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             }
         }
 
+        /**
+         * Returns the label of the subset that contains <code>vertex</code>.
+         *
+         * @param vertex the vertex to return the label from
+         *
+         * @return the label of <code>vertex</code>
+         */
         protected Integer getLabel(V vertex) {
             return labels.get(vertex);
         }
 
+        /**
+         * Returns all labels of all subsets.
+         *
+         * @return the labels of all subsets
+         */
         protected Set<Integer> getLabels() {
             return partition.keySet();
         }
 
+        /**
+         * Returns the set of vertices that are in the subset with label <code>label</code>.
+         *
+         * @param label the label of the subset to return the vertices from
+         *
+         * @return the set of vertices that are in the subset with label <code>label</code>
+         */
         protected Set<V> getPartitionSet(Integer label) {
             return partition.get(label).getFirst();
         }
 
+        /**
+         * Returns the sum of the weights of all vertices that are in the subset with label <code>label</code>.
+         *
+         * @param label the label of the subset to return the weight from
+         *
+         * @return the sum of the weights of all vertices that are in the subset with label <code>label</code>
+         */
         protected Double getPartitionWeight(Integer label) {
             return partition.get(label).getSecond();
         }
@@ -150,6 +215,14 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
      */
     protected SolutionRepresentation solutionRepresentation;
 
+    /**
+     * Construct a new abstract capacitated minimum spanning tree algorithm.
+     *
+     * @param graph the base graph to calculate the capacitated spanning tree for
+     * @param root the root of the capacitated spanning tree
+     * @param capacity the edge capacity constraint
+     * @param demands the demands of the vertices
+     */
     protected AbstractCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> demands) {
         this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
         if (!graph.getType().isUndirected()) {

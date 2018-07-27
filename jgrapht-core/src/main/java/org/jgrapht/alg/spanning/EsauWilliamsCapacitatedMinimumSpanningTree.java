@@ -79,10 +79,11 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
     }
 
     /**
-     * Calculates a partition representation of the capacitated spanning tree. With that, it is possible to calculate a
-     * capacitated miniumum spanning tree in polynomial time.
+     * Calculates a partition representation of the capacitated spanning tree. With that, it is possible to calculate
+     * the to the partition corresponding capacitated spanning tree in polynomial time by calculating the MSTs.
+     * The labels of the partition that are returned are non-negative.
      *
-     * @return a representation of the partition of the capacitated spanning tree.
+     * @return a representation of the partition of the capacitated spanning tree that has non-negative labels.
      */
     protected SolutionRepresentation getSolution() {
         /*

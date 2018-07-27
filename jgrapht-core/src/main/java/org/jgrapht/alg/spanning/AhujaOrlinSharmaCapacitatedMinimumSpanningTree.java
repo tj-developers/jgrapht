@@ -72,344 +72,6 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
     private CapacitatedSpanningTree<V, E> initialSolution;
 
     /**
-     * This enums contains the vertex types of the improvement graph.
-     */
-    private enum ImprovementGraphVertexType {
-        SINGLE, SUBTREE, PSEUDO, ORIGIN
-    }
-
-    // TODO BIG TEXT TO INSERT HERE
-    private class ImprovementGraph {
-
-        /**
-         * the improvement graph itself
-         */
-        Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> improvementGraph;
-
-        /**
-         * mapping form all improvement graph vertices to their labels corresponding to the base graph for the CMST problem
-         */
-        Map<Pair<Integer, ImprovementGraphVertexType>, Integer> cycleAugmentationLabels;
-
-        /**
-         * mapping from the vertex index in the improvement graph to the vertex in the base graph
-         */
-        Map<Integer, V> improvementGraphVertexMapping;
-        /**
-         * mapping from the base graph vertex to the vertex index in the improvement graph
-         */
-        Map<V, Integer> initialVertexMapping;
-        /**
-         * mapping from the label of the subsets to the corresponding vertex mapping
-         */
-        Map<Integer, Pair<Integer, ImprovementGraphVertexType>> pseudoVertexMapping;
-        /**
-         * mapping from the pseudo vertices to the label of the subset they are representing
-         */
-        Map<Pair<Integer, ImprovementGraphVertexType>, Integer> pathExchangeVertexMapping;
-        /**
-         * the origin vertex
-         */
-        Pair<Integer, ImprovementGraphVertexType> origin;
-
-        /**
-         * Constructs an new improvement graph object for this CMST algorithm instance.
-         */
-        private ImprovementGraph() {
-            this.improvementGraphVertexMapping = new HashMap<>();
-            this.initialVertexMapping = new HashMap<>();
-            this.pseudoVertexMapping = new HashMap<>();
-            /*
-             * We initialize this map such that it can be used in the subset-disjoint cycle detection algorithm.
-             * This map redirects the getters to the corresponding maps in this improvement graph such that it realises the correct functionality.
-             */
-            this.cycleAugmentationLabels = new Map<Pair<Integer, ImprovementGraphVertexType>, Integer>() {
-                @Override
-                public int size() {
-                    return improvementGraphVertexMapping.size() + pseudoVertexMapping.size();
-                }
-
-                @Override
-                public boolean isEmpty() {
-                    return improvementGraphVertexMapping.isEmpty() || pseudoVertexMapping.isEmpty();
-                }
-
-                @Override
-                public boolean containsKey(Object key) {
-                    return improvementGraphVertexMapping.containsKey(key) || pseudoVertexMapping.containsKey(key);
-                }
-
-                @Override
-                public boolean containsValue(Object value) {
-                    return improvementGraphVertexMapping.containsValue(value) || pseudoVertexMapping.containsValue(value);
-                }
-
-                @Override
-                public Integer get(Object key) {
-                    if(key instanceof Pair && improvementGraphVertexMapping.containsKey(key)) {
-                        return solutionRepresentation.getLabel(improvementGraphVertexMapping.get(key));
-                    }
-                    return pathExchangeVertexMapping.get(key);
-                }
-
-                @Override
-                public Integer put(Pair<Integer, ImprovementGraphVertexType> key, Integer value) {
-                    return null;
-                }
-
-                @Override
-                public Integer remove(Object key) {
-                    return null;
-                }
-
-                @Override
-                public void putAll(Map<? extends Pair<Integer, ImprovementGraphVertexType>, ? extends Integer> m) {
-
-                }
-
-                @Override
-                public void clear() {
-
-                }
-
-                @Override
-                public Set<Pair<Integer, ImprovementGraphVertexType>> keySet() {
-                    return null;
-                }
-
-                @Override
-                public Collection<Integer> values() {
-                    return null;
-                }
-
-                @Override
-                public Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet() {
-                    return null;
-                }
-            };
-
-            this.improvementGraph = createImprovementGraph();
-        }
-
-        /**
-         * Initializes the improvement graph, i.e. adds single, subtree and pseudo vertices as well as the origin vertex. Furthermore, it initializes all mappings.
-         *
-         * @return the improvement graph itself.
-         */
-        private Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> createImprovementGraph() {
-            Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> improvementGraph = new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
-
-            int counter = 0;
-
-            for(V v : graph.vertexSet()) {
-                Pair<Integer, ImprovementGraphVertexType> singleVertex = new Pair<>(counter, ImprovementGraphVertexType.SINGLE);
-                improvementGraph.addVertex(singleVertex);
-
-                Pair<Integer, ImprovementGraphVertexType> subtreeVertex = new Pair<>(counter, ImprovementGraphVertexType.SUBTREE);
-                improvementGraph.addVertex(subtreeVertex);
-
-                // we have to add these only once
-                improvementGraphVertexMapping.put(counter, v);
-                initialVertexMapping.put(v, counter);
-
-                counter++;
-            }
-
-            Pair<Integer, ImprovementGraphVertexType> origin = new Pair<>(counter, ImprovementGraphVertexType.ORIGIN);
-            improvementGraph.addVertex(origin);
-            this.origin = origin;
-            pathExchangeVertexMapping.put(origin, Integer.MIN_VALUE);
-            counter++;
-
-            for(Integer label : solutionRepresentation.getLabels()) {
-                Pair<Integer, ImprovementGraphVertexType> pseudoVertex = new Pair<>(counter, ImprovementGraphVertexType.PSEUDO);
-                pseudoVertexMapping.put(label, pseudoVertex);
-                pathExchangeVertexMapping.put(pseudoVertex, label);
-                improvementGraph.addVertex(pseudoVertex);
-
-                counter++;
-            }
-
-            /*
-             * connection of pseudo nodes and origin node
-             */
-            for(Pair<Integer, ImprovementGraphVertexType> v : pseudoVertexMapping.values()) {
-                improvementGraph.setEdgeWeight(improvementGraph.addEdge(v, origin), 0);
-            }
-
-            return improvementGraph;
-        }
-
-        /**
-         * Updates the improvement graph after an multi-exchange operation was executed. It updates the vertices and edges in the parts specified in <code>labelsToUpdate</code>.
-         *
-         * @param subtrees the mapping from vertices to their subtree
-         * @param partitionSpanningTrees the mapping from labels of subsets to their spanning tree
-         * @param labelsToUpdate the labels of all subsets that has to be updated (because of the multi-exchange operation)
-         */
-        private void updateImprovementGraph(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees, Set<Integer> labelsToUpdate) {
-
-            double newCapacity, newWeight, oldWeight;
-
-            for(V v1 : graph.vertexSet()) {
-
-                Pair<Integer, ImprovementGraphVertexType> vertexOfV1Single = Pair.of(initialVertexMapping.get(v1), ImprovementGraphVertexType.SINGLE);
-                Pair<Integer, ImprovementGraphVertexType> vertexOfV1Subtree = Pair.of(initialVertexMapping.get(v1), ImprovementGraphVertexType.SUBTREE);
-
-                /*
-                 * update connections to origin node
-                 */
-                oldWeight = partitionSpanningTrees.get(solutionRepresentation.getLabel(v1)).getWeight();
-                // edge for v1 vertex removed
-                solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1)).remove(v1);
-                newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1)))).getSpanningTree().getWeight();
-                addImprovementGraphEdge(
-                        origin,
-                        vertexOfV1Single,
-                        0,
-                        newWeight - oldWeight
-                );
-                solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1)).add(v1);
-
-                // edge for v1 subtree removed
-                solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1)).removeAll(subtrees.get(v1).getFirst());
-                newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1)))).getSpanningTree().getWeight();
-                addImprovementGraphEdge(
-                        origin,
-                        vertexOfV1Subtree,
-                        0,
-                        newWeight - oldWeight
-                );
-                solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1)).addAll(subtrees.get(v1).getFirst());
-
-                /*
-                 * update the connections to regular nodes
-                 */
-                for(Integer label : solutionRepresentation.getLabels()) {
-
-                    oldWeight = partitionSpanningTrees.get(label).getWeight();
-
-                    /*
-                     * only update if there is a change induced by a changed part. This potentially saves a lot of time.
-                     */
-                    if (!label.equals(solutionRepresentation.getLabel(v1)) && labelsToUpdate.contains(solutionRepresentation.getLabel(v1)) && labelsToUpdate.contains(label)) {
-                        /*
-                         * edge for v1 vertex replacing v2 vertex
-                         */
-                        solutionRepresentation.getPartitionSet(label).add(root);
-                        solutionRepresentation.getPartitionSet(label).add(v1);
-
-                        for (V v2 : solutionRepresentation.getPartitionSet(label)) {
-                            /*
-                             * edge for v1 vertex replacing v2 vertex
-                             */
-                            newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - demands.get(v2);
-                            solutionRepresentation.getPartitionSet(label).remove(v2);
-                            newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(label))).getSpanningTree().getWeight();
-                            solutionRepresentation.getPartitionSet(label).add(v2);
-                            addImprovementGraphEdge(
-                                    vertexOfV1Single,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
-
-                            /*
-                             * edge for v1 vertex replacing v2 subtree
-                             */
-                            newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - subtrees.get(v2).getSecond();
-                            solutionRepresentation.getPartitionSet(label).removeAll(subtrees.get(v2).getFirst());
-                            newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(label))).getSpanningTree().getWeight();
-                            solutionRepresentation.getPartitionSet(label).addAll(subtrees.get(v2).getFirst());
-                            addImprovementGraphEdge(
-                                    vertexOfV1Single,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
-                        }
-
-                        /*
-                         * edge for v1 vertex replacing no vertex or subtree
-                         */
-                        Pair<Integer, ImprovementGraphVertexType> pseudoVertex = pseudoVertexMapping.get(label);
-                        newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1);
-                        newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(label))).getSpanningTree().getWeight();
-                        addImprovementGraphEdge(vertexOfV1Single, pseudoVertex, newCapacity, newWeight - oldWeight);
-
-                        solutionRepresentation.getPartitionSet(label).remove(v1);
-
-                        solutionRepresentation.getPartitionSet(label).addAll(subtrees.get(v1).getFirst());
-                        for (V v2 : solutionRepresentation.getPartitionSet(label)) {
-                            /*
-                             * edge for v1 subtree replacing v2 vertex
-                             */
-                            newCapacity = solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond() - demands.get(v2);
-                            solutionRepresentation.getPartitionSet(label).remove(v2);
-                            newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(label))).getSpanningTree().getWeight();
-                            solutionRepresentation.getPartitionSet(label).add(v2);
-                            addImprovementGraphEdge(
-                                    vertexOfV1Subtree,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
-
-                            /*
-                             * edge for v1 subtree replacing v2 subtree
-                             */
-                            newCapacity = solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond();
-                            solutionRepresentation.getPartitionSet(label).removeAll(subtrees.get(v2).getFirst());
-                            newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(label))).getSpanningTree().getWeight();
-                            solutionRepresentation.getPartitionSet(label).addAll(subtrees.get(v2).getFirst());
-                            addImprovementGraphEdge(
-                                    vertexOfV1Subtree,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
-                        }
-
-                        /*
-                         * edge for v1 subtree replacing no vertex or subtree
-                         */
-                        newCapacity = solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond();
-                        newWeight = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, solutionRepresentation.getPartitionSet(label))).getSpanningTree().getWeight();
-                        addImprovementGraphEdge(vertexOfV1Subtree, pseudoVertex, newCapacity, newWeight - oldWeight);
-
-                        solutionRepresentation.getPartitionSet(label).removeAll(subtrees.get(v1).getFirst());
-
-                        solutionRepresentation.getPartitionSet(label).remove(root);
-                    }
-                }
-            }
-        }
-
-        /**
-         * Adds an edge between <code>v1</code> and <code>v2</code> to the improvement graph if <code>newCapacity</code> does not exceed the capacity constraint.
-         * The weight of the edge is <code>newCost</code>.
-         *
-         * @param v1 start vertex (the vertex or subtree induced by <code>v1</code> that will be moved to the subset of <code>v2</code>)
-         * @param v2 end vertex (the vertex or subtree induced by <code>v2</code> that will be removed from the subset of <code>v2</code>)
-         * @param newCapacity the used capacity by adding the vertex or subtree induced by <code>v1</code> to the subset of <code>v2</code> and deleting the vertex or subtree induced by <code>v2</code>
-         * @param newCost the cost of the edge (the cost induced by the operation induced by <code>v1</code> and <code>v2</code>)
-         */
-        private void addImprovementGraphEdge(Pair<Integer, ImprovementGraphVertexType> v1, Pair<Integer, ImprovementGraphVertexType> v2, double newCapacity, double newCost) {
-            if (newCapacity < capacity) {
-                DefaultWeightedEdge edge;
-                if(improvementGraph.containsEdge(v1, v2)) {
-                    edge = improvementGraph.getEdge(v1, v2);
-                } else {
-                    edge = improvementGraph.addEdge(v1, v2);
-                }
-                improvementGraph.setEdgeWeight(edge, newCost);
-            } else {
-                improvementGraph.removeEdge(v1, v2);
-            }
-        }
-    }
-
-    /**
      * Constructs a new instance of this algorithm.
      *
      * @param graph the base graph
@@ -486,31 +148,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      */
     private SolutionRepresentation getInitialSolution() {
         if(initialSolution != null) {
-            Map<V, Integer> labels = new HashMap<>();
-            Map<Integer, Pair<Set<V>, Double>> partition = new HashMap<>();
-
-            DepthFirstIterator<V, E> depthFirstIterator = new DepthFirstIterator<>(new AsSubgraph<>(graph, graph.vertexSet(), initialSolution.getEdges()), root);
-
-            int labelcounter = 0;
-            Set<V> currentPart = new HashSet<>();
-            double currentPartWeight = 0.0;
-
-            while(depthFirstIterator.hasNext()) {
-
-                V next = depthFirstIterator.next();
-                if(next == root) {
-                    partition.put(labelcounter, Pair.of(currentPart, currentPartWeight));
-                    currentPart = new HashSet<>();
-                    currentPartWeight = 0.0;
-                    labelcounter++;
-                    continue;
-                }
-                currentPartWeight += demands.get(next);
-                currentPart.add(next);
-                labels.put(next, labelcounter);
-            }
-
-            return new SolutionRepresentation(labels, partition);
+            return new SolutionRepresentation(initialSolution.getLabels(), initialSolution.getPartition());
         }
         return new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, root, capacity, demands, numberOfOperationsParameter).getSolution();
     }
@@ -671,7 +309,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                 currentPath = new HashSet<>();
                 currentWeight = 0;
             }
-            if(next == root) {
+            if(next.equals(root)) {
                 storeCurrentPath = false;
 
                 currentPath = new HashSet<>();
@@ -683,5 +321,450 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             }
         }
         return Pair.of(subtree, subtreeWeight);
+    }
+
+    /**
+     * This enums contains the vertex types of the improvement graph.
+     */
+    private enum ImprovementGraphVertexType {
+        SINGLE, SUBTREE, PSEUDO, ORIGIN
+    }
+
+    // TODO BIG TEXT TO INSERT HERE
+    private class ImprovementGraph {
+
+        /**
+         * the improvement graph itself
+         */
+        Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> improvementGraph;
+
+        /**
+         * mapping form all improvement graph vertices to their labels corresponding to the base graph for the CMST problem
+         */
+        Map<Pair<Integer, ImprovementGraphVertexType>, Integer> cycleAugmentationLabels;
+
+        /**
+         * mapping from the vertex index in the improvement graph to the vertex in the base graph
+         */
+        Map<Integer, V> improvementGraphVertexMapping;
+        /**
+         * mapping from the base graph vertex to the vertex index in the improvement graph
+         */
+        Map<V, Integer> initialVertexMapping;
+        /**
+         * mapping from the label of the subsets to the corresponding vertex mapping
+         */
+        Map<Integer, Pair<Integer, ImprovementGraphVertexType>> pseudoVertexMapping;
+        /**
+         * mapping from the pseudo vertices to the label of the subset they are representing
+         */
+        Map<Pair<Integer, ImprovementGraphVertexType>, Integer> pathExchangeVertexMapping;
+        /**
+         * the origin vertex
+         */
+        Pair<Integer, ImprovementGraphVertexType> origin;
+        /**
+         *
+         */
+        final Integer originVertexLabel = -1;
+
+        /**
+         * Constructs an new improvement graph object for this CMST algorithm instance.
+         */
+        private ImprovementGraph() {
+            this.improvementGraphVertexMapping = new HashMap<>();
+            this.initialVertexMapping = new HashMap<>();
+            this.pseudoVertexMapping = new HashMap<>();
+            this.pathExchangeVertexMapping = new HashMap<>();
+            /*
+             * We initialize this map such that it can be used in the subset-disjoint cycle detection algorithm.
+             * This map redirects the getters to the corresponding maps in this improvement graph such that it realises the correct functionality.
+             */
+            this.cycleAugmentationLabels = new Map<Pair<Integer, ImprovementGraphVertexType>, Integer>() {
+                @Override
+                public int size() {
+                    return improvementGraphVertexMapping.size() + pseudoVertexMapping.size();
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return improvementGraphVertexMapping.isEmpty() || pseudoVertexMapping.isEmpty();
+                }
+
+                @Override
+                public boolean containsKey(Object key) {
+                    if(key instanceof Pair) {
+                        return improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())
+                                || pseudoVertexMapping.containsKey(((Pair) key).getFirst());
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean containsValue(Object value) {
+                    return improvementGraphVertexMapping.containsValue(value) || pseudoVertexMapping.containsValue(value);
+                }
+
+                @Override
+                public Integer get(Object key) {
+                    if(key instanceof Pair && improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())) {
+                        return solutionRepresentation.getLabel(improvementGraphVertexMapping.get(((Pair) key).getFirst()));
+                    }
+                    return pathExchangeVertexMapping.get(key);
+                }
+
+                @Override
+                public Integer put(Pair<Integer, ImprovementGraphVertexType> key, Integer value) {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public Integer remove(Object key) {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public void putAll(Map<? extends Pair<Integer, ImprovementGraphVertexType>, ? extends Integer> m) {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public void clear() {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public Set<Pair<Integer, ImprovementGraphVertexType>> keySet() {
+                    Set<Pair<Integer, ImprovementGraphVertexType>> keySet = new HashSet<>();
+                    for(Integer i : improvementGraphVertexMapping.keySet()) {
+                        keySet.add(Pair.of(i, ImprovementGraphVertexType.SINGLE));
+                        keySet.add(Pair.of(i, ImprovementGraphVertexType.SUBTREE));
+                    }
+                    keySet.addAll(pathExchangeVertexMapping.keySet());
+                    keySet.add(origin);
+                    return keySet;
+                }
+
+                @Override
+                public Collection<Integer> values() {
+                    return solutionRepresentation.getLabels();
+                }
+
+                @Override
+                public Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet() {
+
+                    Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet = new HashSet<>();
+                    for(Integer i : improvementGraphVertexMapping.keySet()) {
+                        Integer label = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(i));
+                        entrySet.add(new AbstractMap.SimpleEntry<>(Pair.of(i, ImprovementGraphVertexType.SINGLE), label));
+                        entrySet.add(new AbstractMap.SimpleEntry<>(Pair.of(i, ImprovementGraphVertexType.SUBTREE), label));
+                    }
+                    for(Pair<Integer, ImprovementGraphVertexType> pseudoVertex : pathExchangeVertexMapping.keySet()) {
+                        entrySet.add(new AbstractMap.SimpleEntry<>(pseudoVertex, pathExchangeVertexMapping.get(pseudoVertex)));
+                    }
+                    entrySet.add(new AbstractMap.SimpleEntry<>(origin, originVertexLabel));
+                    return entrySet;
+                }
+            };
+
+            this.improvementGraph = createImprovementGraph();
+        }
+
+        /**
+         * Initializes the improvement graph, i.e. adds single, subtree and pseudo vertices as well as the origin vertex. Furthermore, it initializes all mappings.
+         *
+         * @return the improvement graph itself.
+         */
+        private Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> createImprovementGraph() {
+            Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> improvementGraph = new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+
+            int counter = 0;
+
+            for(V v : graph.vertexSet()) {
+
+                if(v.equals(root)) {
+                    continue;
+                }
+
+                Pair<Integer, ImprovementGraphVertexType> singleVertex = new Pair<>(counter, ImprovementGraphVertexType.SINGLE);
+                improvementGraph.addVertex(singleVertex);
+
+                Pair<Integer, ImprovementGraphVertexType> subtreeVertex = new Pair<>(counter, ImprovementGraphVertexType.SUBTREE);
+                improvementGraph.addVertex(subtreeVertex);
+
+                // we have to add these only once
+                improvementGraphVertexMapping.put(counter, v);
+                initialVertexMapping.put(v, counter);
+
+                counter++;
+            }
+
+            Pair<Integer, ImprovementGraphVertexType> origin = new Pair<>(counter, ImprovementGraphVertexType.ORIGIN);
+            improvementGraph.addVertex(origin);
+            this.origin = origin;
+            pathExchangeVertexMapping.put(origin, originVertexLabel);
+            counter++;
+
+            for(Integer label : solutionRepresentation.getLabels()) {
+                Pair<Integer, ImprovementGraphVertexType> pseudoVertex = new Pair<>(counter, ImprovementGraphVertexType.PSEUDO);
+                pseudoVertexMapping.put(label, pseudoVertex);
+                pathExchangeVertexMapping.put(pseudoVertex, label);
+                improvementGraph.addVertex(pseudoVertex);
+
+                counter++;
+            }
+
+            /*
+             * connection of pseudo nodes and origin node
+             */
+            for(Pair<Integer, ImprovementGraphVertexType> v : pseudoVertexMapping.values()) {
+                improvementGraph.setEdgeWeight(improvementGraph.addEdge(v, origin), 0);
+            }
+
+            return improvementGraph;
+        }
+
+        /**
+         * Updates the improvement graph after an multi-exchange operation was executed. It updates the vertices and edges in the parts specified in <code>labelsToUpdate</code>.
+         *
+         * @param subtrees the mapping from vertices to their subtree
+         * @param partitionSpanningTrees the mapping from labels of subsets to their spanning tree
+         * @param labelsToUpdate the labels of all subsets that has to be updated (because of the multi-exchange operation)
+         */
+        private void updateImprovementGraph(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees, Set<Integer> labelsToUpdate) {
+
+            double newCapacity, newWeight, oldWeight;
+            SpanningTreeAlgorithm.SpanningTree spanningTree;
+
+            for(V v1 : graph.vertexSet()) {
+
+                if(v1.equals(root)) {
+                    continue;
+                }
+
+                Pair<Integer, ImprovementGraphVertexType> vertexOfV1Single = Pair.of(initialVertexMapping.get(v1), ImprovementGraphVertexType.SINGLE);
+                Pair<Integer, ImprovementGraphVertexType> vertexOfV1Subtree = Pair.of(initialVertexMapping.get(v1), ImprovementGraphVertexType.SUBTREE);
+
+                /*
+                 * update connections to origin node
+                 */
+                if(labelsToUpdate.contains(solutionRepresentation.getLabel(v1))) {
+                    oldWeight = partitionSpanningTrees.get(solutionRepresentation.getLabel(v1)).getWeight();
+                    // edge for v1 vertex remove operation
+                    Set<V> partitionSetOfV1 = solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1));
+                    partitionSetOfV1.add(root);
+                    partitionSetOfV1.remove(v1);
+                    spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, partitionSetOfV1)).getSpanningTree();
+                    if(spanningTree.getEdges().size() == partitionSetOfV1.size() - 1) {
+                        newWeight = spanningTree.getWeight();
+                    } else {
+                        newWeight = Double.NaN;
+                    }
+                    addImprovementGraphEdge(
+                            origin,
+                            vertexOfV1Single,
+                            0,
+                            newWeight - oldWeight
+                    );
+                    partitionSetOfV1.add(v1);
+
+                    /*
+                     * edge for v1 subtree remove operation
+                     * If the subtree of v1 contains only the vertex itself, it is the same operation as removing v1 as vertex. Thus, do not add edges.
+                     */
+                    if(subtrees.get(v1).getFirst().size() > 1) {
+                        partitionSetOfV1.removeAll(subtrees.get(v1).getFirst());
+                        spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, partitionSetOfV1)).getSpanningTree();
+                        if(spanningTree.getEdges().size() == partitionSetOfV1.size() - 1) {
+                            newWeight = spanningTree.getWeight();
+                        } else {
+                            newWeight = Double.NaN;
+                        }
+                        addImprovementGraphEdge(
+                                origin,
+                                vertexOfV1Subtree,
+                                0,
+                                newWeight - oldWeight
+                        );
+                        partitionSetOfV1.addAll(subtrees.get(v1).getFirst());
+                    }
+                    partitionSetOfV1.remove(root);
+                }
+
+                /*
+                 * update the connections to regular nodes and pseudo nodes
+                 */
+                for(Integer label : solutionRepresentation.getLabels()) {
+
+                    /*
+                     * only update if there is a change induced by a changed part. This potentially saves a lot of time.
+                     */
+                    if (label.equals(solutionRepresentation.getLabel(v1)) || !labelsToUpdate.contains(solutionRepresentation.getLabel(v1)) || !labelsToUpdate.contains(label)) {
+                        continue;
+                    }
+
+                    Set<V> modifiableSet = new HashSet<>(solutionRepresentation.getPartitionSet(label));
+
+                    oldWeight = partitionSpanningTrees.get(label).getWeight();
+
+                    modifiableSet.add(root);
+                    modifiableSet.add(v1);
+
+                    for (V v2 : solutionRepresentation.getPartitionSet(label)) {
+
+                        if(v2.equals(root)) {
+                            throw new IllegalStateException("FUCK");
+                        }
+
+                        /*
+                         * edge for v1 vertex replacing v2 vertex
+                         */
+                        newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - demands.get(v2);
+                        modifiableSet.remove(v2);
+                        spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
+                        if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                            newWeight = spanningTree.getWeight();
+                        } else {
+                            newWeight = Double.NaN;
+                        }
+                        addImprovementGraphEdge(
+                                vertexOfV1Single,
+                                Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE),
+                                newCapacity,
+                                newWeight - oldWeight
+                        );
+                        modifiableSet.add(v2);
+
+                        /*
+                         * edge for v1 vertex replacing v2 subtree
+                         * If the subtree of v2 contains only the vertex itself, it is the same operation as moving v2 as vertex. Thus, do not add edges.
+                         */
+                        if (subtrees.get(v2).getFirst().size() > 1) {
+                            newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - subtrees.get(v2).getSecond();
+                            modifiableSet.removeAll(subtrees.get(v2).getFirst());
+                            spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
+                            if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                                newWeight = spanningTree.getWeight();
+                            } else {
+                                newWeight = Double.NaN;
+                            }
+                            addImprovementGraphEdge(
+                                    vertexOfV1Single,
+                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE),
+                                    newCapacity,
+                                    newWeight - oldWeight
+                            );
+                            modifiableSet.addAll(subtrees.get(v2).getFirst());
+                        }
+                    }
+
+                    /*
+                     * edge for v1 vertex replacing no vertex or subtree
+                     */
+                    Pair<Integer, ImprovementGraphVertexType> pseudoVertex = pseudoVertexMapping.get(label);
+                    newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1);
+                    spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
+                    if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                        newWeight = spanningTree.getWeight();
+                    } else {
+                        newWeight = Double.NaN;
+                    }
+                    addImprovementGraphEdge(vertexOfV1Single, pseudoVertex, newCapacity, newWeight - oldWeight);
+
+                    modifiableSet.remove(v1);
+
+                    /*
+                     * If the subtree of v1 contains only the vertex itself, it is the same operation as moving v1 as vertex. Thus, do not add edges.
+                     */
+                    if (subtrees.get(v1).getFirst().size() > 1) {
+                        modifiableSet.addAll(subtrees.get(v1).getFirst());
+                        for (V v2 : solutionRepresentation.getPartitionSet(label)) {
+
+                            if(v2.equals(root)) {
+                                throw new IllegalStateException("FUCK");
+                            }
+
+                            /*
+                             * edge for v1 subtree replacing v2 vertex
+                             */
+                            newCapacity = solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond() - demands.get(v2);
+                            modifiableSet.remove(v2);
+                            spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
+                            if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                                newWeight = spanningTree.getWeight();
+                            } else {
+                                newWeight = Double.NaN;
+                            }
+                            addImprovementGraphEdge(
+                                    vertexOfV1Subtree,
+                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE),
+                                    newCapacity,
+                                    newWeight - oldWeight
+                            );
+
+                            modifiableSet.add(v2);
+
+                            /*
+                             * edge for v1 subtree replacing v2 subtree
+                             */
+                            newCapacity = solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond();
+                            modifiableSet.removeAll(subtrees.get(v2).getFirst());
+                            spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
+                            if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                                newWeight = spanningTree.getWeight();
+                            } else {
+                                newWeight = Double.NaN;
+                            }
+                            addImprovementGraphEdge(
+                                    vertexOfV1Subtree,
+                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE),
+                                    newCapacity,
+                                    newWeight - oldWeight
+                            );
+                            modifiableSet.addAll(subtrees.get(v2).getFirst());
+                        }
+
+                        /*
+                         * edge for v1 subtree replacing no vertex or subtree
+                         */
+                        newCapacity = solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond();
+                        spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
+                        if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                            newWeight = spanningTree.getWeight();
+                        } else {
+                            newWeight = Double.NaN;
+                        }
+                        addImprovementGraphEdge(vertexOfV1Subtree, pseudoVertex, newCapacity, newWeight - oldWeight);
+
+                        modifiableSet.removeAll(subtrees.get(v1).getFirst());
+
+                        modifiableSet.remove(root);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Adds an edge between <code>v1</code> and <code>v2</code> to the improvement graph if <code>newCapacity</code> does not exceed the capacity constraint.
+         * The weight of the edge is <code>newCost</code>.
+         *
+         * @param v1 start vertex (the vertex or subtree induced by <code>v1</code> that will be moved to the subset of <code>v2</code>)
+         * @param v2 end vertex (the vertex or subtree induced by <code>v2</code> that will be removed from the subset of <code>v2</code>)
+         * @param newCapacity the used capacity by adding the vertex or subtree induced by <code>v1</code> to the subset of <code>v2</code> and deleting the vertex or subtree induced by <code>v2</code>
+         * @param newCost the cost of the edge (the cost induced by the operation induced by <code>v1</code> and <code>v2</code>)
+         */
+        private void addImprovementGraphEdge(Pair<Integer, ImprovementGraphVertexType> v1, Pair<Integer, ImprovementGraphVertexType> v2, double newCapacity, double newCost) {
+            if (newCapacity <= capacity && !Double.isNaN(newCost)) {
+                DefaultWeightedEdge edge;
+                if(improvementGraph.containsEdge(v1, v2)) {
+                    edge = improvementGraph.getEdge(v1, v2);
+                } else {
+                    edge = improvementGraph.addEdge(v1, v2);
+                }
+                improvementGraph.setEdgeWeight(edge, newCost);
+            } else {
+                improvementGraph.removeEdge(v1, v2);
+            }
+        }
     }
 }
