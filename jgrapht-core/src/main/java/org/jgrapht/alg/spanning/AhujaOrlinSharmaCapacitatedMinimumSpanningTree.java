@@ -123,7 +123,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         do {
 
             partitionSpanningTrees = calculateSpanningTrees(partitionSpanningTrees, affectedParts);
-            subtrees = calculateSubtrees(subtrees, partitionSpanningTrees, affectedParts);
+            subtrees = calculateSubtreesOfVertices(subtrees, partitionSpanningTrees, affectedParts);
 
             improvementGraph.updateImprovementGraph(subtrees, partitionSpanningTrees, affectedParts);
 
@@ -174,7 +174,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         Iterator<Pair<Integer, ImprovementGraphVertexType>> it = cycle.getVertexList().iterator();
         if(it.hasNext()) {
             Pair<Integer, ImprovementGraphVertexType> cur = it.next();
-            if(it.hasNext()) {
+            Integer firstLabel;
+            switch(cur.getSecond()) {
+                case SINGLE: firstLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(cur.getFirst())); break;
+                case SUBTREE: firstLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(cur.getFirst())); break;
+                default: firstLabel = -1;
+            }
                 while (it.hasNext()) {
                     Pair<Integer, ImprovementGraphVertexType> next = it.next();
 
@@ -186,14 +191,15 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                         case SINGLE: {
                             V curVertex = improvementGraphVertexMapping.get(cur.getFirst());
                             Integer curLabel = solutionRepresentation.getLabel(curVertex);
-
+                            Integer nextLabel;
+                            if(it.hasNext()) {
+                                nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()));
+                            } else {
+                                nextLabel = firstLabel;
+                            }
                             affectedLabels.add(curLabel);
 
-                            solutionRepresentation.moveVertex(
-                                    curVertex,
-                                    curLabel,
-                                    solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()))
-                            );
+                            solutionRepresentation.moveVertex(curVertex, curLabel, nextLabel);
                             break;
                         }
                         /*
@@ -202,16 +208,18 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                         case SUBTREE: {
                             V curVertex = improvementGraphVertexMapping.get(cur.getFirst());
                             Integer curLabel = solutionRepresentation.getLabel(curVertex);
+                            Integer nextLabel;
+                            if(it.hasNext()) {
+                                nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()));
+                            } else {
+                                nextLabel = firstLabel;
+                            }
 
                             affectedLabels.add(curLabel);
 
                             // get the whole subtree that has to be moved
                             Set<V> subtreeToMove = subtrees.get(curVertex).getFirst();
-                            solutionRepresentation.moveVertices(
-                                    subtreeToMove,
-                                    curLabel,
-                                    solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()))
-                            );
+                            solutionRepresentation.moveVertices(subtreeToMove, curLabel, nextLabel);
                             break;
                         }
                         /*
@@ -226,7 +234,6 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                          * This is the beginning of a path exchange. We have nothing to do.
                          */
                         case ORIGIN: {
-
                             break;
                         }
                         default: throw new IllegalStateException("This is a bug. There are invalid types of vertices in the cycle.");
@@ -234,9 +241,81 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
 
                     cur = next;
                 }
-            }
+
         }
 
+        Set<Integer> moreAffectedLabels = new HashSet<>();
+        for(Integer label : affectedLabels) {
+            moreAffectedLabels.addAll(partitionSubtreesOfSubset(label));
+        }
+        affectedLabels.addAll(moreAffectedLabels);
+
+        solutionRepresentation.cleanUp();
+
+        return affectedLabels;
+    }
+
+    /**
+     * Refines the partition by adding new subsets if the designated root has more than one subtree in the subset <code>label</code> of the partition.
+     *
+     * @param label the label of the subset of the partition that has to be refined
+     */
+    private Set<Integer> partitionSubtreesOfSubset(int label) {
+
+        List<Set<V>> subtreesOfSubset = new LinkedList<>();
+
+        Set<V> vertexSubset = solutionRepresentation.getPartitionSet(label);
+
+        if(vertexSubset.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        vertexSubset.add(root);
+        SpanningTreeAlgorithm.SpanningTree<E> spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, vertexSubset, graph.edgeSet())).getSpanningTree();
+
+        Graph<V, E> spanningTreeGraph = new AsSubgraph<>(graph, vertexSubset, spanningTree.getEdges());
+
+        int degreeOfRoot = spanningTreeGraph.degreeOf(root);
+        if(degreeOfRoot == 1) {
+            vertexSubset.remove(root);
+            return new HashSet<>();
+        }
+
+        Set<Integer> affectedLabels = new HashSet<>();
+
+        DepthFirstIterator<V, E> depthFirstIterator = new DepthFirstIterator<>(spanningTreeGraph, root);
+        if(depthFirstIterator.hasNext()) {
+            depthFirstIterator.next();
+        }
+
+        int numberOfRootEdgesExplored = 0;
+        Set<V> currentSubtree = new HashSet<>();
+
+        while(depthFirstIterator.hasNext()) {
+            V next = depthFirstIterator.next();
+
+            // exploring new subtree
+            if(spanningTreeGraph.containsEdge(root, next)) {
+                if(!currentSubtree.isEmpty()) {
+                    subtreesOfSubset.add(currentSubtree);
+                    currentSubtree = new HashSet<>();
+                }
+                // we do not have to move more vertices
+                if(numberOfRootEdgesExplored + 1 == degreeOfRoot) {
+                    break;
+                }
+            }
+            currentSubtree.add(next);
+        }
+
+        // move the subtrees to new subsets in the partition
+        for(Set<V> subtree : subtreesOfSubset) {
+            int nextLabel = solutionRepresentation.getNextFreeLabel();
+            solutionRepresentation.moveVertices(subtree, label, nextLabel);
+            affectedLabels.add(nextLabel);
+        }
+
+        vertexSubset.remove(root);
         return affectedLabels;
     }
 
@@ -267,7 +346,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @return the updated map of vertices to their subtrees
      */
-    private Map<V, Pair<Set<V>, Double>> calculateSubtrees(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTree, Set<Integer> affectedLabels) {
+    private Map<V, Pair<Set<V>, Double>> calculateSubtreesOfVertices(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTree, Set<Integer> affectedLabels) {
         for(Integer label : affectedLabels) {
             for (V v : solutionRepresentation.getPartitionSet(label)) {
                 Pair<Set<V>, Double> currentSubtree = subtree(v, partitionSpanningTree);
@@ -525,7 +604,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         }
 
         /**
-         * Updates the improvement graph after an multi-exchange operation was executed. It updates the vertices and edges in the parts specified in <code>labelsToUpdate</code>.
+         * Updates the improvement graph. It updates the vertices and edges in the parts specified in <code>labelsToUpdate</code>.
          *
          * @param subtrees the mapping from vertices to their subtree
          * @param partitionSpanningTrees the mapping from labels of subsets to their spanning tree
@@ -534,7 +613,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         private void updateImprovementGraph(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees, Set<Integer> labelsToUpdate) {
 
             double newCapacity, newWeight, oldWeight;
-            SpanningTreeAlgorithm.SpanningTree spanningTree;
+            SpanningTreeAlgorithm.SpanningTree<E> spanningTree;
 
             for(V v1 : graph.vertexSet()) {
 
@@ -560,12 +639,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                     } else {
                         newWeight = Double.NaN;
                     }
-                    addImprovementGraphEdge(
-                            origin,
-                            vertexOfV1Single,
-                            0,
-                            newWeight - oldWeight
-                    );
+                    updateImprovementGraphEdge(origin, vertexOfV1Single,0,newWeight - oldWeight);
                     partitionSetOfV1.add(v1);
 
                     /*
@@ -580,12 +654,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                         } else {
                             newWeight = Double.NaN;
                         }
-                        addImprovementGraphEdge(
-                                origin,
-                                vertexOfV1Subtree,
-                                0,
-                                newWeight - oldWeight
-                        );
+                        updateImprovementGraphEdge(origin, vertexOfV1Subtree,0,newWeight - oldWeight);
                         partitionSetOfV1.addAll(subtrees.get(v1).getFirst());
                     }
                     partitionSetOfV1.remove(root);
@@ -619,20 +688,16 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                         /*
                          * edge for v1 vertex replacing v2 vertex
                          */
-                        newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - demands.get(v2);
                         modifiableSet.remove(v2);
                         spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                         if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                            newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - demands.get(v2));
                             newWeight = spanningTree.getWeight();
                         } else {
+                            newCapacity = Double.NaN;
                             newWeight = Double.NaN;
                         }
-                        addImprovementGraphEdge(
-                                vertexOfV1Single,
-                                Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE),
-                                newCapacity,
-                                newWeight - oldWeight
-                        );
+                        updateImprovementGraphEdge(vertexOfV1Single, Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE), newCapacity, newWeight - oldWeight);
                         modifiableSet.add(v2);
 
                         /*
@@ -640,20 +705,16 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                          * If the subtree of v2 contains only the vertex itself, it is the same operation as moving v2 as vertex. Thus, do not add edges.
                          */
                         if (subtrees.get(v2).getFirst().size() > 1) {
-                            newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - subtrees.get(v2).getSecond();
                             modifiableSet.removeAll(subtrees.get(v2).getFirst());
                             spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                             if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - subtrees.get(v2).getSecond());
                                 newWeight = spanningTree.getWeight();
                             } else {
+                                newCapacity = Double.NaN;
                                 newWeight = Double.NaN;
                             }
-                            addImprovementGraphEdge(
-                                    vertexOfV1Single,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
+                            updateImprovementGraphEdge(vertexOfV1Single, Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE), newCapacity,newWeight - oldWeight);
                             modifiableSet.addAll(subtrees.get(v2).getFirst());
                         }
                     }
@@ -662,14 +723,15 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                      * edge for v1 vertex replacing no vertex or subtree
                      */
                     Pair<Integer, ImprovementGraphVertexType> pseudoVertex = pseudoVertexMapping.get(label);
-                    newCapacity = solutionRepresentation.getPartitionWeight(label) + demands.get(v1);
                     spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                     if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                        newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + demands.get(v1));
                         newWeight = spanningTree.getWeight();
                     } else {
+                        newCapacity = Double.NaN;
                         newWeight = Double.NaN;
                     }
-                    addImprovementGraphEdge(vertexOfV1Single, pseudoVertex, newCapacity, newWeight - oldWeight);
+                    updateImprovementGraphEdge(vertexOfV1Single, pseudoVertex, newCapacity, newWeight - oldWeight);
 
                     modifiableSet.remove(v1);
 
@@ -687,54 +749,47 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                             /*
                              * edge for v1 subtree replacing v2 vertex
                              */
-                            newCapacity = solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond() - demands.get(v2);
                             modifiableSet.remove(v2);
                             spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                             if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond() - demands.get(v2));
                                 newWeight = spanningTree.getWeight();
                             } else {
+                                newCapacity = Double.NaN;
                                 newWeight = Double.NaN;
                             }
-                            addImprovementGraphEdge(
-                                    vertexOfV1Subtree,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
+                            updateImprovementGraphEdge(vertexOfV1Subtree, Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SINGLE), newCapacity, newWeight - oldWeight);
 
                             modifiableSet.add(v2);
 
                             /*
                              * edge for v1 subtree replacing v2 subtree
                              */
-                            newCapacity = solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond();
                             modifiableSet.removeAll(subtrees.get(v2).getFirst());
                             spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                             if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond());
                                 newWeight = spanningTree.getWeight();
                             } else {
+                                newCapacity = Double.NaN;
                                 newWeight = Double.NaN;
                             }
-                            addImprovementGraphEdge(
-                                    vertexOfV1Subtree,
-                                    Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE),
-                                    newCapacity,
-                                    newWeight - oldWeight
-                            );
+                            updateImprovementGraphEdge(vertexOfV1Subtree, Pair.of(initialVertexMapping.get(v2), ImprovementGraphVertexType.SUBTREE), newCapacity, newWeight - oldWeight);
                             modifiableSet.addAll(subtrees.get(v2).getFirst());
                         }
 
                         /*
                          * edge for v1 subtree replacing no vertex or subtree
                          */
-                        newCapacity = solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond();
                         spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                         if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
+                            newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond());
                             newWeight = spanningTree.getWeight();
                         } else {
+                            newCapacity = Double.NaN;
                             newWeight = Double.NaN;
                         }
-                        addImprovementGraphEdge(vertexOfV1Subtree, pseudoVertex, newCapacity, newWeight - oldWeight);
+                        updateImprovementGraphEdge(vertexOfV1Subtree, pseudoVertex, newCapacity, newWeight - oldWeight);
 
                         modifiableSet.removeAll(subtrees.get(v1).getFirst());
 
@@ -753,8 +808,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
          * @param newCapacity the used capacity by adding the vertex or subtree induced by <code>v1</code> to the subset of <code>v2</code> and deleting the vertex or subtree induced by <code>v2</code>
          * @param newCost the cost of the edge (the cost induced by the operation induced by <code>v1</code> and <code>v2</code>)
          */
-        private void addImprovementGraphEdge(Pair<Integer, ImprovementGraphVertexType> v1, Pair<Integer, ImprovementGraphVertexType> v2, double newCapacity, double newCost) {
-            if (newCapacity <= capacity && !Double.isNaN(newCost)) {
+        private void updateImprovementGraphEdge(Pair<Integer, ImprovementGraphVertexType> v1, Pair<Integer, ImprovementGraphVertexType> v2, double newCapacity, double newCost) {
+            if (!Double.isNaN(newCapacity) && newCapacity <= capacity && !Double.isNaN(newCost)) {
                 DefaultWeightedEdge edge;
                 if(improvementGraph.containsEdge(v1, v2)) {
                     edge = improvementGraph.getEdge(v1, v2);
@@ -765,6 +820,73 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             } else {
                 improvementGraph.removeEdge(v1, v2);
             }
+        }
+
+        /**
+         * Calculates the maximum demand over all new subtrees induced by the minimum spanning tree <code>spanningTree</code>.
+         * A spanning tree induces more than one subset in the partition if the root vertex of the base graph connects more than one subtree of the spanning tree.
+         *
+         * @param vertexSubset the vertex subset <code>spanning Tree is defined on</code>
+         * @param spanningTree the spanning tree
+         * @param totalDemand the total demand of the whole spanning tree
+         *
+         * @return the maximum demand over all new subtrees induced by the minimum spanning tree <code>spanningTree</code>
+         */
+        private double calculateMaximumDemandOfSubtrees(Set<V> vertexSubset, SpanningTreeAlgorithm.SpanningTree<E> spanningTree, double totalDemand) {
+
+            Graph<V, E> spanningTreeGraph = new AsSubgraph<>(graph, vertexSubset, spanningTree.getEdges());
+
+            /*
+             * The subtree does not evolve to more than 1 partition subsets, thus, we can return the total demand.
+             */
+            int degreeOfRoot = spanningTreeGraph.degreeOf(root);
+            if(degreeOfRoot == 1) {
+                return totalDemand;
+            }
+
+            double maximumDemand = 0;
+
+            DepthFirstIterator<V, E> depthFirstIterator = new DepthFirstIterator<>(spanningTreeGraph, root);
+            if(depthFirstIterator.hasNext()) {
+                depthFirstIterator.next();
+            }
+
+            int numberOfRootEdgesExplored = 0;
+
+            double exploredVerticesDemand = 0;
+            double currentDemand = 0;
+
+            while(depthFirstIterator.hasNext()) {
+                V next = depthFirstIterator.next();
+
+                // exploring new subtree
+                if(spanningTreeGraph.containsEdge(root, next)) {
+
+                    exploredVerticesDemand += currentDemand;
+
+                    // we can stop the exploration, all subtrees but one are explored
+                    if(numberOfRootEdgesExplored + 1 == degreeOfRoot) {
+                        return totalDemand - exploredVerticesDemand;
+                    }
+
+                    if(maximumDemand < currentDemand) {
+                        maximumDemand = currentDemand;
+                    }
+
+                    // we can stop the exploration
+                    if(maximumDemand >= 0.5 * totalDemand || exploredVerticesDemand + maximumDemand >= totalDemand) {
+                        return maximumDemand;
+                    }
+
+                    numberOfRootEdgesExplored++;
+
+                    currentDemand = 0;
+                }
+
+                currentDemand += demands.get(next);
+            }
+
+            return maximumDemand;
         }
     }
 }

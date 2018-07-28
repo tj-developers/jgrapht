@@ -41,6 +41,11 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
         private Map<Integer, Pair<Set<V>, Double>> partition;
 
         /**
+         * the next free label
+         */
+        private int nextFreeLabel;
+
+        /**
          * Constructs a new solution representation for the CMST problem.
          */
         protected SolutionRepresentation() {
@@ -67,6 +72,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             }
             this.labels = labels;
             this.partition = partition;
+            getNextFreeLabel();
         }
 
         /**
@@ -110,11 +116,6 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             Set<V> newPart = partition.get(toLabel).getFirst();
             newPart.add(vertex);
             partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + demands.get(vertex)));
-
-            // remove merged part from partition if empty
-            if(partition.get(fromLabel).getFirst().isEmpty()) {
-                partition.remove(fromLabel);
-            }
         }
 
         /**
@@ -140,11 +141,27 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             Set<V> oldPart = partition.get(fromLabel).getFirst();
             oldPart.removeAll(vertices);
             partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weightOfVertices));
+        }
 
-            // remove merged part from partition if empty
-            if(partition.get(fromLabel).getFirst().isEmpty()) {
-                partition.remove(fromLabel);
+        /**
+         * Cleans up the solution representation by removing all empty sets from the partition.
+         */
+        protected void cleanUp() {
+            partition.entrySet().removeIf(entry -> entry.getValue().getFirst().isEmpty());
+        }
+
+        /**
+         * Returns the next free label in the label map respectively partition
+         *
+         * @return the next free label in the label map respectively partition
+         */
+        protected int getNextFreeLabel() {
+            int freeLabel = nextFreeLabel;
+            nextFreeLabel++;
+            while(partition.keySet().contains(nextFreeLabel)) {
+                nextFreeLabel++;
             }
+            return freeLabel;
         }
 
         /**
@@ -154,7 +171,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
          *
          * @return the label of <code>vertex</code>
          */
-        protected Integer getLabel(V vertex) {
+        protected int getLabel(V vertex) {
             return labels.get(vertex);
         }
 
@@ -185,7 +202,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
          *
          * @return the sum of the weights of all vertices that are in the subset with label <code>label</code>
          */
-        protected Double getPartitionWeight(Integer label) {
+        protected double getPartitionWeight(Integer label) {
             return partition.get(label).getSecond();
         }
     }
