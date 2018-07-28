@@ -193,7 +193,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                             Integer curLabel = solutionRepresentation.getLabel(curVertex);
                             Integer nextLabel;
                             if(it.hasNext()) {
-                                nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()));
+                                switch(next.getSecond()) {
+                                    case SINGLE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case SUBTREE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case PSEUDO: nextLabel = pathExchangeVertexMapping.get(next); break;
+                                    default: throw new IllegalStateException("This is a bug. There are invalid types of vertices in the cycle.");
+                                }
                             } else {
                                 nextLabel = firstLabel;
                             }
@@ -210,7 +215,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                             Integer curLabel = solutionRepresentation.getLabel(curVertex);
                             Integer nextLabel;
                             if(it.hasNext()) {
-                                nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst()));
+                                switch(next.getSecond()) {
+                                    case SINGLE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case SUBTREE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case PSEUDO: nextLabel = pathExchangeVertexMapping.get(next); break;
+                                    default: throw new IllegalStateException("This is a bug. There are invalid types of vertices in the cycle.");
+                                }
                             } else {
                                 nextLabel = firstLabel;
                             }
@@ -245,12 +255,20 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         }
 
         Set<Integer> moreAffectedLabels = new HashSet<>();
-        for(Integer label : affectedLabels) {
-            moreAffectedLabels.addAll(partitionSubtreesOfSubset(label));
+        Iterator<Integer> affectedLabelIterator = affectedLabels.iterator();
+        while(affectedLabelIterator.hasNext()) {
+            int label = affectedLabelIterator.next();
+            Set<V> vertexSubset = solutionRepresentation.getPartitionSet(label);
+            if(vertexSubset.isEmpty()) {
+                affectedLabelIterator.remove();
+            } else {
+                moreAffectedLabels.addAll(partitionSubtreesOfSubset(vertexSubset, label));
+            }
         }
         affectedLabels.addAll(moreAffectedLabels);
 
         solutionRepresentation.cleanUp();
+
 
         return affectedLabels;
     }
@@ -260,11 +278,9 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @param label the label of the subset of the partition that has to be refined
      */
-    private Set<Integer> partitionSubtreesOfSubset(int label) {
+    private Set<Integer> partitionSubtreesOfSubset(Set<V> vertexSubset, int label) {
 
         List<Set<V>> subtreesOfSubset = new LinkedList<>();
-
-        Set<V> vertexSubset = solutionRepresentation.getPartitionSet(label);
 
         if(vertexSubset.isEmpty()) {
             return new HashSet<>();
@@ -668,7 +684,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                     /*
                      * only update if there is a change induced by a changed part. This potentially saves a lot of time.
                      */
-                    if (label.equals(solutionRepresentation.getLabel(v1)) || !labelsToUpdate.contains(solutionRepresentation.getLabel(v1)) || !labelsToUpdate.contains(label)) {
+                    if (label.equals(solutionRepresentation.getLabel(v1)) || (!labelsToUpdate.contains(solutionRepresentation.getLabel(v1)) && !labelsToUpdate.contains(label))) {
                         continue;
                     }
 
@@ -811,9 +827,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         private void updateImprovementGraphEdge(Pair<Integer, ImprovementGraphVertexType> v1, Pair<Integer, ImprovementGraphVertexType> v2, double newCapacity, double newCost) {
             if (!Double.isNaN(newCapacity) && newCapacity <= capacity && !Double.isNaN(newCost)) {
                 DefaultWeightedEdge edge;
-                if(improvementGraph.containsEdge(v1, v2)) {
-                    edge = improvementGraph.getEdge(v1, v2);
-                } else {
+                edge = improvementGraph.getEdge(v1, v2);
+                if(edge == null) {
                     edge = improvementGraph.addEdge(v1, v2);
                 }
                 improvementGraph.setEdgeWeight(edge, newCost);
