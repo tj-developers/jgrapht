@@ -1,6 +1,7 @@
 package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.AhujaOrlinSharmaCyclicExchangeLocalAugmentation;
 import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
 
     /**
-     * a simple cyclic exchange
+     * A simple cyclic exchange
      */
     @Test
     public void testInstance1() {
@@ -99,7 +100,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
     }
 
     /**
-     * in this example, the initial solution should not be changed
+     * In this example, the initial solution should not be changed
      */
     @Test
     public void testInstance2() {
@@ -167,7 +168,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
     }
 
     /**
-     * a double cyclic exchange
+     * A double cyclic exchange
      */
     @Test
     public void testInstance3() {
@@ -249,7 +250,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
     }
 
     /**
-     * a simple path exchange
+     * A simple path exchange
      */
     @Test
     public void testInstance4() {
@@ -342,7 +343,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
     }
 
     /**
-     * a simple subtree exchange
+     * A simple subtree exchange
      */
     @Test
     public void testInstance5() {
@@ -442,7 +443,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
     }
 
     /**
-     * a more complicate example
+     * A more complicate example
      */
     @Test
     public void testInstance6() {

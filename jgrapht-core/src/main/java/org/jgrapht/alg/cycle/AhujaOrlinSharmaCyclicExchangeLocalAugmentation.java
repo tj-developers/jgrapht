@@ -45,200 +45,6 @@ import java.util.*;
 public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
 
     /**
-     * Implementation of a labeled path.
-     * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maintain the paths in the calculation.
-     *
-     * @param <V> the vertex type
-     *
-     * @author Christoph Grüne
-     * @since June 7, 2018
-     */
-    private static class LabeledPath<V> implements Cloneable {
-
-        /**
-         * the vertices in the path
-         */
-        private ArrayList<V> vertices;
-        /**
-         * the labels the path contains
-         */
-        private HashSet<Integer> labels;
-        /**
-         * the cost of the path
-         */
-        private double cost;
-
-        /**
-         * Constructs a LabeledPath with the given inputs
-         *
-         * @param vertices the vertices of the path in order of the path
-         * @param cost the cost of the edges connecting the vertices
-         * @param labels the mapping of the vertices to labels (subsets)
-         */
-        protected LabeledPath(ArrayList<V> vertices, double cost, HashSet<Integer> labels) {
-            this.vertices = vertices;
-            this.cost = cost;
-            this.labels = labels;
-        }
-
-        /**
-         * Adds a vertex to the path
-         *
-         * @param v the vertex
-         * @param edgeCost the cost of the edge connecting the last vertex of the path and the new vertex
-         * @param label the label of the new vertex
-         */
-        protected void addVertex(V v, double edgeCost, int label) {
-            this.vertices.add(v);
-            this.cost += edgeCost;
-            this.labels.add(label);
-        }
-
-        /**
-         * Returns the start vertex of the path
-         *
-         * @return the start vertex of the path
-         */
-        protected V getHead() {
-            return vertices.get(0);
-        }
-
-        /**
-         * Returns the end vertex of the path
-         *
-         * @return the end vertex of the path
-         */
-        protected V getTail() {
-            return vertices.get(vertices.size() - 1);
-        }
-
-        /**
-         * Returns whether the path is empty, i.e. has no vertices
-         *
-         * @return whether the path is empty
-         */
-        protected boolean isEmpty() {
-            return vertices.isEmpty();
-        }
-
-        /**
-         * Returns an ordered list of the vertices of the path
-         *
-         * @return an ordered list of the vertices of the path
-         */
-        protected List<V> getVertices() {
-            return vertices;
-        }
-
-        /**
-         * Returns the labels of all vertices of the path
-         *
-         * @return the labels of all vertices of the path
-         */
-        protected Set<Integer> getLabels() {
-            return labels;
-        }
-
-        /**
-         * Returns the cost of the path
-         *
-         * @return the cost of the path
-         */
-        protected double getCost() {
-            return cost;
-        }
-
-        /**
-         * Returns a shallow copy of this labeled path instance. Vertices are not cloned.
-         *
-         * @return a shallow copy of this path.
-         *
-         * @throws RuntimeException in case the clone is not supported
-         *
-         * @see java.lang.Object#clone()
-         */
-        public LabeledPath<V> clone() {
-            try {
-                LabeledPath<V> newLabeledPath = TypeUtil.uncheckedCast(super.clone());
-                newLabeledPath.vertices = (ArrayList<V>) this.vertices.clone();
-                newLabeledPath.labels = (HashSet<Integer>) this.labels.clone();
-                newLabeledPath.cost = this.cost;
-
-                return newLabeledPath;
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-                throw new RuntimeException();
-            }
-        }
-    }
-
-    /**
-     * Implementation of a key for the path maps.
-     * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maintain the path sets in the calculation.
-     *
-     * @param <V> the vertex type
-     *
-     * @author Christoph Grüne
-     * @since June 7, 2018
-     */
-    private static class PathSetKey<V> {
-        /**
-         * the head of the paths indexed by this key
-         */
-        private V head;
-        /**
-         * the tail of the paths indexed by this key
-         */
-        private V tail;
-        /**
-         * the label set of the paths indexed by this key
-         */
-        private Set<Integer> labels;
-
-        /**
-         * Constructs a new PathSetKey object
-         *
-         * @param head the head of the paths indexed by this key
-         * @param tail the tail of the paths indexed by this key
-         * @param labels the label set of the paths indexed by this key
-         */
-        private PathSetKey(V head, V tail, Set<Integer> labels) {
-            this.head = head;
-            this.tail = tail;
-            this.labels = labels;
-        }
-
-        /**
-         * Constructs a new PathSetKey object
-         *
-         * @param head the head of the path indexed by this key
-         * @param tail the tail of the path indexed by this key
-         * @param labels the label set of the path indexed by this key
-         * @param <V> the vertex type
-         * @return a new PathSetKey object
-         */
-        protected static <V> PathSetKey<V> of(V head, V tail, Set<Integer> labels) {
-            return new PathSetKey<>(head, tail, labels);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.head, this.tail, this.labels);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            else if (!(o instanceof PathSetKey))
-                return false;
-
-            @SuppressWarnings("unchecked") PathSetKey<V> other = (PathSetKey<V>) o;
-            return Objects.equals(head, other.head) && Objects.equals(tail, other.tail) && Objects.equals(labels, other.labels);
-        }
-    }
-
-    /**
      * the input graph
      */
     private Graph<V, E> graph;
@@ -416,5 +222,199 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
     private void updatePathIndex(Map<PathSetKey<V>, LabeledPath<V>> paths, LabeledPath<V> path) {
         PathSetKey<V> currentKey = PathSetKey.of(path.getHead(), path.getTail(), path.getLabels());
         paths.put(currentKey, path);
+    }
+
+    /**
+     * Implementation of a labeled path.
+     * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maintain the paths in the calculation.
+     *
+     * @param <V> the vertex type
+     *
+     * @author Christoph Grüne
+     * @since June 7, 2018
+     */
+    private static class LabeledPath<V> implements Cloneable {
+
+        /**
+         * the vertices in the path
+         */
+        private ArrayList<V> vertices;
+        /**
+         * the labels the path contains
+         */
+        private HashSet<Integer> labels;
+        /**
+         * the cost of the path
+         */
+        private double cost;
+
+        /**
+         * Constructs a LabeledPath with the given inputs
+         *
+         * @param vertices the vertices of the path in order of the path
+         * @param cost the cost of the edges connecting the vertices
+         * @param labels the mapping of the vertices to labels (subsets)
+         */
+        public LabeledPath(ArrayList<V> vertices, double cost, HashSet<Integer> labels) {
+            this.vertices = vertices;
+            this.cost = cost;
+            this.labels = labels;
+        }
+
+        /**
+         * Adds a vertex to the path
+         *
+         * @param v the vertex
+         * @param edgeCost the cost of the edge connecting the last vertex of the path and the new vertex
+         * @param label the label of the new vertex
+         */
+        public void addVertex(V v, double edgeCost, int label) {
+            this.vertices.add(v);
+            this.cost += edgeCost;
+            this.labels.add(label);
+        }
+
+        /**
+         * Returns the start vertex of the path
+         *
+         * @return the start vertex of the path
+         */
+        public V getHead() {
+            return vertices.get(0);
+        }
+
+        /**
+         * Returns the end vertex of the path
+         *
+         * @return the end vertex of the path
+         */
+        public V getTail() {
+            return vertices.get(vertices.size() - 1);
+        }
+
+        /**
+         * Returns whether the path is empty, i.e. has no vertices
+         *
+         * @return whether the path is empty
+         */
+        public boolean isEmpty() {
+            return vertices.isEmpty();
+        }
+
+        /**
+         * Returns an ordered list of the vertices of the path
+         *
+         * @return an ordered list of the vertices of the path
+         */
+        public List<V> getVertices() {
+            return vertices;
+        }
+
+        /**
+         * Returns the labels of all vertices of the path
+         *
+         * @return the labels of all vertices of the path
+         */
+        public Set<Integer> getLabels() {
+            return labels;
+        }
+
+        /**
+         * Returns the cost of the path
+         *
+         * @return the cost of the path
+         */
+        public double getCost() {
+            return cost;
+        }
+
+        /**
+         * Returns a shallow copy of this labeled path instance. Vertices are not cloned.
+         *
+         * @return a shallow copy of this path.
+         *
+         * @throws RuntimeException in case the clone is not supported
+         *
+         * @see java.lang.Object#clone()
+         */
+        public LabeledPath<V> clone() {
+            try {
+                LabeledPath<V> newLabeledPath = TypeUtil.uncheckedCast(super.clone());
+                newLabeledPath.vertices = (ArrayList<V>) this.vertices.clone();
+                newLabeledPath.labels = (HashSet<Integer>) this.labels.clone();
+                newLabeledPath.cost = this.cost;
+
+                return newLabeledPath;
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+        }
+    }
+
+    /**
+     * Implementation of a key for the path maps.
+     * It is used in AhujaOrlinSharmaCyclicExchangeLocalAugmentation to efficiently maintain the path sets in the calculation.
+     *
+     * @param <V> the vertex type
+     *
+     * @author Christoph Grüne
+     * @since June 7, 2018
+     */
+    private static class PathSetKey<V> {
+        /**
+         * the head of the paths indexed by this key
+         */
+        private V head;
+        /**
+         * the tail of the paths indexed by this key
+         */
+        private V tail;
+        /**
+         * the label set of the paths indexed by this key
+         */
+        private Set<Integer> labels;
+
+        /**
+         * Constructs a new PathSetKey object
+         *
+         * @param head the head of the paths indexed by this key
+         * @param tail the tail of the paths indexed by this key
+         * @param labels the label set of the paths indexed by this key
+         */
+        private PathSetKey(V head, V tail, Set<Integer> labels) {
+            this.head = head;
+            this.tail = tail;
+            this.labels = labels;
+        }
+
+        /**
+         * Constructs a new PathSetKey object
+         *
+         * @param head the head of the path indexed by this key
+         * @param tail the tail of the path indexed by this key
+         * @param labels the label set of the path indexed by this key
+         * @param <V> the vertex type
+         * @return a new PathSetKey object
+         */
+        public static <V> PathSetKey<V> of(V head, V tail, Set<Integer> labels) {
+            return new PathSetKey<>(head, tail, labels);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.head, this.tail, this.labels);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            else if (!(o instanceof PathSetKey))
+                return false;
+
+            @SuppressWarnings("unchecked") PathSetKey<V> other = (PathSetKey<V>) o;
+            return Objects.equals(head, other.head) && Objects.equals(tail, other.tail) && Objects.equals(labels, other.labels);
+        }
     }
 }

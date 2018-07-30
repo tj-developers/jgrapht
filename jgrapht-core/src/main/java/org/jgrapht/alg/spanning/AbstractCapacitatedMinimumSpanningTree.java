@@ -25,187 +25,14 @@ import org.jgrapht.graph.AsSubgraph;
 
 import java.util.*;
 
+/**
+ * This is an abstract class for capacitated minimum spanning tree algorithms.
+ * This class manages the basic instance information and a solution representation {see SolutionRepresentation} for a capacitated spanning tree.
+ *
+ * @param <V> the vertex type
+ * @param <E> the edge type
+ */
 public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements CapacitatedSpanningTreeAlgorithm<V, E> {
-
-    protected class SolutionRepresentation {
-
-        /**
-         * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
-         * in the input graph: the vertex indicating the vertex itself and the vertex indicating the subtree.
-         */
-        private Map<V, Integer> labels;
-
-        /**
-         * the implicit partition defined by the subtrees
-         */
-        private Map<Integer, Pair<Set<V>, Double>> partition;
-
-        /**
-         * the next free label
-         */
-        private int nextFreeLabel;
-
-        /**
-         * Constructs a new solution representation for the CMST problem.
-         */
-        protected SolutionRepresentation() {
-            this(new HashMap<>(), new HashMap<>());
-        }
-
-        /**
-         * Constructs a new solution representation for the CMST problem based on <code>labels</code> and <code>partition</code>.
-         * All labels have to be positive.
-         *
-         * @param labels the labels of the subsets in the partition
-         * @param partition the partition map
-         */
-        protected SolutionRepresentation(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
-            for(Integer i : labels.values()) {
-                if(i < 0) {
-                    throw new IllegalArgumentException("Labels are not non-negative");
-                }
-            }
-            for(Integer i : partition.keySet()) {
-                if(i < 0) {
-                    throw new IllegalArgumentException("Labels are not non-negative");
-                }
-            }
-            this.labels = labels;
-            this.partition = partition;
-            getNextFreeLabel();
-        }
-
-        /**
-         * Calculates the resulting spanning tree based on this solution representation.
-         *
-         * @return the resulting spanning tree based on this solution representation
-         */
-        protected CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<V, E> calculateResultingSpanningTree() {
-            Set<E> spanningTreeEdges = new HashSet<>();
-            double weight = 0;
-
-            for(Pair<Set<V>, Double> part : solutionRepresentation.partition.values()) {
-                // get spanning tree on the part inclusive the root vertex
-                Set<V> set = part.getFirst();
-                set.add(root);
-                SpanningTreeAlgorithm.SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
-                set.remove(root);
-
-                // add the partial solution to the overall solution
-                spanningTreeEdges.addAll(subtree.getEdges());
-                weight += subtree.getWeight();
-            }
-
-            return new CapacitatedSpanningTreeImpl<>(root, capacity, demands, labels, partition, spanningTreeEdges, weight);
-        }
-
-        /**
-         * Moves <code>vertex</code> from the subset represented by <code>fromLabel</code> to the subset represented by <code>toLabel</code>.
-         *
-         * @param vertex the vertex to move
-         * @param fromLabel the subset to move the vertex from
-         * @param toLabel the subset to move the vertex to
-         */
-        protected void moveVertex(V vertex, Integer fromLabel, Integer toLabel) {
-            labels.put(vertex, toLabel);
-
-            Set<V> oldPart = partition.get(fromLabel).getFirst();
-            oldPart.remove(vertex);
-            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - demands.get(vertex)));
-
-            Set<V> newPart = partition.get(toLabel).getFirst();
-            newPart.add(vertex);
-            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + demands.get(vertex)));
-        }
-
-        /**
-         * Moves all vertices in <code>vertices</code> from the subset represented by <code>fromLabel</code> to the subset represented by <code>toLabel</code>.
-         *
-         * @param vertices the vertices to move
-         * @param fromLabel the subset to move the vertices from
-         * @param toLabel the subset to move the vertices to
-         */
-        protected void moveVertices(Set<V> vertices, Integer fromLabel, Integer toLabel) {
-            // update labels and calculate weight change
-            double weightOfVertices = 0;
-            for(V v : vertices) {
-                weightOfVertices += demands.get(v);
-                labels.put(v, toLabel);
-            }
-
-            // update partition
-            Set<V> newPart = partition.get(toLabel).getFirst();
-            newPart.addAll(vertices);
-            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + weightOfVertices));
-
-            Set<V> oldPart = partition.get(fromLabel).getFirst();
-            oldPart.removeAll(vertices);
-            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weightOfVertices));
-        }
-
-        /**
-         * Cleans up the solution representation by removing all empty sets from the partition.
-         */
-        protected void cleanUp() {
-            partition.entrySet().removeIf(entry -> entry.getValue().getFirst().isEmpty());
-        }
-
-        /**
-         * Returns the next free label in the label map respectively partition
-         *
-         * @return the next free label in the label map respectively partition
-         */
-        protected int getNextFreeLabel() {
-            int freeLabel = nextFreeLabel;
-            nextFreeLabel++;
-            while(partition.keySet().contains(nextFreeLabel)) {
-                nextFreeLabel++;
-            }
-            return freeLabel;
-        }
-
-        /**
-         * Returns the label of the subset that contains <code>vertex</code>.
-         *
-         * @param vertex the vertex to return the label from
-         *
-         * @return the label of <code>vertex</code>
-         */
-        protected int getLabel(V vertex) {
-            return labels.get(vertex);
-        }
-
-        /**
-         * Returns all labels of all subsets.
-         *
-         * @return the labels of all subsets
-         */
-        protected Set<Integer> getLabels() {
-            return partition.keySet();
-        }
-
-        /**
-         * Returns the set of vertices that are in the subset with label <code>label</code>.
-         *
-         * @param label the label of the subset to return the vertices from
-         *
-         * @return the set of vertices that are in the subset with label <code>label</code>
-         */
-        protected Set<V> getPartitionSet(Integer label) {
-            return partition.get(label).getFirst();
-        }
-
-        /**
-         * Returns the sum of the weights of all vertices that are in the subset with label <code>label</code>.
-         *
-         * @param label the label of the subset to return the weight from
-         *
-         * @return the sum of the weights of all vertices that are in the subset with label <code>label</code>
-         */
-        protected double getPartitionWeight(Integer label) {
-            return partition.get(label).getSecond();
-        }
-    }
 
     /**
      * the input graph.
@@ -254,4 +81,188 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
 
     @Override
     public abstract CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree();
+
+    /**
+     * This class represents a solution isntance by manging the labels and the partition mapping.
+     * With the help of this class, a capacitated spanning tree based on the label and partition mapping can be calculated.
+     */
+    protected class SolutionRepresentation {
+
+        /**
+         * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
+         * in the input graph: the vertex indicating the vertex itself and the vertex indicating the subtree.
+         */
+        private Map<V, Integer> labels;
+
+        /**
+         * the implicit partition defined by the subtrees
+         */
+        private Map<Integer, Pair<Set<V>, Double>> partition;
+
+        /**
+         * the next free label
+         */
+        private int nextFreeLabel;
+
+        /**
+         * Constructs a new solution representation for the CMST problem.
+         */
+        public SolutionRepresentation() {
+            this(new HashMap<>(), new HashMap<>());
+        }
+
+        /**
+         * Constructs a new solution representation for the CMST problem based on <code>labels</code> and <code>partition</code>.
+         * All labels have to be positive.
+         *
+         * @param labels the labels of the subsets in the partition
+         * @param partition the partition map
+         */
+        public SolutionRepresentation(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
+            for(Integer i : labels.values()) {
+                if(i < 0) {
+                    throw new IllegalArgumentException("Labels are not non-negative");
+                }
+            }
+            for(Integer i : partition.keySet()) {
+                if(i < 0) {
+                    throw new IllegalArgumentException("Labels are not non-negative");
+                }
+            }
+            this.labels = labels;
+            this.partition = partition;
+            getNextFreeLabel();
+        }
+
+        /**
+         * Calculates the resulting spanning tree based on this solution representation.
+         *
+         * @return the resulting spanning tree based on this solution representation
+         */
+        public CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<V, E> calculateResultingSpanningTree() {
+            Set<E> spanningTreeEdges = new HashSet<>();
+            double weight = 0;
+
+            for(Pair<Set<V>, Double> part : solutionRepresentation.partition.values()) {
+                // get spanning tree on the part inclusive the root vertex
+                Set<V> set = part.getFirst();
+                set.add(root);
+                SpanningTreeAlgorithm.SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
+                set.remove(root);
+
+                // add the partial solution to the overall solution
+                spanningTreeEdges.addAll(subtree.getEdges());
+                weight += subtree.getWeight();
+            }
+
+            return new CapacitatedSpanningTreeImpl<>(root, capacity, demands, labels, partition, spanningTreeEdges, weight);
+        }
+
+        /**
+         * Moves <code>vertex</code> from the subset represented by <code>fromLabel</code> to the subset represented by <code>toLabel</code>.
+         *
+         * @param vertex the vertex to move
+         * @param fromLabel the subset to move the vertex from
+         * @param toLabel the subset to move the vertex to
+         */
+        public void moveVertex(V vertex, Integer fromLabel, Integer toLabel) {
+            labels.put(vertex, toLabel);
+
+            Set<V> oldPart = partition.get(fromLabel).getFirst();
+            oldPart.remove(vertex);
+            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - demands.get(vertex)));
+
+            Set<V> newPart = partition.get(toLabel).getFirst();
+            newPart.add(vertex);
+            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + demands.get(vertex)));
+        }
+
+        /**
+         * Moves all vertices in <code>vertices</code> from the subset represented by <code>fromLabel</code> to the subset represented by <code>toLabel</code>.
+         *
+         * @param vertices the vertices to move
+         * @param fromLabel the subset to move the vertices from
+         * @param toLabel the subset to move the vertices to
+         */
+        public void moveVertices(Set<V> vertices, Integer fromLabel, Integer toLabel) {
+            // update labels and calculate weight change
+            double weightOfVertices = 0;
+            for(V v : vertices) {
+                weightOfVertices += demands.get(v);
+                labels.put(v, toLabel);
+            }
+
+            // update partition
+            Set<V> newPart = partition.get(toLabel).getFirst();
+            newPart.addAll(vertices);
+            partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + weightOfVertices));
+
+            Set<V> oldPart = partition.get(fromLabel).getFirst();
+            oldPart.removeAll(vertices);
+            partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weightOfVertices));
+        }
+
+        /**
+         * Cleans up the solution representation by removing all empty sets from the partition.
+         */
+        public void cleanUp() {
+            partition.entrySet().removeIf(entry -> entry.getValue().getFirst().isEmpty());
+        }
+
+        /**
+         * Returns the next free label in the label map respectively partition
+         *
+         * @return the next free label in the label map respectively partition
+         */
+        public int getNextFreeLabel() {
+            int freeLabel = nextFreeLabel;
+            nextFreeLabel++;
+            while(partition.keySet().contains(nextFreeLabel)) {
+                nextFreeLabel++;
+            }
+            return freeLabel;
+        }
+
+        /**
+         * Returns the label of the subset that contains <code>vertex</code>.
+         *
+         * @param vertex the vertex to return the label from
+         *
+         * @return the label of <code>vertex</code>
+         */
+        public int getLabel(V vertex) {
+            return labels.get(vertex);
+        }
+
+        /**
+         * Returns all labels of all subsets.
+         *
+         * @return the labels of all subsets
+         */
+        public Set<Integer> getLabels() {
+            return partition.keySet();
+        }
+
+        /**
+         * Returns the set of vertices that are in the subset with label <code>label</code>.
+         *
+         * @param label the label of the subset to return the vertices from
+         *
+         * @return the set of vertices that are in the subset with label <code>label</code>
+         */
+        public Set<V> getPartitionSet(Integer label) {
+            return partition.get(label).getFirst();
+        }
+
+        /**
+         * Returns the sum of the weights of all vertices that are in the subset with label <code>label</code>.
+         *
+         * @param label the label of the subset to return the weight from
+         *
+         * @return the sum of the weights of all vertices that are in the subset with label <code>label</code>
+         */
+        public double getPartitionWeight(Integer label) {
+            return partition.get(label).getSecond();
+        }
+    }
 }
