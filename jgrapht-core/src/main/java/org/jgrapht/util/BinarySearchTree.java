@@ -159,6 +159,7 @@ public interface BinarySearchTree<K, V> {
      * @return the number of keys in the tree strictly less than <code>key</code>
      *
      * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
      */
     int orderingPosition(K key);
 

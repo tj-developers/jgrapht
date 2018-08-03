@@ -18,10 +18,7 @@
 package org.jgrapht.util;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Implementation of a Red-Black-Tree
@@ -421,7 +418,64 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public K floor(K key) {
-        return null;
+        return floorNode(key).getKey();
+    }
+
+    /**
+     * The Search tree node associated to the given key.
+     *
+     * @param key the key of the tree node
+     * @return the path (as stack) to the node containing the key, if the key is not contained, the path leads to the node that would be the parent of the searched key
+     */
+    private Deque<RedBlackTreeNode<K, V>> searchNodeWithStack(K key) {
+        Deque<RedBlackTreeNode<K, V>> stack = new ArrayDeque<>();
+        RedBlackTreeNode<K, V> node = root;
+
+        while (node != null) {
+            stack.push(node);
+
+            if (keyComparator.compare(node.getKey(), key) < 0) {
+                node = node.getRightChild();
+            } else if (keyComparator.compare(node.getKey(), key) > 0) {
+                node = node.getLeftChild();
+            } else {
+                // TODO should we check for object equality or do we trust the comparator?
+                // key found, return
+                break;
+            }
+        }
+
+        return stack;
+    }
+
+    private RedBlackTreeNode<K, V> floorNode(K key) {
+        Deque<RedBlackTreeNode<K, V>> stack = searchNodeWithStack(key);
+
+        // check whether the node with the key is found
+        if (stack.peek().getKey().equals(key)) {
+            return stack.peek();
+        }
+
+        // key is not in the tree, search for next smaller key
+
+        // get last not null node
+        RedBlackTreeNode<K, V> node = stack.pop();
+
+        if (keyComparator.compare(node.getKey(), key) < 0) {
+            return node;
+        } else if (keyComparator.compare(node.getKey(), key) > 0) {
+            RedBlackTreeNode<K, V> parent;
+            while (node != root) {
+                parent = stack.pop();
+                if (node == parent.getLeftChild()) {
+                    continue;
+                }
+                return parent;
+            }
+        }
+
+        // root does not have a parent, key is not contained in tree
+        throw new NoSuchElementException();
     }
 
     /**
@@ -429,7 +483,37 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public K ceiling(K key) {
-        return null;
+        return ceilingNode(key).getKey();
+    }
+
+    private RedBlackTreeNode<K, V> ceilingNode(K key) {
+        Deque<RedBlackTreeNode<K, V>> stack = searchNodeWithStack(key);
+
+        // check whether the node with the key is found
+        if (stack.peek().getKey().equals(key)) {
+            return stack.peek();
+        }
+
+        // key is not in the tree, search for next smaller key
+
+        // get last not null node
+        RedBlackTreeNode<K, V> node = stack.pop();
+
+        if (keyComparator.compare(node.getKey(), key) < 0) {
+            RedBlackTreeNode<K, V> parent;
+            while (node != root) {
+                parent = stack.pop();
+                if (node == parent.getLeftChild()) {
+                    continue;
+                }
+                return parent;
+            }
+        } else if (keyComparator.compare(node.getKey(), key) > 0) {
+            return node;
+        }
+
+        // root does not have a parent, key is not contained in tree
+        throw new NoSuchElementException();
     }
 
     /**
@@ -437,7 +521,18 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public K select(int k) {
-        return null;
+        RedBlackTreeNode<K, V> node = root;
+        while (node != null) {
+            if (orderingPosition(node) == k) {
+                return node.getKey();
+            } else if (orderingPosition(node) < k) {
+                node = node.getRightChild();
+            } else {
+                node = node.getLeftChild();
+            }
+        }
+
+        throw new IllegalArgumentException();
     }
 
     /**
@@ -445,7 +540,21 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public int orderingPosition(K key) {
-        return 0;
+        return orderingPosition(searchNode(key));
+    }
+
+    /**
+     *
+     * @param node
+     * @return
+     * @throws NoSuchElementException when node is null
+     */
+    private int orderingPosition(RedBlackTreeNode<K, V> node) {
+        if (node == null) {
+            throw new NoSuchElementException();
+        }
+
+        return getSize(node.getLeftChild());
     }
 
     /**
@@ -453,7 +562,25 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public Iterable<K> keys() {
-        return null;
+        return new Iterable<K>() {
+            @Override
+            public Iterator<K> iterator() {
+                return new Iterator<K>() {
+                    Deque<RedBlackTreeNode<K, V>> stack = new ArrayDeque<>((int) Math.ceil(Math.log(root.getSize())));
+
+                    
+                    @Override
+                    public boolean hasNext() {
+                        return false;
+                    }
+
+                    @Override
+                    public K next() {
+                        return null;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -469,7 +596,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public int size(K min, K max) {
-        return 0;
+        return orderingPosition(max) - orderingPosition(min) + 1;
     }
 
     /**
