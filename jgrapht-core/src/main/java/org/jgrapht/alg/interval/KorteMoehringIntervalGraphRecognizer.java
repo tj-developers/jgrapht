@@ -468,6 +468,12 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             List<V> neighbors =
                 Graphs.neighborListOf(graph, intervalToVertexMap.get(currentInterval));
             for (V neighbor : neighbors) {
+                
+                //not relevant
+                if(!vertexToIntervalMap.containsKey(neighbor)) {
+                    continue;
+                }
+                
                 Interval<Integer> neighborInterval =
                     vertexToIntervalMap.get(neighbor).getInterval();
 
@@ -527,6 +533,11 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             List<V> neighbors =
                 Graphs.neighborListOf(graph, intervalToVertexMap.get(currentInterval));
             for (V neighbor : neighbors) {
+                //not relevant
+                if(!vertexToIntervalMap.containsKey(neighbor)) {
+                    continue;
+                }
+                
                 Interval<Integer> neighborInterval =
                     vertexToIntervalMap.get(neighbor).getInterval();
 
