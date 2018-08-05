@@ -19,8 +19,8 @@ package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
-import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.junit.Test;
@@ -170,5 +170,84 @@ public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
                             || e == graph.getEdge(3, 2)
             );
         }
+    }
+
+    /**
+     * An unconected graph
+     */
+    @Test
+    public void testUnconnectedGraph() {
+        Graph<Integer, DefaultWeightedEdge> graph = new DefaultUndirectedGraph<>(DefaultWeightedEdge.class);
+        Map<Integer, Double> demands = new HashMap<>();
+        graph.addVertex(0);
+        demands.put(0, 1.0);
+        graph.addVertex(1);
+        demands.put(1, 1.0);
+
+        double capacity = 30.0;
+
+        boolean testOK = false;
+
+        try {
+            CapacitatedSpanningTreeAlgorithm<Integer, DefaultWeightedEdge> capacitatedSpanningTreeAlgorithm
+                    = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
+                    graph,
+                    0,
+                    capacity,
+                    demands,
+                    7,
+                    true,
+                    1,
+                    true,
+                    false,
+                    true,
+                    10,
+                    15
+            );
+        } catch (IllegalArgumentException e) {
+            testOK = true;
+        }
+
+        assertTrue(testOK);
+    }
+
+    /**
+     * Graph violating the capacity constraint
+     */
+    @Test
+    public void testViolatedCapacityConstraint() {
+        Graph<Integer, DefaultWeightedEdge> graph = new DefaultUndirectedGraph<>(DefaultWeightedEdge.class);
+        Map<Integer, Double> demands = new HashMap<>();
+        graph.addVertex(0);
+        demands.put(0, 1.0);
+        graph.addVertex(1);
+        demands.put(1, 1.0);
+        graph.addEdge(0, 1);
+
+        double capacity = -1.0;
+
+        boolean testOK = false;
+
+        try {
+            CapacitatedSpanningTreeAlgorithm<Integer, DefaultWeightedEdge> capacitatedSpanningTreeAlgorithm
+                    = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
+                    graph,
+                    0,
+                    capacity,
+                    demands,
+                    7,
+                    true,
+                    1,
+                    true,
+                    false,
+                    true,
+                    10,
+                    15
+            );
+        } catch (IllegalArgumentException e) {
+            testOK = true;
+        }
+
+        assertTrue(testOK);
     }
 }

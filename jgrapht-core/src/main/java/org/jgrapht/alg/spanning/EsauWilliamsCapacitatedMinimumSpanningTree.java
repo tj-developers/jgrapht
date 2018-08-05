@@ -44,6 +44,7 @@ import java.util.*;
  *
  * @param <V> the vertex type
  * @param <E> the edge type
+ *
  * @author Christoph Grüne
  * @since July 12, 2018
  */

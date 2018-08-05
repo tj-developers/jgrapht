@@ -18,6 +18,7 @@
 package org.jgrapht.alg.spanning;
 
 import org.jgrapht.Graph;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
@@ -32,6 +33,9 @@ import java.util.*;
  *
  * @param <V> the vertex type
  * @param <E> the edge type
+ *
+ * @author Christoph Grüne
+ * @since July 18, 2018
  */
 public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements CapacitatedSpanningTreeAlgorithm<V, E> {
 
@@ -73,9 +77,17 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
         if (!graph.getType().isUndirected()) {
             throw new IllegalArgumentException("Graph must be undirected");
         }
+        if(!new ConnectivityInspector<>(graph).isConnected()) {
+            throw new IllegalArgumentException("Graph must be connected. Otherwise, there is no capacitated minimum spanning tree.");
+        }
         this.root = Objects.requireNonNull(root, "Root cannot be null");
         this.capacity = capacity;
         this.demands = Objects.requireNonNull(demands, "Demands cannot be null");
+        for(double demand : demands.values()) {
+            if(demand > capacity) {
+                throw new IllegalArgumentException("Demands must not be greater than the capacity. Otherwise, there is no capacitated minimum spanning tree.");
+            }
+        }
 
         this.bestSolution = new SolutionRepresentation();
     }
@@ -84,7 +96,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
     public abstract CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree();
 
     /**
-     * This class represents a solution isntance by manging the labels and the partition mapping.
+     * This class represents a solution instance by managing the labels and the partition mapping.
      * With the help of this class, a capacitated spanning tree based on the label and partition mapping can be calculated.
      */
     protected class SolutionRepresentation implements Cloneable {

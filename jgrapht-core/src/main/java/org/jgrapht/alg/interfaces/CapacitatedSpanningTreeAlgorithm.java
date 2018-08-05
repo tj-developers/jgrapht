@@ -17,9 +17,14 @@
  */
 package org.jgrapht.alg.interfaces;
 
+import org.jgrapht.Graph;
 import org.jgrapht.alg.util.Pair;
+import org.jgrapht.graph.AsSubgraph;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +53,23 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
      * @param <E> the graph edge type
      */
     interface CapacitatedSpanningTree<V, E> extends Iterable<E>, SpanningTreeAlgorithm.SpanningTree<E> {
+
+        /**
+         * Tests whether <code>cmst</code> is a CMST on <code>graph</code> with root <code>root</code>, capacity <code>capacity</code> and demand function <code>demands</code>.
+         *
+         * @param graph the graph
+         * @param root the expected root of cmst
+         * @param capacity the expected capacity of cmst
+         * @param demands the demand function
+         *
+         * @return whether <code>cmst</code> is a CMST
+         */
+        boolean isCapacacitatedSpanningTree(
+                Graph<V, E> graph,
+                V root,
+                double capacity,
+                Map<V, Double> demands
+        );
 
         /**
          * Returns the root vertex of the capacitated spanning tree.
@@ -118,6 +140,81 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
             this.partition = partition;
             this.edges = edges;
             this.weight = weight;
+        }
+
+        @Override
+        public boolean isCapacacitatedSpanningTree(
+                Graph<V, E> graph,
+                V root,
+                double capacity,
+                Map<V, Double> demands
+        ) {
+            if (!this.getRoot().equals(root)) {
+                return false;
+            }
+            if (this.getCapacity() != capacity) {
+                return false;
+            }
+            if(this.getEdges().size() != graph.vertexSet().size() - 1) {
+                return false;
+            }
+
+            // check for disjointness
+            for (Pair<Set<V>, Double> set1 : this.getPartition().values()) {
+                for (Pair<Set<V>, Double> set2 : this.getPartition().values()) {
+                    if (set1 != set2 && !Collections.disjoint(set1.getFirst(), set2.getFirst())) {
+                        return false;
+                    }
+                }
+            }
+
+            // check demands and number of vertices
+            int numberOfNodesExplored = 0;
+            for (Pair<Set<V>, Double> set1 : this.getPartition().values()) {
+                int currentCapacity = 0;
+                for (V v : set1.getFirst()) {
+                    currentCapacity += demands.get(v);
+                    numberOfNodesExplored++;
+                }
+                if (currentCapacity > this.getCapacity() || currentCapacity > capacity) {
+                    return false;
+                }
+            }
+            if (graph.vertexSet().size() - 1 != numberOfNodesExplored) {
+                return false;
+            }
+
+            // check if partition and tree correspond to each other
+            Graph<V, E> spanningTreeGraph = new AsSubgraph<>(graph, graph.vertexSet(), this.getEdges());
+
+            DepthFirstIterator<V, E> depthFirstIterator = new DepthFirstIterator<>(spanningTreeGraph, root);
+            if (depthFirstIterator.hasNext()) {
+                depthFirstIterator.next();
+            }
+
+            int numberOfRootEdgesExplored = 0;
+            Set<V> currentSubtree = new HashSet<>();
+
+            while (depthFirstIterator.hasNext()) {
+                V next = depthFirstIterator.next();
+
+                if (spanningTreeGraph.containsEdge(root, next)) {
+                    if (!currentSubtree.isEmpty()) {
+                        if (!currentSubtree.equals(this.getPartition().get(this.getLabels().get(currentSubtree.iterator().next())).getFirst())) {
+                            return false;
+                        }
+                        currentSubtree = new HashSet<>();
+                    }
+                    numberOfRootEdgesExplored++;
+                }
+                currentSubtree.add(next);
+            }
+
+            if (numberOfRootEdgesExplored != spanningTreeGraph.degreeOf(root)) {
+                return false;
+            }
+
+            return true;
         }
 
         @Override
