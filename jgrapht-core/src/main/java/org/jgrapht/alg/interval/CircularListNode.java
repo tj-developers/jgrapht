@@ -106,4 +106,8 @@ public class CircularListNode<E> {
         return this;
     }
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> implement circular list node
