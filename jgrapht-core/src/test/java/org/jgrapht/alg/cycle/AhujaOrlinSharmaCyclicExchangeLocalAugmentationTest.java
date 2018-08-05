@@ -64,7 +64,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 2;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
         assertEquals(cycle, calculatedCycle.getVertexList());
         assertEquals(-4, calculatedCycle.getWeight(), 0.0000001);
@@ -101,7 +101,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 5;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
         assertEquals(cycle, calculatedCycle.getVertexList());
         assertEquals(-5, calculatedCycle.getWeight(), 0.0000001);
@@ -137,7 +137,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 5;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
         assertEquals(cycle, calculatedCycle.getVertexList());
         assertEquals(3.9 - 4, calculatedCycle.getWeight(), 0.0000001);
@@ -146,14 +146,21 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
 
     @Test
     public void testImprovementGraph4() {
-        LinkedList<Integer> cycle = new LinkedList<>();
-        cycle.add(3);
-        cycle.add(4);
-        cycle.add(5);
-        cycle.add(0);
-        cycle.add(1);
-        cycle.add(2);
-        cycle.add(3);
+        LinkedList<Integer> cycle1 = new LinkedList<>();
+        cycle1.add(1);
+        cycle1.add(4);
+        cycle1.add(5);
+        cycle1.add(0);
+        cycle1.add(1);
+
+        LinkedList<Integer> cycle2 = new LinkedList<>();
+        cycle2.add(3);
+        cycle2.add(4);
+        cycle2.add(5);
+        cycle2.add(0);
+        cycle2.add(1);
+        cycle2.add(2);
+        cycle2.add(3);
 
         Map<Integer, Integer> labels = new HashMap<>();
         labels.put(0, 0);
@@ -169,28 +176,25 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         }
         for(int i = 0; i < 6; ++i) {
             graph.setEdgeWeight(graph.addEdge(i, (i + 1) % 6), 1);
-
         }
-        graph.setEdgeWeight(graph.addEdge(1, 4), 1);
 
-        graph.setEdgeWeight(graph.getEdge(1, 4), -3);
+        graph.setEdgeWeight(graph.addEdge(1, 4), -3);
         graph.setEdgeWeight(graph.getEdge(3, 4), -6);
 
         int lengthBound1 = 4;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle1
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound1, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound1, labels, false).getLocalAugmentationCycle();
 
-        assertEquals(Double.MAX_VALUE, calculatedCycle1.getWeight(), 0.0000001);
-        assertEquals(new ArrayList<>(lengthBound1), calculatedCycle1.getVertexList());
-        assertTrue(calculatedCycle1.isEmpty());
+        assertEquals(0, calculatedCycle1.getWeight(), 0.0000001);
+        assertEquals(cycle1, calculatedCycle1.getVertexList());
 
         int lengthBound2 = 6;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle2
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound2, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound2, labels, false).getLocalAugmentationCycle();
 
-        assertEquals(cycle, calculatedCycle2.getVertexList());
+        assertEquals(cycle2, calculatedCycle2.getVertexList());
         assertEquals(-1, calculatedCycle2.getWeight(), 0.0000001);
     }
 
@@ -226,9 +230,9 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 6;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle1
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
-        assertEquals(-1, calculatedCycle1.getWeight(), 0.0000001);
+        assertEquals(-2, calculatedCycle1.getWeight(), 0.0000001);
         assertEquals(cycle, calculatedCycle1.getVertexList());
         assertEquals(Integer.valueOf(0), calculatedCycle1.getStartVertex());
         assertEquals(Integer.valueOf(0), calculatedCycle1.getEndVertex());
@@ -301,7 +305,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 6;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
         assertNotNull(calculatedCycle);
         assertEquals(cycle, calculatedCycle.getVertexList());
@@ -362,7 +366,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 6;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
         assertNotNull(calculatedCycle);
         assertEquals(cycle, calculatedCycle.getVertexList());
@@ -419,11 +423,119 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentationTest {
         int lengthBound = 6;
 
         GraphWalk<Integer, DefaultEdge> calculatedCycle
-                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels).getLocalAugmentationCycle();
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, false).getLocalAugmentationCycle();
 
         assertNotNull(calculatedCycle);
         assertEquals(cycle, calculatedCycle.getVertexList());
         assertEquals(-4.0, calculatedCycle.getWeight(), 0.00000001);
+    }
+
+    @Test
+    public void testImprovementGraph9() {
+        LinkedList<Integer> cycle = new LinkedList<>();
+
+        Map<Integer, Integer> labels = new HashMap<>();
+        labels.put(0, 0);
+        labels.put(1, 0);
+        labels.put(2, 0);
+
+        Graph<Integer, DefaultEdge> graph = new DefaultDirectedGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), true);
+        for(int i = 0; i < 3; ++i) {
+            graph.addVertex(i);
+        }
+        graph.setEdgeWeight(graph.addEdge(0,1), -4);
+        graph.setEdgeWeight(graph.addEdge(1,2), 1);
+
+        int lengthBound = 6;
+
+        GraphWalk<Integer, DefaultEdge> calculatedCycle
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, true).getLocalAugmentationCycle();
+
+        assertNotNull(calculatedCycle);
+        assertEquals(cycle, calculatedCycle.getVertexList());
+        assertEquals(Double.MAX_VALUE, calculatedCycle.getWeight(), 0.00000001);
+    }
+
+    @Test
+    public void testImprovementGraph10() {
+        LinkedList<Integer> cycle = new LinkedList<>();
+        cycle.add(1);
+        cycle.add(2);
+        cycle.add(3);
+        cycle.add(4);
+        cycle.add(5);
+        cycle.add(6);
+        cycle.add(1);
+
+        Map<Integer, Integer> labels = new HashMap<>();
+        labels.put(0, 0);
+        labels.put(1, 1);
+        labels.put(2, 2);
+        labels.put(3, 3);
+        labels.put(4, 4);
+        labels.put(5, 5);
+        labels.put(6, 6);
+
+        Graph<Integer, DefaultEdge> graph = new DefaultDirectedGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), true);
+        for(int i = 0; i < 7; ++i) {
+            graph.addVertex(i);
+        }
+        for(int i = 0; i < 7; ++i) {
+            for(int j = 0; j < 7; ++j) {
+                if(i == j) {
+                    graph.setEdgeWeight(graph.addEdge(i, j), 1);
+                } else if((i + j) % 2 == 0) {
+                    graph.setEdgeWeight(graph.addEdge(i, j), i + j);
+                } else if(j == i + 1) {
+                    graph.setEdgeWeight(graph.addEdge(i, j), -i - j);
+                } else if(i == 6 && j == 1) {
+                    graph.setEdgeWeight(graph.addEdge(i, j), -i - j);
+                } else {
+                    graph.setEdgeWeight(graph.addEdge(i, j),- i - j + 1);
+                }
+            }
+        }
+
+        int lengthBound = 8;
+
+        GraphWalk<Integer, DefaultEdge> calculatedCycle
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, true).getLocalAugmentationCycle();
+
+        assertNotNull(calculatedCycle);
+        assertEquals(cycle, calculatedCycle.getVertexList());
+        assertEquals(-42.0, calculatedCycle.getWeight(), 0.00000001);
+    }
+
+    @Test
+    public void testImprovementGraph11() {
+        LinkedList<Integer> cycle = new LinkedList<>();
+        cycle.add(5);
+        cycle.add(5);
+
+        Map<Integer, Integer> labels = new HashMap<>();
+        labels.put(0, 0);
+        labels.put(1, 1);
+        labels.put(2, 2);
+        labels.put(3, 3);
+        labels.put(4, 4);
+        labels.put(5, 5);
+
+        Graph<Integer, DefaultEdge> graph = new DefaultDirectedGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), true);
+        for(int i = 0; i < 6; ++i) {
+            graph.addVertex(i);
+        }
+        for(int i = 0; i < 6; ++i) {
+            graph.setEdgeWeight(graph.addEdge(i, i), - i * i);
+        }
+
+        int lengthBound = 4;
+
+        GraphWalk<Integer, DefaultEdge> calculatedCycle
+                = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(graph, lengthBound, labels, true).getLocalAugmentationCycle();
+
+        assertNotNull(calculatedCycle);
+        assertEquals(cycle, calculatedCycle.getVertexList());
+        assertEquals(-50.0, calculatedCycle.getWeight(), 0.00000001);
     }
 
     private Graph<Integer, DefaultEdge> generateImprovementGraphForPartitionProblem(Map<Integer, Integer> labels, double initialWeight) {

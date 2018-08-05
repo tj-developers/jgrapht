@@ -45,8 +45,10 @@ import java.util.*;
  *
  * This algorithm is a very large scale neighborhood search algorithm using a cyclic exchange neighborhood
  * until a local minimum is found. It makes frequently use of a MST algorithm and the algorithm for subset
- * disjoint cycles by Ahuja et al.
- * That is, the algorithm may run in exponential time.
+ * disjoint cycles by Ahuja et al. That is, the algorithm may run in exponential time.
+ * This algorithm is implemented in two different version: a local search and a tabu search. In both cases we have to
+ * find the best neighbor of the current capacitated spanning tree. For further information about finding such an
+ * improving neighbor {@see ImprovementGraph}
  *
  * @param <V> the vertex type
  * @param <E> the edge type
@@ -62,6 +64,11 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
     private final int lengthBound;
 
     /**
+     * contains whether the best (if true) or the first improvement (if false) is returned in the neighborhood search
+     */
+    private final boolean bestImprovement;
+
+    /**
      * the number of the most profitable operations considered in the GRASP procedure for the initial solution.
      */
     private final int numberOfOperationsParameter;
@@ -74,13 +81,27 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
     /**
      * contains whether the local search uses the vertex operation
      */
-    private boolean useVertexOperation;
+    private final boolean useVertexOperation;
 
     /**
-     * conatains whether the local search uses the subtree operation
+     * contains whether the local search uses the subtree operation
      */
-    private boolean useSubtreeOperation;
+    private final boolean useSubtreeOperation;
 
+    /**
+     * contains whether a tabu search is used
+     */
+    private final boolean useTabuSearch;
+
+    /**
+     * the tabu time that is the number of iterations an element is in the tabu list
+     */
+    private final int tabuTime;
+
+    /**
+     * the upper limit of non-improving exchanges, this is the stopping criterion in the tabu search
+     */
+    private final int upperLimitTabuExchanges;
 
     /**
      * Constructs a new instance of this algorithm.
@@ -93,7 +114,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * @param numberOfOperationsParameter the number of operations that are considered in the randomized Esau-Williams algorithm {@see EsauWilliamsCapacitatedMinimumSpanningTree}
      */
     public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> demands, int lengthBound, int numberOfOperationsParameter) {
-        this(graph, root, capacity, demands, lengthBound, numberOfOperationsParameter, true, true);
+        this(graph, root, capacity, demands, lengthBound, false, numberOfOperationsParameter, true, true, true, 10, 50);
     }
 
     /**
@@ -107,7 +128,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * @param lengthBound the length bound of the cycle detection algorithm
      */
     public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(CapacitatedSpanningTree<V, E> initialSolution, Graph<V, E> graph, V root, double capacity, Map<V, Double> demands, int lengthBound) {
-        this(graph, root, capacity, demands, lengthBound, 0, true, true);
+        this(graph, root, capacity, demands, lengthBound, false, 0, true, true, true, 10, 50);
         this.initialSolution = initialSolution;
     }
 
@@ -119,9 +140,13 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * @param capacity the edge capacity constraint
      * @param demands the demands of the vertices
      * @param lengthBound the length bound of the cycle detection algorithm
+     * @param bestImprovement contains whether the best (if true) or the first improvement (if false) is returned in the neighborhood search
      * @param numberOfOperationsParameter the number of operations that are considered in the randomized Esau-Williams algorithm {@see EsauWilliamsCapacitatedMinimumSpanningTree}
      * @param useVertexOperation contains whether the local search uses the vertex operation
      * @param useSubtreeOperation contains whether the local search uses the subtree operation
+     * @param useTabuSearch contains whether a tabu search is used
+     * @param tabuTime the tabu time that is the number of iterations an element is in the tabu list
+     * @param upperLimitTabuExchanges the upper limit of non-improving exchanges, this is the stopping criterion in the tabu search
      */
     public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(
             Graph<V, E> graph,
@@ -129,18 +154,26 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             double capacity,
             Map<V, Double> demands,
             int lengthBound,
+            boolean bestImprovement,
             int numberOfOperationsParameter,
             boolean useVertexOperation,
-            boolean useSubtreeOperation
+            boolean useSubtreeOperation,
+            boolean useTabuSearch,
+            int tabuTime,
+            int upperLimitTabuExchanges
     ) {
         super(graph, root, capacity, demands);
         this.lengthBound = lengthBound;
+        this.bestImprovement = bestImprovement;
         this.numberOfOperationsParameter = numberOfOperationsParameter;
         if(!useSubtreeOperation && !useVertexOperation) {
             throw new IllegalArgumentException("At least one of the options has to be enabled, otherwise it is not possible to excute the local search: useVertexOperation and useSubtreeOperation.");
         }
         this.useVertexOperation = useVertexOperation;
         this.useSubtreeOperation = useSubtreeOperation;
+        this.useTabuSearch = useTabuSearch;
+        this.tabuTime = tabuTime;
+        this.upperLimitTabuExchanges = upperLimitTabuExchanges;
     }
 
     /**
@@ -152,19 +185,28 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * @param capacity the edge capacity constraint
      * @param demands the demands of the vertices
      * @param lengthBound the length bound of the cycle detection algorithm
+     * @param bestImprovement contains whether the best (if true) or the first improvement (if false) is returned in the neighborhood search
      * @param useVertexOperation contains whether the local search uses the vertex operation
      * @param useSubtreeOperation contains whether the local search uses the subtree operation
+     * @param useTabuSearch contains whether a tabu search is used
+     * @param tabuTime the tabu time that is the number of iterations an element is in the tabu list
+     * @param upperLimitTabuExchanges the upper limit of non-improving exchanges, this is the stopping criterion in the tabu search
      */
     public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(
             CapacitatedSpanningTree<V, E> initialSolution,
-            Graph<V, E> graph, V root,
+            Graph<V, E> graph,
+            V root,
             double capacity,
             Map<V, Double> demands,
             int lengthBound,
+            boolean bestImprovement,
             boolean useVertexOperation,
-            boolean useSubtreeOperation
+            boolean useSubtreeOperation,
+            boolean useTabuSearch,
+            int tabuTime,
+            int upperLimitTabuExchanges
     ) {
-        this(graph, root, capacity, demands, lengthBound, 0, useVertexOperation, useSubtreeOperation);
+        this(graph, root, capacity, demands, lengthBound, bestImprovement,0, useVertexOperation, useSubtreeOperation, useTabuSearch, tabuTime, upperLimitTabuExchanges);
         this.initialSolution = initialSolution;
     }
 
@@ -172,38 +214,87 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
     public CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree() {
 
         // calculates initial solution on which we base the local search
-        solutionRepresentation = getInitialSolution();
+        bestSolution = getInitialSolution();
 
         // map that contains all spanning trees of the current partition
         Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees = new HashMap<>();
         // map that contains the subtrees of all vertices
         Map<V, Pair<Set<V>, Double>> subtrees = new HashMap<>();
         // set that contains all part of the partition that were affected by an exchange operation
-        Set<Integer> affectedParts = solutionRepresentation.getLabels();
+        Pair<Set<Integer>, Set<V>> affected = Pair.of(bestSolution.getLabels(), new HashSet<>());
         // the improvement graph
-        ImprovementGraph improvementGraph = new ImprovementGraph();
+        ImprovementGraph improvementGraph = new ImprovementGraph(bestSolution);
+        // tabu list
+        LinkedList<Set<V>> tabuList = new LinkedList<>();
+        // tabu time list
+        LinkedList<Integer> tabuTimeList = new LinkedList<>();
+        // tabu timer
+        int tabuTimer = 0;
+        // number of tabu echanges
+        int numberOfTabuExchanges = 0;
+
+        // the solution int he current iteration
+        SolutionRepresentation currentSolution = bestSolution;
+        // the difference from the current solution and the best solution
+        double costDifference = 0;
 
         double currentCost;
 
         // do local improvement steps
-        do {
+        while(true) {
 
-            partitionSpanningTrees = calculateSpanningTrees(partitionSpanningTrees, affectedParts);
-            subtrees = calculateSubtreesOfVertices(subtrees, partitionSpanningTrees, affectedParts);
+            partitionSpanningTrees = calculateSpanningTrees(currentSolution, partitionSpanningTrees, affected.getFirst());
+            if(useSubtreeOperation) {
+                subtrees = calculateSubtreesOfVertices(currentSolution, subtrees, partitionSpanningTrees, affected.getFirst());
+            }
 
-            improvementGraph.updateImprovementGraph(subtrees, partitionSpanningTrees, affectedParts);
+            improvementGraph.updateImprovementGraph(currentSolution, subtrees, partitionSpanningTrees, affected.getFirst(), tabuList);
 
             AhujaOrlinSharmaCyclicExchangeLocalAugmentation<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> ahujaOrlinSharmaCyclicExchangeLocalAugmentation
-                    = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(improvementGraph.improvementGraph, lengthBound, improvementGraph.cycleAugmentationLabels);
+                    = new AhujaOrlinSharmaCyclicExchangeLocalAugmentation<>(improvementGraph.improvementGraph, lengthBound, improvementGraph.cycleAugmentationLabels, bestImprovement);
 
             GraphWalk<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> cycle = ahujaOrlinSharmaCyclicExchangeLocalAugmentation.getLocalAugmentationCycle();
             currentCost = cycle.getWeight();
+            costDifference += currentCost;
 
-            affectedParts = executeNeighborhoodOperation(improvementGraph.improvementGraphVertexMapping, improvementGraph.pathExchangeVertexMapping, subtrees, cycle);
+            if(useTabuSearch) {
+                if(currentCost < 0) {
+                    affected = executeNeighborhoodOperation(currentSolution, improvementGraph.improvementGraphVertexMapping, improvementGraph.pathExchangeVertexMapping, subtrees, cycle);
+                    if(costDifference < 0) {
+                        bestSolution = currentSolution;
+                        costDifference = 0;
+                    }
+                } else {
+                    if(upperLimitTabuExchanges <= numberOfTabuExchanges) {
+                        break;
+                    }
 
-        } while(currentCost < 0);
+                    if(currentSolution == bestSolution) {
+                        currentSolution = currentSolution.clone();
+                    }
 
-        return solutionRepresentation.calculateResultingSpanningTree();
+                    affected = executeNeighborhoodOperation(currentSolution, improvementGraph.improvementGraphVertexMapping, improvementGraph.pathExchangeVertexMapping, subtrees, cycle);
+                    tabuList.addFirst(affected.getSecond());
+                    tabuTimeList.addFirst(tabuTimer);
+                    numberOfTabuExchanges++;
+                }
+
+                while(!tabuTimeList.isEmpty() && tabuTimeList.getLast() + tabuTime < tabuTimer) {
+                    tabuList.removeLast();
+                    tabuTimeList.removeLast();
+                }
+                tabuTimer++;
+
+            } else {
+                if (currentCost < 0) {
+                    affected = executeNeighborhoodOperation(currentSolution, improvementGraph.improvementGraphVertexMapping, improvementGraph.pathExchangeVertexMapping, subtrees, cycle);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return bestSolution.calculateResultingSpanningTree();
     }
 
     /**
@@ -229,12 +320,14 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @return the set of affected labels of subsets that were affected by the move operations
      */
-    private Set<Integer> executeNeighborhoodOperation(
+    private Pair<Set<Integer>, Set<V>> executeNeighborhoodOperation(
+            SolutionRepresentation currentSolution,
             Map<Integer, V> improvementGraphVertexMapping,
             Map<Pair<Integer, ImprovementGraphVertexType>, Integer> pathExchangeVertexMapping,
             Map<V, Pair<Set<V>, Double>> subtrees,
             GraphWalk<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> cycle
     ) {
+        Set<V> affectedVertices = new HashSet<>();
         Set<Integer> affectedLabels = new HashSet<>();
 
         Iterator<Pair<Integer, ImprovementGraphVertexType>> it = cycle.getVertexList().iterator();
@@ -242,8 +335,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             Pair<Integer, ImprovementGraphVertexType> cur = it.next();
             Integer firstLabel;
             switch(cur.getSecond()) {
-                case SINGLE: firstLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(cur.getFirst())); break;
-                case SUBTREE: firstLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(cur.getFirst())); break;
+                case SINGLE: firstLabel = currentSolution.getLabel(improvementGraphVertexMapping.get(cur.getFirst())); break;
+                case SUBTREE: firstLabel = currentSolution.getLabel(improvementGraphVertexMapping.get(cur.getFirst())); break;
                 default: firstLabel = -1;
             }
                 while (it.hasNext()) {
@@ -256,21 +349,22 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                          */
                         case SINGLE: {
                             V curVertex = improvementGraphVertexMapping.get(cur.getFirst());
-                            Integer curLabel = solutionRepresentation.getLabel(curVertex);
+                            Integer curLabel = currentSolution.getLabel(curVertex);
                             Integer nextLabel;
                             if(it.hasNext()) {
                                 switch(next.getSecond()) {
-                                    case SINGLE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
-                                    case SUBTREE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case SINGLE: nextLabel = currentSolution.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case SUBTREE: nextLabel = currentSolution.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
                                     case PSEUDO: nextLabel = pathExchangeVertexMapping.get(next); break;
                                     default: throw new IllegalStateException("This is a bug. There are invalid types of vertices in the cycle.");
                                 }
                             } else {
                                 nextLabel = firstLabel;
                             }
+                            affectedVertices.add(curVertex);
                             affectedLabels.add(curLabel);
 
-                            solutionRepresentation.moveVertex(curVertex, curLabel, nextLabel);
+                            currentSolution.moveVertex(curVertex, curLabel, nextLabel);
                             break;
                         }
                         /*
@@ -278,24 +372,24 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                          */
                         case SUBTREE: {
                             V curVertex = improvementGraphVertexMapping.get(cur.getFirst());
-                            Integer curLabel = solutionRepresentation.getLabel(curVertex);
+                            Integer curLabel = currentSolution.getLabel(curVertex);
                             Integer nextLabel;
                             if(it.hasNext()) {
                                 switch(next.getSecond()) {
-                                    case SINGLE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
-                                    case SUBTREE: nextLabel = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case SINGLE: nextLabel = currentSolution.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
+                                    case SUBTREE: nextLabel = currentSolution.getLabel(improvementGraphVertexMapping.get(next.getFirst())); break;
                                     case PSEUDO: nextLabel = pathExchangeVertexMapping.get(next); break;
                                     default: throw new IllegalStateException("This is a bug. There are invalid types of vertices in the cycle.");
                                 }
                             } else {
                                 nextLabel = firstLabel;
                             }
-
+                            affectedVertices.add(curVertex);
                             affectedLabels.add(curLabel);
 
                             // get the whole subtree that has to be moved
                             Set<V> subtreeToMove = subtrees.get(curVertex).getFirst();
-                            solutionRepresentation.moveVertices(subtreeToMove, curLabel, nextLabel);
+                            currentSolution.moveVertices(subtreeToMove, curLabel, nextLabel);
                             break;
                         }
                         /*
@@ -324,19 +418,19 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         Iterator<Integer> affectedLabelIterator = affectedLabels.iterator();
         while(affectedLabelIterator.hasNext()) {
             int label = affectedLabelIterator.next();
-            Set<V> vertexSubset = solutionRepresentation.getPartitionSet(label);
+            Set<V> vertexSubset = currentSolution.getPartitionSet(label);
             if(vertexSubset.isEmpty()) {
                 affectedLabelIterator.remove();
             } else {
-                moreAffectedLabels.addAll(partitionSubtreesOfSubset(vertexSubset, label));
+                moreAffectedLabels.addAll(partitionSubtreesOfSubset(currentSolution, vertexSubset, label));
             }
         }
         affectedLabels.addAll(moreAffectedLabels);
 
-        solutionRepresentation.cleanUp();
+        currentSolution.cleanUp();
 
 
-        return affectedLabels;
+        return Pair.of(affectedLabels, affectedVertices);
     }
 
     /**
@@ -344,7 +438,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @param label the label of the subset of the partition that has to be refined
      */
-    private Set<Integer> partitionSubtreesOfSubset(Set<V> vertexSubset, int label) {
+    private Set<Integer> partitionSubtreesOfSubset(SolutionRepresentation currentSolution, Set<V> vertexSubset, int label) {
 
         List<Set<V>> subtreesOfSubset = new LinkedList<>();
 
@@ -382,8 +476,11 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                     subtreesOfSubset.add(currentSubtree);
                     currentSubtree = new HashSet<>();
                 }
+
+                numberOfRootEdgesExplored++;
+
                 // we do not have to move more vertices
-                if(numberOfRootEdgesExplored + 1 == degreeOfRoot) {
+                if(numberOfRootEdgesExplored == degreeOfRoot) {
                     break;
                 }
             }
@@ -392,8 +489,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
 
         // move the subtrees to new subsets in the partition
         for(Set<V> subtree : subtreesOfSubset) {
-            int nextLabel = solutionRepresentation.getNextFreeLabel();
-            solutionRepresentation.moveVertices(subtree, label, nextLabel);
+            int nextLabel = currentSolution.getNextFreeLabel();
+            currentSolution.moveVertices(subtree, label, nextLabel);
             affectedLabels.add(nextLabel);
         }
 
@@ -409,12 +506,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @return the updated map containing the MST for every subset of the partition
      */
-    private Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> calculateSpanningTrees(Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees, Set<Integer> affectedLabels) {
+    private Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> calculateSpanningTrees(SolutionRepresentation currentSolution, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees, Set<Integer> affectedLabels) {
         for(Integer label : affectedLabels) {
-            Set<V> set = solutionRepresentation.getPartitionSet(label);
-            solutionRepresentation.getPartitionSet(label).add(root);
+            Set<V> set = currentSolution.getPartitionSet(label);
+            currentSolution.getPartitionSet(label).add(root);
             partitionSpanningTrees.put(label, new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree());
-            solutionRepresentation.getPartitionSet(label).remove(root);
+            currentSolution.getPartitionSet(label).remove(root);
         }
         return partitionSpanningTrees;
     }
@@ -428,10 +525,10 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @return the updated map of vertices to their subtrees
      */
-    private Map<V, Pair<Set<V>, Double>> calculateSubtreesOfVertices(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTree, Set<Integer> affectedLabels) {
+    private Map<V, Pair<Set<V>, Double>> calculateSubtreesOfVertices(SolutionRepresentation currentSolution, Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTree, Set<Integer> affectedLabels) {
         for(Integer label : affectedLabels) {
-            for (V v : solutionRepresentation.getPartitionSet(label)) {
-                Pair<Set<V>, Double> currentSubtree = subtree(v, partitionSpanningTree);
+            for (V v : currentSolution.getPartitionSet(label)) {
+                Pair<Set<V>, Double> currentSubtree = subtree(currentSolution, v, partitionSpanningTree);
                 subtrees.put(v, currentSubtree);
             }
         }
@@ -446,9 +543,9 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      *
      * @return the subtree of <code>v</code> with respect to the MST given in <code>partitionSpanningTree</code>.
      */
-    private Pair<Set<V>, Double> subtree(V v, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTree) {
-        Set<V> partVertices = solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v));
-        SpanningTreeAlgorithm.SpanningTree<E> partSpanningTree = partitionSpanningTree.get(solutionRepresentation.getLabel(v));
+    private Pair<Set<V>, Double> subtree(SolutionRepresentation currentSolution, V v, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTree) {
+        Set<V> partVertices = currentSolution.getPartitionSet(currentSolution.getLabel(v));
+        SpanningTreeAlgorithm.SpanningTree<E> partSpanningTree = partitionSpanningTree.get(currentSolution.getLabel(v));
         Graph<V, E> spanningTree = new AsSubgraph<>(graph, partVertices, partSpanningTree.getEdges());
 
         Set<V> subtree = new HashSet<>();
@@ -481,6 +578,10 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                 currentWeight += demands.get(next);
             }
         }
+        if(storeCurrentPath && !currentPath.equals(new HashSet<>())) {
+            subtree.addAll(currentPath);
+            subtreeWeight += currentWeight;
+        }
         return Pair.of(subtree, subtreeWeight);
     }
 
@@ -491,13 +592,66 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         SINGLE, SUBTREE, PSEUDO, ORIGIN
     }
 
-    // TODO BIG TEXT TO INSERT HERE
+    /**
+     * This class realises the improvement graph for the composite multi-exchange large neighborhood search.
+     * The improvement graph encodes two exchange classes:
+     *  - cyclic exchange (on vertices and subtrees)
+     *  - path exchange (on vertices and subtrees)
+     *
+     * EXCHANGES
+     * Let T[i] be the subtree rooted at i of the MST implicitly defined by the vertex partition.
+     * Cyclic Exchange:
+     * A cyclic exchange is defined on vertices i_1, ..., i_r, i_1, where the vertices represent either itself in the
+     * base graph or the subtrees rooted at i_k for k = 1, ..., r, where T[i_a] != T[i_b] for a != b. The cyclic
+     * exchange on i_1, ..., i_r, i_1 moves the i_a (or T[i_a]) to the subset of i_b, where b = a+1 mod r+1.
+     * Such a cyclic exchange is feasible if the capacity constraint is not violated.
+     * We can represent the cost of the cyclic exchange by the following formulas:
+     * Let S[i_k] be the subset of i_k in the implicitly defined partition.
+     *      - exchange of vertices:
+     *      $$
+     *          c(T_new) - c(T) = \sum_{a = 1}^{r} c(\{i_{a - 1}\} \cup S[i_{i_a}] \setminus \{i_a\}]
+     *      $$
+     *      - exchange of rooted subtrees:
+     *      $$
+     *          c(T_new) - c(T) = \sum_{a = 1}^{r} c(T[i_{a - 1}] \cup S[i_{i_a}] \setminus T[i_a]]
+     *      $$
+     * where c is the given edge cost function and T_new is the CMST resulting by executing the cyclic exchange.
+     * Thus, an exchange is profitable if c(T_new) - c(T) < 0.
+     *
+     * Path Exchange:
+     * A path exchange follows the same idea as the cyclic exchange but it does not end at the same vertex. That is,
+     * the path exchange is defined on i_1, ..., i_r. The cost function has to be adapted at the start and end point of
+     * the path.
+     *
+     * NEIGHBORHOOD
+     * Furthermore, we have to define the neighborhood. These are all capacitated spanning trees that are reachable by
+     * using such an exchange as given above.
+     *
+     * IMPROVEMENT GRAPH
+     * The improvement graph is based on a feasible capacitated spanning tree and uses a one-to-one correspondence
+     * between the vertices in the base graph and the vertices in the improvement graph. We want to define the arc set
+     * of the improvement graph such that each subset disjoint directed cycle correspond to a cyclic exchange
+     * (or a path exchange, we come to that later). Furthermore, the cost of the cycle in the improvement graph and the
+     * cost of the corresponding cyclic exchange has to be equal.
+     *
+     * CONSTRUCTION OF THE IMPROVEMENT GRAPH
+     *
+     *
+     * IDENTIFYING SUBSET DISJOINT CYCLES
+     * This is done via a heuristic which can be found here {@see AhujaOrlinSharmaCyclicExchangeLocalAugmentation}.
+     *
+     */
     private class ImprovementGraph {
 
         /**
          * the improvement graph itself
          */
         Graph<Pair<Integer, ImprovementGraphVertexType>, DefaultWeightedEdge> improvementGraph;
+
+        /**
+         * the current solution corresponding to the improvement graph
+         */
+        SolutionRepresentation solutionRepresentation;
 
         /**
          * mapping form all improvement graph vertices to their labels corresponding to the base graph for the CMST problem
@@ -525,14 +679,15 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
          */
         Pair<Integer, ImprovementGraphVertexType> origin;
         /**
-         *
+         * dummy label of the origin vertex
          */
         final Integer originVertexLabel = -1;
 
         /**
          * Constructs an new improvement graph object for this CMST algorithm instance.
          */
-        public ImprovementGraph() {
+        public ImprovementGraph(SolutionRepresentation solutionRepresentation) {
+            this.solutionRepresentation = solutionRepresentation;
             this.improvementGraphVertexMapping = new HashMap<>();
             this.initialVertexMapping = new HashMap<>();
             this.pseudoVertexMapping = new HashMap<>();
@@ -541,92 +696,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
              * We initialize this map such that it can be used in the subset-disjoint cycle detection algorithm.
              * This map redirects the getters to the corresponding maps in this improvement graph such that it realises the correct functionality.
              */
-            this.cycleAugmentationLabels = new Map<Pair<Integer, ImprovementGraphVertexType>, Integer>() {
-                @Override
-                public int size() {
-                    return improvementGraphVertexMapping.size() + pseudoVertexMapping.size();
-                }
-
-                @Override
-                public boolean isEmpty() {
-                    return improvementGraphVertexMapping.isEmpty() || pseudoVertexMapping.isEmpty();
-                }
-
-                @Override
-                public boolean containsKey(Object key) {
-                    if(key instanceof Pair) {
-                        return improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())
-                                || pseudoVertexMapping.containsKey(((Pair) key).getFirst());
-                    }
-                    return false;
-                }
-
-                @Override
-                public boolean containsValue(Object value) {
-                    return improvementGraphVertexMapping.containsValue(value) || pseudoVertexMapping.containsValue(value);
-                }
-
-                @Override
-                public Integer get(Object key) {
-                    if(key instanceof Pair && improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())) {
-                        return solutionRepresentation.getLabel(improvementGraphVertexMapping.get(((Pair) key).getFirst()));
-                    }
-                    return pathExchangeVertexMapping.get(key);
-                }
-
-                @Override
-                public Integer put(Pair<Integer, ImprovementGraphVertexType> key, Integer value) {
-                    throw new IllegalStateException();
-                }
-
-                @Override
-                public Integer remove(Object key) {
-                    throw new IllegalStateException();
-                }
-
-                @Override
-                public void putAll(Map<? extends Pair<Integer, ImprovementGraphVertexType>, ? extends Integer> m) {
-                    throw new IllegalStateException();
-                }
-
-                @Override
-                public void clear() {
-                    throw new IllegalStateException();
-                }
-
-                @Override
-                public Set<Pair<Integer, ImprovementGraphVertexType>> keySet() {
-                    Set<Pair<Integer, ImprovementGraphVertexType>> keySet = new HashSet<>();
-                    for(Integer i : improvementGraphVertexMapping.keySet()) {
-                        keySet.add(Pair.of(i, ImprovementGraphVertexType.SINGLE));
-                        keySet.add(Pair.of(i, ImprovementGraphVertexType.SUBTREE));
-                    }
-                    keySet.addAll(pathExchangeVertexMapping.keySet());
-                    keySet.add(origin);
-                    return keySet;
-                }
-
-                @Override
-                public Collection<Integer> values() {
-                    return solutionRepresentation.getLabels();
-                }
-
-                @Override
-                public Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet() {
-
-                    Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet = new HashSet<>();
-                    for(Integer i : improvementGraphVertexMapping.keySet()) {
-                        Integer label = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(i));
-                        entrySet.add(new AbstractMap.SimpleEntry<>(Pair.of(i, ImprovementGraphVertexType.SINGLE), label));
-                        entrySet.add(new AbstractMap.SimpleEntry<>(Pair.of(i, ImprovementGraphVertexType.SUBTREE), label));
-                    }
-                    for(Pair<Integer, ImprovementGraphVertexType> pseudoVertex : pathExchangeVertexMapping.keySet()) {
-                        entrySet.add(new AbstractMap.SimpleEntry<>(pseudoVertex, pathExchangeVertexMapping.get(pseudoVertex)));
-                    }
-                    entrySet.add(new AbstractMap.SimpleEntry<>(origin, originVertexLabel));
-                    return entrySet;
-                }
-            };
+            this.cycleAugmentationLabels = getImprovementGraphLabelMap();
 
             this.improvementGraph = createImprovementGraph();
         }
@@ -647,11 +717,14 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                     continue;
                 }
 
-                Pair<Integer, ImprovementGraphVertexType> singleVertex = new Pair<>(counter, ImprovementGraphVertexType.SINGLE);
-                improvementGraph.addVertex(singleVertex);
-
-                Pair<Integer, ImprovementGraphVertexType> subtreeVertex = new Pair<>(counter, ImprovementGraphVertexType.SUBTREE);
-                improvementGraph.addVertex(subtreeVertex);
+                if(useVertexOperation) {
+                    Pair<Integer, ImprovementGraphVertexType> singleVertex = new Pair<>(counter, ImprovementGraphVertexType.SINGLE);
+                    improvementGraph.addVertex(singleVertex);
+                }
+                if(useSubtreeOperation) {
+                    Pair<Integer, ImprovementGraphVertexType> subtreeVertex = new Pair<>(counter, ImprovementGraphVertexType.SUBTREE);
+                    improvementGraph.addVertex(subtreeVertex);
+                }
 
                 // we have to add these only once
                 improvementGraphVertexMapping.put(counter, v);
@@ -664,15 +737,12 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             improvementGraph.addVertex(origin);
             this.origin = origin;
             pathExchangeVertexMapping.put(origin, originVertexLabel);
-            counter++;
 
             for(Integer label : solutionRepresentation.getLabels()) {
-                Pair<Integer, ImprovementGraphVertexType> pseudoVertex = new Pair<>(counter, ImprovementGraphVertexType.PSEUDO);
+                Pair<Integer, ImprovementGraphVertexType> pseudoVertex = new Pair<>(origin.getFirst() + label + 1, ImprovementGraphVertexType.PSEUDO);
                 pseudoVertexMapping.put(label, pseudoVertex);
                 pathExchangeVertexMapping.put(pseudoVertex, label);
                 improvementGraph.addVertex(pseudoVertex);
-
-                counter++;
             }
 
             /*
@@ -688,15 +758,51 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         /**
          * Updates the improvement graph. It updates the vertices and edges in the parts specified in <code>labelsToUpdate</code>.
          *
+         * @param currentSolution the current solution
          * @param subtrees the mapping from vertices to their subtree
          * @param partitionSpanningTrees the mapping from labels of subsets to their spanning tree
          * @param labelsToUpdate the labels of all subsets that has to be updated (because of the multi-exchange operation)
          */
-        public void updateImprovementGraph(Map<V, Pair<Set<V>, Double>> subtrees, Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees, Set<Integer> labelsToUpdate) {
+        public void updateImprovementGraph(
+                SolutionRepresentation currentSolution,
+                Map<V, Pair<Set<V>, Double>> subtrees,
+                Map<Integer, SpanningTreeAlgorithm.SpanningTree<E>> partitionSpanningTrees,
+                Set<Integer> labelsToUpdate,
+                List<Set<V>> tabuList
+        ) {
+
+            this.solutionRepresentation = currentSolution;
+            this.cycleAugmentationLabels = getImprovementGraphLabelMap();
 
             double newCapacity, newWeight, oldWeight;
             SpanningTreeAlgorithm.SpanningTree<E> spanningTree;
 
+            if(!currentSolution.getLabels().equals(pseudoVertexMapping.keySet())) {
+                for(Integer label : currentSolution.getLabels()) {
+                    if(!pseudoVertexMapping.keySet().contains(label)) {
+                        Pair<Integer, ImprovementGraphVertexType> pseudoVertex = new Pair<>(origin.getFirst() + label + 1, ImprovementGraphVertexType.PSEUDO);
+                        pseudoVertexMapping.put(label, pseudoVertex);
+                        pathExchangeVertexMapping.put(pseudoVertex, label);
+                        improvementGraph.addVertex(pseudoVertex);
+                        DefaultWeightedEdge newEdge = improvementGraph.addEdge(pseudoVertex, origin);
+                        improvementGraph.setEdgeWeight(newEdge, 0);
+                    }
+                }
+                if (currentSolution.getLabels().size() != pseudoVertexMapping.keySet().size()) {
+                    Iterator<Integer> labelIterator = pseudoVertexMapping.keySet().iterator();
+                    while(labelIterator.hasNext()) {
+                        int label = labelIterator.next();
+                        if (!currentSolution.getLabels().contains(label)) {
+                            Pair<Integer, ImprovementGraphVertexType> pseudoVertex = new Pair<>(origin.getFirst() + label + 1, ImprovementGraphVertexType.PSEUDO);
+                            labelIterator.remove();
+                            pathExchangeVertexMapping.remove(pseudoVertex);
+                            improvementGraph.removeVertex(pseudoVertex);
+                        }
+                    }
+                }
+            }
+
+            v1Loop:
             for(V v1 : graph.vertexSet()) {
 
                 if(v1.equals(root)) {
@@ -706,38 +812,61 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                 Pair<Integer, ImprovementGraphVertexType> vertexOfV1Single = Pair.of(initialVertexMapping.get(v1), ImprovementGraphVertexType.SINGLE);
                 Pair<Integer, ImprovementGraphVertexType> vertexOfV1Subtree = Pair.of(initialVertexMapping.get(v1), ImprovementGraphVertexType.SUBTREE);
 
+                for(Set<V> set : tabuList) {
+                    if(set.contains(v1)) {
+                        // remove all edges from the vertex
+                        if(useVertexOperation) {
+                            improvementGraph.removeVertex(vertexOfV1Single);
+                            improvementGraph.addVertex(vertexOfV1Single);
+                        }
+                        if(useSubtreeOperation) {
+                            improvementGraph.removeVertex(vertexOfV1Subtree);
+                            improvementGraph.addVertex(vertexOfV1Subtree);
+                        }
+                        continue v1Loop;
+                    }
+                }
+
                 /*
                  * update connections to origin node
                  */
-                if(labelsToUpdate.contains(solutionRepresentation.getLabel(v1))) {
-                    oldWeight = partitionSpanningTrees.get(solutionRepresentation.getLabel(v1)).getWeight();
-                    // edge for v1 vertex remove operation
-                    Set<V> partitionSetOfV1 = solutionRepresentation.getPartitionSet(solutionRepresentation.getLabel(v1));
-                    partitionSetOfV1.add(root);
-                    partitionSetOfV1.remove(v1);
-                    spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, partitionSetOfV1)).getSpanningTree();
-                    if(spanningTree.getEdges().size() == partitionSetOfV1.size() - 1) {
-                        newWeight = spanningTree.getWeight();
-                    } else {
-                        newWeight = Double.NaN;
-                    }
-                    updateImprovementGraphEdge(origin, vertexOfV1Single,0,newWeight - oldWeight);
-                    partitionSetOfV1.add(v1);
-
+                if(labelsToUpdate.contains(currentSolution.getLabel(v1))) {
+                    oldWeight = partitionSpanningTrees.get(currentSolution.getLabel(v1)).getWeight();
                     /*
-                     * edge for v1 subtree remove operation
-                     * If the subtree of v1 contains only the vertex itself, it is the same operation as removing v1 as vertex. Thus, do not add edges.
+                     * edge for v1 vertex remove operation
                      */
-                    if(subtrees.get(v1).getFirst().size() > 1) {
-                        partitionSetOfV1.removeAll(subtrees.get(v1).getFirst());
+                    Set<V> partitionSetOfV1 = currentSolution.getPartitionSet(currentSolution.getLabel(v1));
+                    partitionSetOfV1.add(root);
+                    if(useVertexOperation) {
+                        partitionSetOfV1.remove(v1);
                         spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, partitionSetOfV1)).getSpanningTree();
-                        if(spanningTree.getEdges().size() == partitionSetOfV1.size() - 1) {
+                        if (spanningTree.getEdges().size() == partitionSetOfV1.size() - 1) {
                             newWeight = spanningTree.getWeight();
                         } else {
                             newWeight = Double.NaN;
                         }
-                        updateImprovementGraphEdge(origin, vertexOfV1Subtree,0,newWeight - oldWeight);
-                        partitionSetOfV1.addAll(subtrees.get(v1).getFirst());
+                        updateImprovementGraphEdge(origin, vertexOfV1Single, 0, newWeight - oldWeight);
+                        partitionSetOfV1.add(v1);
+                    }
+                    /*
+                     * edge for v1 subtree remove operation
+                     * If the subtree of v1 contains only the vertex itself, it is the same operation as removing v1 as vertex. Thus, do not add edges.
+                     */
+                    if(useSubtreeOperation) {
+                        if (subtrees.get(v1).getFirst().size() > 1 || !useVertexOperation) {
+                            partitionSetOfV1.removeAll(subtrees.get(v1).getFirst());
+                            spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, partitionSetOfV1)).getSpanningTree();
+                            if (spanningTree.getEdges().size() == partitionSetOfV1.size() - 1) {
+                                newWeight = spanningTree.getWeight();
+                            } else {
+                                newWeight = Double.NaN;
+                            }
+                            updateImprovementGraphEdge(origin, vertexOfV1Subtree, 0, newWeight - oldWeight);
+                            partitionSetOfV1.addAll(subtrees.get(v1).getFirst());
+                        } else {
+                            improvementGraph.removeVertex(vertexOfV1Subtree);
+                            improvementGraph.addVertex(vertexOfV1Subtree);
+                        }
                     }
                     partitionSetOfV1.remove(root);
                 }
@@ -745,18 +874,18 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                 /*
                  * update the connections to regular nodes and pseudo nodes
                  */
-                for(Integer label : solutionRepresentation.getLabels()) {
+                for(Integer label : currentSolution.getLabels()) {
 
                     /*
                      * only update if there is a change induced by a changed part. This potentially saves a lot of time.
                      */
-                    if (label.equals(solutionRepresentation.getLabel(v1)) || (!labelsToUpdate.contains(solutionRepresentation.getLabel(v1)) && !labelsToUpdate.contains(label))) {
+                    if (label.equals(currentSolution.getLabel(v1)) || (!labelsToUpdate.contains(currentSolution.getLabel(v1)) && !labelsToUpdate.contains(label))) {
                         continue;
                     }
 
                     Pair<Integer, ImprovementGraphVertexType> pseudoVertex = pseudoVertexMapping.get(label);
 
-                    Set<V> modifiableSet = new HashSet<>(solutionRepresentation.getPartitionSet(label));
+                    Set<V> modifiableSet = new HashSet<>(currentSolution.getPartitionSet(label));
 
                     oldWeight = partitionSpanningTrees.get(label).getWeight();
 
@@ -769,10 +898,17 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                      * We need to considers this only if vertex operations should be used.
                      */
                     if (useVertexOperation) {
-                        for (V v2 : solutionRepresentation.getPartitionSet(label)) {
+                        v2Loop:
+                        for (V v2 : currentSolution.getPartitionSet(label)) {
 
                             if (v2.equals(root)) {
-                                throw new IllegalStateException("FUCK");
+                                throw new IllegalStateException("The root is in the partition. This is a bug.");
+                            }
+
+                            for(Set<V> set : tabuList) {
+                                if(set.contains(v2)) {
+                                    continue v2Loop;
+                                }
                             }
 
                             /*
@@ -781,7 +917,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                             modifiableSet.remove(v2);
                             spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                             if (spanningTree.getEdges().size() == modifiableSet.size() - 1) {
-                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - demands.get(v2));
+                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, currentSolution.getPartitionWeight(label) + demands.get(v1) - demands.get(v2));
                                 newWeight = spanningTree.getWeight();
                             } else {
                                 newCapacity = Double.NaN;
@@ -800,7 +936,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                                     modifiableSet.removeAll(subtrees.get(v2).getFirst());
                                     spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                                     if (spanningTree.getEdges().size() == modifiableSet.size() - 1) {
-                                        newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + demands.get(v1) - subtrees.get(v2).getSecond());
+                                        newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, currentSolution.getPartitionWeight(label) + demands.get(v1) - subtrees.get(v2).getSecond());
                                         newWeight = spanningTree.getWeight();
                                     } else {
                                         newCapacity = Double.NaN;
@@ -818,7 +954,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                          */
                         spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                         if (spanningTree.getEdges().size() == modifiableSet.size() - 1) {
-                            newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + demands.get(v1));
+                            newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, currentSolution.getPartitionWeight(label) + demands.get(v1));
                             newWeight = spanningTree.getWeight();
                         } else {
                             newCapacity = Double.NaN;
@@ -842,10 +978,10 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                         // add the subtree of v1 to the set for MST calculations
                         modifiableSet.addAll(subtrees.get(v1).getFirst());
 
-                        for (V v2 : solutionRepresentation.getPartitionSet(label)) {
+                        for (V v2 : currentSolution.getPartitionSet(label)) {
 
                             if(v2.equals(root)) {
-                                throw new IllegalStateException("FUCK");
+                                throw new IllegalStateException("The root is in the partition. This is a bug.");
                             }
 
                             /*
@@ -855,7 +991,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                                 modifiableSet.remove(v2);
                                 spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                                 if (spanningTree.getEdges().size() == modifiableSet.size() - 1) {
-                                    newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond() - demands.get(v2));
+                                    newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, currentSolution.getPartitionWeight(label) + subtrees.get(v1).getSecond() - demands.get(v2));
                                     newWeight = spanningTree.getWeight();
                                 } else {
                                     newCapacity = Double.NaN;
@@ -872,7 +1008,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                             modifiableSet.removeAll(subtrees.get(v2).getFirst());
                             spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                             if (spanningTree.getEdges().size() == modifiableSet.size() - 1) {
-                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond());
+                                newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, currentSolution.getPartitionWeight(currentSolution.getLabel(v2)) + subtrees.get(v1).getSecond() - subtrees.get(v2).getSecond());
                                 newWeight = spanningTree.getWeight();
                             } else {
                                 newCapacity = Double.NaN;
@@ -888,7 +1024,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                          */
                         spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, modifiableSet, graph.edgeSet())).getSpanningTree();
                         if(spanningTree.getEdges().size() == modifiableSet.size() - 1) {
-                            newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, solutionRepresentation.getPartitionWeight(label) + subtrees.get(v1).getSecond());
+                            newCapacity = calculateMaximumDemandOfSubtrees(modifiableSet, spanningTree, currentSolution.getPartitionWeight(label) + subtrees.get(v1).getSecond());
                             newWeight = spanningTree.getWeight();
                         } else {
                             newCapacity = Double.NaN;
@@ -969,11 +1105,6 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
 
                     exploredVerticesDemand += currentDemand;
 
-                    // we can stop the exploration, all subtrees but one are explored
-                    if(numberOfRootEdgesExplored + 1 == degreeOfRoot) {
-                        return totalDemand - exploredVerticesDemand;
-                    }
-
                     if(maximumDemand < currentDemand) {
                         maximumDemand = currentDemand;
                     }
@@ -981,6 +1112,11 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                     // we can stop the exploration
                     if(maximumDemand >= 0.5 * totalDemand || exploredVerticesDemand + maximumDemand >= totalDemand) {
                         return maximumDemand;
+                    }
+
+                    // we can stop the exploration, all subtrees but one are explored
+                    if(numberOfRootEdgesExplored + 1 == degreeOfRoot) {
+                        return Math.max(maximumDemand, totalDemand - exploredVerticesDemand);
                     }
 
                     numberOfRootEdgesExplored++;
@@ -992,6 +1128,108 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             }
 
             return maximumDemand;
+        }
+
+        /**
+         * Returns the mapping that is used in the valid cycle detection algorithm, i.e. the vertex label map.
+         *
+         * @return the vertex label map used in the valid cycle detection algorithm
+         */
+        private Map<Pair<Integer, ImprovementGraphVertexType>, Integer> getImprovementGraphLabelMap() {
+            return new Map<Pair<Integer, ImprovementGraphVertexType>, Integer>() {
+                @Override
+                public int size() {
+                    return improvementGraphVertexMapping.size() + pseudoVertexMapping.size();
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return improvementGraphVertexMapping.isEmpty() || pseudoVertexMapping.isEmpty();
+                }
+
+                @Override
+                public boolean containsKey(Object key) {
+                    if(key instanceof Pair) {
+                        return improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())
+                                || pseudoVertexMapping.containsKey(((Pair) key).getFirst());
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean containsValue(Object value) {
+                    return improvementGraphVertexMapping.containsValue(value) || pseudoVertexMapping.containsValue(value);
+                }
+
+                @Override
+                public Integer get(Object key) {
+                    if(key instanceof Pair && improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())) {
+                        return solutionRepresentation.getLabel(improvementGraphVertexMapping.get(((Pair) key).getFirst()));
+                    }
+                    return pathExchangeVertexMapping.get(key);
+                }
+
+                @Override
+                public Integer put(Pair<Integer, ImprovementGraphVertexType> key, Integer value) {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public Integer remove(Object key) {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public void putAll(Map<? extends Pair<Integer, ImprovementGraphVertexType>, ? extends Integer> m) {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public void clear() {
+                    throw new IllegalStateException();
+                }
+
+                @Override
+                public Set<Pair<Integer, ImprovementGraphVertexType>> keySet() {
+                    Set<Pair<Integer, ImprovementGraphVertexType>> keySet = new HashSet<>();
+                    for(Integer i : improvementGraphVertexMapping.keySet()) {
+                        if(useVertexOperation) {
+                            keySet.add(Pair.of(i, ImprovementGraphVertexType.SINGLE));
+                        }
+                        if(useSubtreeOperation) {
+                            keySet.add(Pair.of(i, ImprovementGraphVertexType.SUBTREE));
+                        }
+                    }
+                    keySet.addAll(pathExchangeVertexMapping.keySet());
+                    keySet.add(origin);
+                    return keySet;
+                }
+
+                @Override
+                public Collection<Integer> values() {
+                    return solutionRepresentation.getLabels();
+                }
+
+                @Override
+                public Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet() {
+
+                    Set<Entry<Pair<Integer, ImprovementGraphVertexType>, Integer>> entrySet = new HashSet<>();
+                    for(Integer i : improvementGraphVertexMapping.keySet()) {
+                        Integer label = solutionRepresentation.getLabel(improvementGraphVertexMapping.get(i));
+                        if(useVertexOperation) {
+                            entrySet.add(new AbstractMap.SimpleEntry<>(Pair.of(i, ImprovementGraphVertexType.SINGLE), label));
+                        }
+                        if(useSubtreeOperation) {
+                            entrySet.add(new AbstractMap.SimpleEntry<>(Pair.of(i, ImprovementGraphVertexType.SUBTREE), label));
+                        }
+                    }
+                    for(Pair<Integer, ImprovementGraphVertexType> pseudoVertex : pathExchangeVertexMapping.keySet()) {
+                        entrySet.add(new AbstractMap.SimpleEntry<>(pseudoVertex, pathExchangeVertexMapping.get(pseudoVertex)));
+                    }
+                    entrySet.add(new AbstractMap.SimpleEntry<>(origin, originVertexLabel));
+                    return entrySet;
+                }
+            };
         }
     }
 }

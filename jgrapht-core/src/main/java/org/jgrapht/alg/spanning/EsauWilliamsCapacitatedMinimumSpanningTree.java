@@ -112,7 +112,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         /*
          * construct a new solution representation with the initialized labels and partition
          */
-        solutionRepresentation = new SolutionRepresentation(labels, partition);
+        bestSolution = new SolutionRepresentation(labels, partition);
 
         /*
          * map that contains the current savings for all vertices
@@ -154,7 +154,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
                 // store closest vertex to v1
                 closestVertex.put(v, closestVertexToV);
                 // store the maximum saving and the corresponding vertex
-                savings.put(v, graph.getEdgeWeight(graph.getEdge(shortestGate.getOrDefault(solutionRepresentation.getLabel(v), v), root)) - graph.getEdgeWeight(graph.getEdge(v, closestVertexToV)));
+                savings.put(v, getDistance(shortestGate.getOrDefault(bestSolution.getLabel(v), v), root) - getDistance(v, closestVertexToV));
             }
 
             // calculate list of best operations
@@ -164,9 +164,9 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
                 V vertexToMove = bestVertices.get((int) (Math.random() * bestVertices.size()));
 
                 // update shortestGate
-                Integer labelOfVertexToMove = solutionRepresentation.getLabel(vertexToMove);
+                Integer labelOfVertexToMove = bestSolution.getLabel(vertexToMove);
                 V closestMoveVertex = closestVertex.get(vertexToMove);
-                Integer labelOfClosestMoveVertex = solutionRepresentation.getLabel(closestMoveVertex);
+                Integer labelOfClosestMoveVertex = bestSolution.getLabel(closestMoveVertex);
 
                 V shortestGate1 = shortestGate.getOrDefault(labelOfVertexToMove, vertexToMove);
                 V shortestGate2 = shortestGate.getOrDefault(labelOfClosestMoveVertex, closestMoveVertex);
@@ -178,26 +178,26 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
                  * connected to this part, the label is still correct and is not the label of the old part,
                  * which will be deleted by the move operation.
                  */
-                if (solutionRepresentation.getPartitionWeight(labelOfVertexToMove) < solutionRepresentation.getPartitionWeight(labelOfClosestMoveVertex)) {
-                    solutionRepresentation.moveVertices(
-                            solutionRepresentation.getPartitionSet(labelOfVertexToMove),
+                if (bestSolution.getPartitionWeight(labelOfVertexToMove) < bestSolution.getPartitionWeight(labelOfClosestMoveVertex)) {
+                    bestSolution.moveVertices(
+                            bestSolution.getPartitionSet(labelOfVertexToMove),
                             labelOfVertexToMove,
                             labelOfClosestMoveVertex
                     );
 
-                    if (graph.getEdgeWeight(graph.getEdge(shortestGate1, root)) < graph.getEdgeWeight(graph.getEdge(shortestGate2, root))) {
+                    if (getDistance(shortestGate1, root) < getDistance(shortestGate2, root)) {
                         shortestGate.put(labelOfClosestMoveVertex, shortestGate1);
                     } else {
                         shortestGate.put(labelOfClosestMoveVertex, shortestGate2);
                     }
                 } else {
-                    solutionRepresentation.moveVertices(
-                            solutionRepresentation.getPartitionSet(labelOfClosestMoveVertex),
+                    bestSolution.moveVertices(
+                            bestSolution.getPartitionSet(labelOfClosestMoveVertex),
                             labelOfClosestMoveVertex,
                             labelOfVertexToMove
                     );
 
-                    if (graph.getEdgeWeight(graph.getEdge(shortestGate1, root)) < graph.getEdgeWeight(graph.getEdge(shortestGate2, root))) {
+                    if (getDistance(shortestGate1, root) < getDistance(shortestGate2, root)) {
                         shortestGate.put(labelOfVertexToMove, shortestGate1);
                     } else {
                         shortestGate.put(labelOfVertexToMove, shortestGate2);
@@ -209,7 +209,9 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
             }
         }
 
-        return new SolutionRepresentation(labels, partition);
+        SolutionRepresentation result = new SolutionRepresentation(labels, partition);
+        result.cleanUp();
+        return result;
     }
 
 
@@ -260,24 +262,24 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         V closestVertexToV1 = null;
 
         double distanceToRoot;
-        V shortestGateOfV = shortestGate.get(solutionRepresentation.getLabel(vertex));
+        V shortestGateOfV = shortestGate.get(bestSolution.getLabel(vertex));
         if (shortestGateOfV != null) {
-            distanceToRoot = graph.getEdgeWeight(graph.getEdge(shortestGateOfV, root));
+            distanceToRoot = getDistance(shortestGateOfV, root);
         } else {
-            distanceToRoot = graph.getEdgeWeight(graph.getEdge(vertex, root));
+            distanceToRoot = getDistance(vertex, root);
         }
 
         // calculate closest vertex to v1
-        for (Integer label : solutionRepresentation.getLabels()) {
+        for (Integer label : bestSolution.getLabels()) {
             Set<Integer> restrictionSet = restrictionMap.get(vertex);
             if (restrictionSet == null || !restrictionSet.contains(label)) {
-                Set<V> part = solutionRepresentation.getPartitionSet(label);
+                Set<V> part = bestSolution.getPartitionSet(label);
                 if (!part.contains(vertex)) {
                     for (V v2 : part) {
                         if (graph.containsEdge(vertex, v2)) {
-                            double newWeight = solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(v2)) + solutionRepresentation.getPartitionWeight(solutionRepresentation.getLabel(vertex));
+                            double newWeight = bestSolution.getPartitionWeight(bestSolution.getLabel(v2)) + bestSolution.getPartitionWeight(bestSolution.getLabel(vertex));
                             if (newWeight <= capacity) {
-                                double currentEdgeWeight = graph.getEdgeWeight(graph.getEdge(vertex, v2));
+                                double currentEdgeWeight = getDistance(vertex, v2);
                                 if (currentEdgeWeight < distanceToRoot) {
                                     closestVertexToV1 = v2;
                                     distanceToRoot = currentEdgeWeight;
@@ -287,7 +289,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
                                  * the capacity would be exceeded if the vertex would be assigned to this part, so add the part to the restricted parts
                                  */
                                 Set<Integer> restriction = restrictionMap.computeIfAbsent(vertex, k -> new HashSet<>());
-                                restriction.add(solutionRepresentation.getLabel(v2));
+                                restriction.add(bestSolution.getLabel(v2));
                                 break;
                             }
                         }
@@ -297,5 +299,13 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         }
 
         return closestVertexToV1;
+    }
+
+    private double getDistance(V v1, V v2) {
+        E e = graph.getEdge(v1, v2);
+        if(e == null) {
+            return Double.MAX_VALUE;
+        }
+        return graph.getEdgeWeight(e);
     }
 }

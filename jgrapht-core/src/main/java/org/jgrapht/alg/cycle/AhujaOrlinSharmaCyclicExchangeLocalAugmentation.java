@@ -56,6 +56,10 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * bound on how long the cycle can get
      */
     private int lengthBound;
+    /**
+     * contains whether the best or the first improvement is returned
+     */
+    private boolean bestImprovement;
 
     /**
      * Constructs an algorithm with given inputs
@@ -63,14 +67,16 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @param graph the (improvement) graph on which to calculate the local augmentation
      * @param lengthBound the (inclusive) upper bound for the length of cycles to detect
      * @param labelMap the labelMap of the vertices encoding the subsets of vertices
+     * @param bestImprovement contains whether the best or the first improvement is returned: best if true, first if false
      */
-    public AhujaOrlinSharmaCyclicExchangeLocalAugmentation(Graph<V, E> graph, int lengthBound, Map<V, Integer> labelMap) {
+    public AhujaOrlinSharmaCyclicExchangeLocalAugmentation(Graph<V, E> graph, int lengthBound, Map<V, Integer> labelMap, boolean bestImprovement) {
         this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
         if (!graph.getType().isWeighted()) {
             throw new IllegalArgumentException("Graph is not weighted");
         }
         this.lengthBound = lengthBound;
         this.labelMap = Objects.requireNonNull(labelMap, "Labels cannot be null");
+        this.bestImprovement = bestImprovement;
     }
 
     /**
@@ -82,6 +88,8 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
     public GraphWalk<V, E> getLocalAugmentationCycle() {
 
         int k = 1;
+
+        LabeledPath<V> bestCycle = new LabeledPath<>(new ArrayList<>(lengthBound), Double.MAX_VALUE, new HashSet<>());
 
         /*
          * Store the path in map with key PathSetKey<V, V, Set<Integer>>, since only paths with the same head,
@@ -98,10 +106,20 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                 V targetVertex = graph.getEdgeTarget(e);
                 // catch self-loops directly
                 if(sourceVertex == targetVertex) {
-                    List<V> vertices = new ArrayList<>();
+                    ArrayList<V> vertices = new ArrayList<>();
                     vertices.add(sourceVertex);
                     vertices.add(targetVertex);
-                    return new GraphWalk<>(graph, vertices, graph.getEdgeWeight(e));
+
+                    double currentEdgeWeight = graph.getEdgeWeight(e);
+                    if(bestImprovement) {
+                        if(bestCycle.getCost() > 2 * currentEdgeWeight) {
+                            HashSet<Integer> labelSet = new HashSet<>();
+                            labelSet.add(labelMap.get(sourceVertex));
+                            bestCycle = new LabeledPath<>(vertices, 2 * currentEdgeWeight, labelSet);
+                        }
+                    } else {
+                        return new GraphWalk<>(graph, vertices, 2 * currentEdgeWeight);
+                    }
                 }
                 if (!labelMap.get(sourceVertex).equals(labelMap.get(targetVertex))) {
                     ArrayList<V> pathVertices = new ArrayList<>(lengthBound);
@@ -126,13 +144,23 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                 V head = path.getHead();
                 V tail = path.getTail();
 
-                // the path builds a valid negative cycle
-                if (graph.containsEdge(tail, head)
-                        && path.getCost() + graph.getEdgeWeight(graph.getEdge(tail, head)) < 0) {
-                    LabeledPath<V> cycleResult = path.clone();
-                    cycleResult.addVertex(head, graph.getEdgeWeight(graph.getEdge(tail, head)), labelMap.get(head));
+                E currentEdge = graph.getEdge(tail, head);
+                if(currentEdge != null) {
+                    double currentCost = path.getCost() + graph.getEdgeWeight(currentEdge);
 
-                    return new GraphWalk<>(graph, cycleResult.getVertices(), cycleResult.getCost());
+                    if (currentCost < bestCycle.getCost()) {
+                        LabeledPath<V> cycleResult = path.clone();
+                        cycleResult.addVertex(head, graph.getEdgeWeight(currentEdge), labelMap.get(head));
+
+                    /*
+                     * The path builds a valid negative cycle. Return the cycle if the first improvement should be returned.
+                     */
+                        if (!bestImprovement && currentCost < 0) {
+                            return new GraphWalk<>(graph, cycleResult.getVertices(), cycleResult.getCost());
+                        }
+
+                        bestCycle = cycleResult;
+                    }
                 }
 
                 for (E e : graph.outgoingEdgesOf(tail)) {
@@ -144,10 +172,10 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                         LabeledPath<V> newPath = path.clone();
                         newPath.addVertex(currentVertex, edgeWeight, currentLabel);
 
-                            /*
-                             * check if paths are dominated, i.e. if the path is definitely worse than other paths
-                             * and does not have to be considered in the future
-                             */
+                        /*
+                         * check if paths are dominated, i.e. if the path is definitely worse than other paths
+                         * and does not have to be considered in the future
+                         */
                         if (!checkDominatedPathsOfLengthKplus1(newPath, pathsLengthKplus1)) {
                             if(!checkDominatedPathsOfLengthK(newPath, pathsLengthK)) {
                                 updatePathIndex(pathsLengthKplus1, newPath);
@@ -163,7 +191,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
             pathsLengthKplus1 = new LinkedHashMap<>();
         }
 
-        return new GraphWalk<>(graph, new ArrayList<>(lengthBound), Double.MAX_VALUE);
+        return new GraphWalk<>(graph, bestCycle.getVertices(), bestCycle.getCost());
     }
 
     /**

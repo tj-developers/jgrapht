@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -22,6 +22,7 @@ import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.AsSubgraph;
+import org.jgrapht.util.TypeUtil;
 
 import java.util.*;
 
@@ -57,7 +58,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
     /**
      * representation of the solution
      */
-    protected SolutionRepresentation solutionRepresentation;
+    protected SolutionRepresentation bestSolution;
 
     /**
      * Construct a new abstract capacitated minimum spanning tree algorithm.
@@ -76,7 +77,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
         this.capacity = capacity;
         this.demands = Objects.requireNonNull(demands, "Demands cannot be null");
 
-        this.solutionRepresentation = new SolutionRepresentation();
+        this.bestSolution = new SolutionRepresentation();
     }
 
     @Override
@@ -86,7 +87,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
      * This class represents a solution isntance by manging the labels and the partition mapping.
      * With the help of this class, a capacitated spanning tree based on the label and partition mapping can be calculated.
      */
-    protected class SolutionRepresentation {
+    protected class SolutionRepresentation implements Cloneable {
 
         /**
          * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
@@ -143,7 +144,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             Set<E> spanningTreeEdges = new HashSet<>();
             double weight = 0;
 
-            for(Pair<Set<V>, Double> part : solutionRepresentation.partition.values()) {
+            for(Pair<Set<V>, Double> part : bestSolution.partition.values()) {
                 // get spanning tree on the part inclusive the root vertex
                 Set<V> set = part.getFirst();
                 set.add(root);
@@ -172,6 +173,9 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             oldPart.remove(vertex);
             partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - demands.get(vertex)));
 
+            if(!partition.keySet().contains(toLabel)) {
+                partition.put(toLabel, Pair.of(new HashSet<>(), 0.0));
+            }
             Set<V> newPart = partition.get(toLabel).getFirst();
             newPart.add(vertex);
             partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + demands.get(vertex)));
@@ -193,6 +197,9 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             }
 
             // update partition
+            if(!partition.keySet().contains(toLabel)) {
+                partition.put(toLabel, Pair.of(new HashSet<>(), 0.0));
+            }
             Set<V> newPart = partition.get(toLabel).getFirst();
             newPart.addAll(vertices);
             partition.put(toLabel, Pair.of(newPart, partition.get(toLabel).getSecond() + weightOfVertices));
@@ -263,6 +270,32 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
          */
         public double getPartitionWeight(Integer label) {
             return partition.get(label).getSecond();
+        }
+
+        /**
+         * Returns a shallow copy of this solution representation instance. Vertices are not cloned.
+         *
+         * @return a shallow copy of this solution representation.
+         *
+         * @throws RuntimeException in case the clone is not supported
+         *
+         * @see java.lang.Object#clone()
+         */
+        public SolutionRepresentation clone() {
+            try {
+                SolutionRepresentation solutionRepresentation = TypeUtil.uncheckedCast(super.clone());
+                solutionRepresentation.labels = new HashMap<>(labels);
+                solutionRepresentation.partition = new HashMap<>();
+                for(Map.Entry<Integer, Pair<Set<V>, Double>> entry : this.partition.entrySet()) {
+                    solutionRepresentation.partition.put(entry.getKey(), Pair.of(new HashSet<>(entry.getValue().getFirst()), entry.getValue().getSecond()));
+                }
+                solutionRepresentation.nextFreeLabel = this.nextFreeLabel;
+
+                return solutionRepresentation;
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
         }
     }
 }
