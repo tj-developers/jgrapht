@@ -439,6 +439,10 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
 
         }
 
+        /*
+         * The subsets in the partition may include more than one subtree rooted at root.
+         * We create a subset for all subtrees rooted at root.
+         */
         Set<Integer> moreAffectedLabels = new HashSet<>();
         Iterator<Integer> affectedLabelIterator = affectedLabels.iterator();
         while (affectedLabelIterator.hasNext()) {
@@ -452,6 +456,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
         }
         affectedLabels.addAll(moreAffectedLabels);
 
+        // clean up the partition such that only current subsets are represented
         currentSolution.cleanUp();
 
 
@@ -598,6 +603,9 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
                 currentPath = new HashSet<>();
                 currentWeight = 0;
             }
+            /*
+             * This part of the subtree is connected to the root, thus, this particular tree is not part of the subtree of the current vertex v.
+             */
             if(next.equals(root)) {
                 storeCurrentPath = false;
 
