@@ -23,6 +23,7 @@ import org.jgrapht.alg.interfaces.CapacitatedSpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.AsSubgraph;
+import org.jgrapht.traverse.DepthFirstIterator;
 import org.jgrapht.util.TypeUtil;
 
 import java.util.*;
@@ -160,7 +161,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
                 // get spanning tree on the part inclusive the root vertex
                 Set<V> set = part.getFirst();
                 set.add(root);
-                SpanningTreeAlgorithm.SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set, graph.edgeSet())).getSpanningTree();
+                SpanningTreeAlgorithm.SpanningTree<E> subtree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, set, graph.edgeSet())).getSpanningTree();
                 set.remove(root);
 
                 // add the partial solution to the overall solution
@@ -219,6 +220,73 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             Set<V> oldPart = partition.get(fromLabel).getFirst();
             oldPart.removeAll(vertices);
             partition.put(fromLabel, Pair.of(oldPart, partition.get(fromLabel).getSecond() - weightOfVertices));
+        }
+
+        /**
+         * Refines the partition by adding new subsets if the designated root has more than one subtree in the subset <code>label</code> of the partition.
+         *
+         * @param label the label of the subset of the partition that were refined
+         */
+        public Set<Integer> partitionSubtreesOfSubset(Set<V> vertexSubset, int label) {
+
+            List<Set<V>> subtreesOfSubset = new LinkedList<>();
+
+            if (vertexSubset.isEmpty()) {
+                return new HashSet<>();
+            }
+
+            // initialize a subgraph containing the MST of the subset
+            vertexSubset.add(root);
+            SpanningTreeAlgorithm.SpanningTree<E> spanningTree = new PrimMinimumSpanningTree<>(new AsSubgraph<>(graph, vertexSubset, graph.edgeSet())).getSpanningTree();
+            Graph<V, E> spanningTreeGraph = new AsSubgraph<>(graph, vertexSubset, spanningTree.getEdges());
+
+            int degreeOfRoot = spanningTreeGraph.degreeOf(root);
+            if (degreeOfRoot == 1) {
+                vertexSubset.remove(root);
+                return new HashSet<>();
+            }
+
+            // store the affected labels
+            Set<Integer> affectedLabels = new HashSet<>();
+
+            // search for subtrees rooted at root
+            DepthFirstIterator<V, E> depthFirstIterator = new DepthFirstIterator<>(spanningTreeGraph, root);
+            if (depthFirstIterator.hasNext()) {
+                depthFirstIterator.next();
+            }
+
+            int numberOfRootEdgesExplored = 0;
+            Set<V> currentSubtree = new HashSet<>();
+
+            while (depthFirstIterator.hasNext()) {
+                V next = depthFirstIterator.next();
+
+                // exploring new subtree
+                if (spanningTreeGraph.containsEdge(root, next)) {
+                    if (!currentSubtree.isEmpty()) {
+                        subtreesOfSubset.add(currentSubtree);
+                        currentSubtree = new HashSet<>();
+                    }
+
+                    numberOfRootEdgesExplored++;
+
+                    // we do not have to move more vertices
+                    if (numberOfRootEdgesExplored == degreeOfRoot) {
+                        break;
+                    }
+                }
+                currentSubtree.add(next);
+            }
+
+            // move the subtrees to new subsets in the partition
+            for (Set<V> subtree : subtreesOfSubset) {
+                int nextLabel = this.getNextFreeLabel();
+                this.moveVertices(subtree, label, nextLabel);
+                affectedLabels.add(nextLabel);
+            }
+
+            vertexSubset.remove(root);
+            return affectedLabels;
         }
 
         /**

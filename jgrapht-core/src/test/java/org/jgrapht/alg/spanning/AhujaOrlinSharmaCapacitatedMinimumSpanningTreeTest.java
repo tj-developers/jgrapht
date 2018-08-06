@@ -637,9 +637,9 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertex() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
-        double capacity = 40.0;
+        double capacity = 30.0;
 
         CapacitatedSpanningTreeAlgorithm<Integer, DefaultWeightedEdge> capacitatedSpanningTreeAlgorithm
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -668,7 +668,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertexTabu() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
         double capacity = 30.0;
 
@@ -699,7 +699,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceSubtree() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
         double capacity = 30.0;
 
@@ -723,7 +723,6 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
 
         assertNotNull(cmst);
         assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
-
     }
 
     /**
@@ -731,7 +730,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceSubtreeTabu() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
         double capacity = 30.0;
 
@@ -762,9 +761,9 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertexAndSubtree() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
-        double capacity = 40.0;
+        double capacity = 30.0;
 
         CapacitatedSpanningTreeAlgorithm<Integer, DefaultWeightedEdge> capacitatedSpanningTreeAlgorithm
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -793,7 +792,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertexAndSubtreeTabu() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
         double capacity = 30.0;
 
@@ -805,7 +804,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
                 graph.getSecond(),
                 7,
                 false,
-                3,
+                1,
                 true,
                 true,
                 true,
@@ -813,7 +812,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
                 15
         );
 
-        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
+        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
+                = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
         assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
@@ -824,7 +824,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertexBestImprovement() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
         double capacity = 30.0;
 
@@ -855,7 +855,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertexTabuBestImprovement() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(30);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
 
         double capacity = 30.0;
 

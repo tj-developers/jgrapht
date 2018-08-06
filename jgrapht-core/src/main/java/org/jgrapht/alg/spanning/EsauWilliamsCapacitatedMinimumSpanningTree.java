@@ -211,7 +211,12 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         }
 
         SolutionRepresentation result = new SolutionRepresentation(labels, partition);
+
         result.cleanUp();
+        Set<Integer> labelSet = new HashSet<>(result.getLabels());
+        for(Integer label : labelSet) {
+            result.partitionSubtreesOfSubset(result.getPartitionSet(label), label);
+        }
         return result;
     }
 
