@@ -225,7 +225,10 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
         /**
          * Refines the partition by adding new subsets if the designated root has more than one subtree in the subset <code>label</code> of the partition.
          *
+         * @param vertexSubset the subset represented by <code>label</code>, that is the subset that has to be refined
          * @param label the label of the subset of the partition that were refined
+         *
+         * @return the set of all labels of subsets that were changed during the refinement
          */
         public Set<Integer> partitionSubtreesOfSubset(Set<V> vertexSubset, int label) {
 

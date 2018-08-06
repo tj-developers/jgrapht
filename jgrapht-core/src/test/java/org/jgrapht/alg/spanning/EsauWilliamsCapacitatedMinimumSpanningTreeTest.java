@@ -285,12 +285,13 @@ public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
         weights.put(5, 1.0);
         weights.put(6, 1.0);
 
-        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
-                = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 3, weights, 20).getCapacitatedSpanningTree();
+        for(int i = 0; i < 30; ++i) {
+            CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
+                    = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 3, weights, 20).getCapacitatedSpanningTree();
 
-        assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 3, weights));
-        System.out.println(cmst.getWeight());
+            assertNotNull(cmst);
+            assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 3, weights));
+        }
     }
 
     /**
