@@ -160,7 +160,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
                 // get spanning tree on the part inclusive the root vertex
                 Set<V> set = part.getFirst();
                 set.add(root);
-                SpanningTreeAlgorithm.SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set)).getSpanningTree();
+                SpanningTreeAlgorithm.SpanningTree<E> subtree = new KruskalMinimumSpanningTree<>(new AsSubgraph<>(graph, set, graph.edgeSet())).getSpanningTree();
                 set.remove(root);
 
                 // add the partial solution to the overall solution

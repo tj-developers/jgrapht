@@ -108,6 +108,9 @@ public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
         }
     }
 
+    /**
+     * Instance calculated by hand
+     */
     @Test
     public void testInstance2() {
         Graph<Integer, DefaultWeightedEdge> graph = new DefaultUndirectedWeightedGraph<Integer, DefaultWeightedEdge>(DefaultWeightedEdge.class);
@@ -170,6 +173,115 @@ public class EsauWilliamsCapacitatedMinimumSpanningTreeTest {
                             || e == graph.getEdge(3, 2)
             );
         }
+    }
+
+    /**
+     * Instance as in testInstance2() but without edge (0,5). That is, an incomplete graph is tested.
+     */
+    @Test
+    public void testInstance3() {
+        Graph<Integer, DefaultWeightedEdge> graph = new DefaultUndirectedWeightedGraph<Integer, DefaultWeightedEdge>(DefaultWeightedEdge.class);
+
+        for(int i = 0; i < 6; ++i) {
+            graph.addVertex(i);
+        }
+        for(int i = 0; i < 6; ++i) {
+            for(int j = i + 1; j < 6; ++j) {
+                if(i != 0 || j != 5) {
+                    graph.addEdge(i, j);
+                }
+            }
+        }
+        graph.setEdgeWeight(graph.getEdge(0, 1), 7);
+        graph.setEdgeWeight(graph.getEdge(0, 2), 5);
+        graph.setEdgeWeight(graph.getEdge(0, 3), 1);
+        graph.setEdgeWeight(graph.getEdge(0, 4), 2);
+        graph.setEdgeWeight(graph.getEdge(1, 2), 8);
+        graph.setEdgeWeight(graph.getEdge(1, 3), 5);
+        graph.setEdgeWeight(graph.getEdge(1, 4), 2);
+        graph.setEdgeWeight(graph.getEdge(1, 5), 2);
+        graph.setEdgeWeight(graph.getEdge(2, 3), 2);
+        graph.setEdgeWeight(graph.getEdge(2, 4), 5);
+        graph.setEdgeWeight(graph.getEdge(2, 5), 6);
+        graph.setEdgeWeight(graph.getEdge(3, 4), 9);
+        graph.setEdgeWeight(graph.getEdge(3, 5), 5);
+        graph.setEdgeWeight(graph.getEdge(4, 5), 1);
+
+        Map<Integer, Double> weights = new HashMap<>();
+        weights.put(1, 2.0);
+        weights.put(2, 1.0);
+        weights.put(3, 2.0);
+        weights.put(4, 3.0);
+        weights.put(5, 2.0);
+
+        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 1).getCapacitatedSpanningTree();
+
+        assertNotNull(cmst);
+        assertEquals(14.0, cmst.getWeight(), 0.0000001);
+        assertEquals(0, cmst.getRoot(), 0);
+        assertEquals(4.0, cmst.getCapacity(), 0.00000001);
+        assertEquals(weights, cmst.getDemands());
+
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(1)), Pair.of(new HashSet<>(Arrays.asList(1, 5)), 4.0));
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(2)), Pair.of(new HashSet<>(Arrays.asList(2, 3)), 3.0));
+        assertEquals(cmst.getPartition().get(cmst.getLabels().get(4)), Pair.of(new HashSet<>(Collections.singletonList(4)), 3.0));
+
+        assertEquals(cmst.getLabels().get(1), cmst.getLabels().get(5), 0);
+        assertEquals(cmst.getLabels().get(2), cmst.getLabels().get(3), 0);
+        assertNotEquals(cmst.getLabels().get(1), cmst.getLabels().get(3));
+        assertNotEquals(cmst.getLabels().get(1), cmst.getLabels().get(4));
+        assertNotEquals(cmst.getLabels().get(3), cmst.getLabels().get(4));
+
+        for(DefaultWeightedEdge e : cmst.getEdges()) {
+            assertTrue(
+                    e == graph.getEdge(0, 1)
+                            || e == graph.getEdge(0, 3)
+                            || e == graph.getEdge(0, 4)
+                            || e == graph.getEdge(1, 5)
+                            || e == graph.getEdge(3, 2)
+            );
+        }
+    }
+
+    @Test
+    public void testInstanceWithRandomness() {
+        Graph<Integer, DefaultWeightedEdge> graph = new DefaultUndirectedWeightedGraph<Integer, DefaultWeightedEdge>(DefaultWeightedEdge.class);
+
+        for(int i = 0; i < 6; ++i) {
+            graph.addVertex(i);
+        }
+        for(int i = 0; i < 6; ++i) {
+            for(int j = i + 1; j < 6; ++j) {
+                graph.addEdge(i, j);
+            }
+        }
+        graph.setEdgeWeight(graph.getEdge(0, 1), 7);
+        graph.setEdgeWeight(graph.getEdge(0, 2), 5);
+        graph.setEdgeWeight(graph.getEdge(0, 3), 1);
+        graph.setEdgeWeight(graph.getEdge(0, 4), 2);
+        graph.setEdgeWeight(graph.getEdge(0, 5), 8);
+        graph.setEdgeWeight(graph.getEdge(1, 2), 8);
+        graph.setEdgeWeight(graph.getEdge(1, 3), 5);
+        graph.setEdgeWeight(graph.getEdge(1, 4), 2);
+        graph.setEdgeWeight(graph.getEdge(1, 5), 2);
+        graph.setEdgeWeight(graph.getEdge(2, 3), 2);
+        graph.setEdgeWeight(graph.getEdge(2, 4), 5);
+        graph.setEdgeWeight(graph.getEdge(2, 5), 6);
+        graph.setEdgeWeight(graph.getEdge(3, 4), 9);
+        graph.setEdgeWeight(graph.getEdge(3, 5), 5);
+        graph.setEdgeWeight(graph.getEdge(4, 5), 1);
+
+        Map<Integer, Double> weights = new HashMap<>();
+        weights.put(1, 2.0);
+        weights.put(2, 1.0);
+        weights.put(3, 2.0);
+        weights.put(4, 3.0);
+        weights.put(5, 2.0);
+
+        CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = new EsauWilliamsCapacitatedMinimumSpanningTree<>(graph, 0, 4, weights, 5).getCapacitatedSpanningTree();
+
+        assertNotNull(cmst);
+        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 4, weights));
     }
 
     /**
