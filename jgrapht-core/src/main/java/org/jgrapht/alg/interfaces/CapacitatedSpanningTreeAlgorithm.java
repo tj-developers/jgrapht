@@ -127,12 +127,24 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
         private final Set<E> edges;
 
         /**
-         * Construct a new spanning tree.
+         * Construct a new capacitated spanning tree.
          *
-         * @param edges the edges
-         * @param weight the weight
+         * @param root the root vertex of the capacitated spanning tree
+         * @param capacity the capacity constraint of the capacitated spanning tree
+         * @param demands the demand function
+         * @param labels the labelling of the vertices marking their subset membership in the partition
+         * @param partition the implicitly defined partition of the vertices in the capacitated spanning tree
+         * @param edges the edge set of the capacitated spanning tree
+         * @param weight the weight of the capacitated spanning tree, i.e. the sum of all edge weights
          */
-        public CapacitatedSpanningTreeImpl(V root, double capacity, Map<V, Double> demands, Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition, Set<E> edges, double weight) {
+        public CapacitatedSpanningTreeImpl(
+                V root,
+                double capacity,
+                Map<V, Double> demands, Map<V, Integer> labels,
+                Map<Integer, Pair<Set<V>, Double>> partition,
+                Set<E> edges,
+                double weight
+        ) {
             this.root = root;
             this.capacity = capacity;
             this.demands = demands;

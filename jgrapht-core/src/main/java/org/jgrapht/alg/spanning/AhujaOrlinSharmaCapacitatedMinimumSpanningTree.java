@@ -48,7 +48,7 @@ import java.util.*;
  * disjoint cycles by Ahuja et al. That is, the algorithm may run in exponential time.
  * This algorithm is implemented in two different version: a local search and a tabu search. In both cases we have to
  * find the best neighbor of the current capacitated spanning tree. For further information about finding such an
- * improving neighbor {@see ImprovementGraph}
+ * improving neighbor {@link ImprovementGraph} @see ImprovementGraph
  *
  * @param <V> the vertex type
  * @param <E> the edge type
@@ -111,7 +111,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * @param capacity                    the edge capacity constraint
      * @param demands                     the demands of the vertices
      * @param lengthBound                 the length bound of the cycle detection algorithm
-     * @param numberOfOperationsParameter the number of operations that are considered in the randomized Esau-Williams algorithm {@see EsauWilliamsCapacitatedMinimumSpanningTree}
+     * @param numberOfOperationsParameter the number of operations that are considered in the randomized Esau-Williams algorithm {@link EsauWilliamsCapacitatedMinimumSpanningTree} @see EsauWilliamsCapacitatedMinimumSpanningTree
      */
     public AhujaOrlinSharmaCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> demands, int lengthBound, int numberOfOperationsParameter) {
         this(graph, root, capacity, demands, lengthBound, false, numberOfOperationsParameter, true, true, true, 10, 50);
@@ -140,7 +140,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * @param demands                     the demands of the vertices
      * @param lengthBound                 the length bound of the cycle detection algorithm
      * @param bestImprovement             contains whether the best (if true) or the first improvement (if false) is returned in the neighborhood search
-     * @param numberOfOperationsParameter the number of operations that are considered in the randomized Esau-Williams algorithm {@see EsauWilliamsCapacitatedMinimumSpanningTree}
+     * @param numberOfOperationsParameter the number of operations that are considered in the randomized Esau-Williams algorithm {@link EsauWilliamsCapacitatedMinimumSpanningTree} @see EsauWilliamsCapacitatedMinimumSpanningTree
      * @param useVertexOperation          contains whether the local search uses the vertex operation
      * @param useSubtreeOperation         contains whether the local search uses the subtree operation
      * @param useTabuSearch               contains whether a tabu search is used
@@ -697,7 +697,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
      * Again, those arc exists only if the exchange is feasible.
      *
      * IDENTIFYING SUBSET DISJOINT CYCLES
-     * This is done via a heuristic which can be found here {@see AhujaOrlinSharmaCyclicExchangeLocalAugmentation}.
+     * This is done via a heuristic which can be found here {@link AhujaOrlinSharmaCyclicExchangeLocalAugmentation} @see AhujaOrlinSharmaCyclicExchangeLocalAugmentation.
      */
     private class ImprovementGraph {
 

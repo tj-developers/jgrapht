@@ -36,6 +36,8 @@ import java.util.*;
  * This algorithm returns the first found negative subset-disjoint cycle, that is, the cycle has minimum number of vertices. It may enumerate all paths up
  * to the length given by the parameter <code>lengthBound</code>, i.e the algorithm runs in exponential time.
  *
+ * This algorithm is used to detect valid cyclic exchanges in a cyclic exchange neighborhood for the Capacitated Minomum Spanning Tree problem {@link org.jgrapht.alg.spanning.AhujaOrlinSharmaCapacitatedMinimumSpanningTree} @see org.jgrapht.alg.spanning.AhujaOrlinSharmaCapacitatedMinimumSpanningTree
+ *
  * @param <V> the vertex type
  * @param <E> the edge type
  *

@@ -36,7 +36,7 @@ import java.util.*;
  * Working papers, Massachusetts Institute of Technology (MIT), Sloan School of Management.
  * <p>
  * This version runs in polynomial time dependent on the number of considered operations per iteration
- * <code>numberOfOperationsParameter</code> (denoted by p), such that runs is in O(|V|^3 + p*|V|) = O(|V|^3) since p <= |V|.
+ * <code>numberOfOperationsParameter</code> (denoted by p), such that runs is in $O(|V|^3 + p|V|) = O(|V|^3)$ since $p \leq |V|$.
  * <p>
  * A <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum Spanning Tree</a>
  * (CMST) is a rooted minimal cost spanning tree that satisfies the capacity
