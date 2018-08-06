@@ -156,7 +156,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             Set<E> spanningTreeEdges = new HashSet<>();
             double weight = 0;
 
-            for(Pair<Set<V>, Double> part : bestSolution.partition.values()) {
+            for(Pair<Set<V>, Double> part : partition.values()) {
                 // get spanning tree on the part inclusive the root vertex
                 Set<V> set = part.getFirst();
                 set.add(root);
