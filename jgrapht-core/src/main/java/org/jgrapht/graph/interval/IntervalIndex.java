@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @param <T> the type of the interval
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 interface IntervalIndex<T extends Comparable<T>> {

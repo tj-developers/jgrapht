@@ -27,7 +27,7 @@ import java.util.Objects;
  * @param <I> the type of the interval
  * @param <T> The underlying type for the intervals
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T>> implements Serializable {

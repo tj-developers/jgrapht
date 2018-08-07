@@ -29,7 +29,7 @@ import org.jgrapht.event.GraphVertexChangeEvent;
  * @param <VertexType> the underlying vertex type
  * @param <T> The underlying type for intervals
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since May 30, 2018
  */
 public class IntervalGraphMappingListener<V extends IntervalVertexPair<VertexType, T>, E, VertexType, T extends Comparable<T>>

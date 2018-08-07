@@ -568,7 +568,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
                 return new Iterator<K>() {
                     Deque<RedBlackTreeNode<K, V>> stack = new ArrayDeque<>((int) Math.ceil(Math.log(root.getSize())));
 
-                    
+
                     @Override
                     public boolean hasNext() {
                         return false;
@@ -578,9 +578,9 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
                     public K next() {
                         return null;
                     }
-                }
+                };
             }
-        }
+        };
     }
 
     /**

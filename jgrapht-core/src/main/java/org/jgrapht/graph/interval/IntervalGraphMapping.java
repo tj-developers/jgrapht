@@ -29,15 +29,19 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
- * Implementation of an interval graph mapping. An interval graph is an intersection graph of intervals on a line.
- * Because of that instances do not allow the adding or removing of edges. The edges are implicitly defined by the
- * intervals.
+ * Implementation of an interval graph mapping. An interval graph G = (V, E) is an undirected graph formed by a family
+ * of intervals I = \{I_v\}_{v \in V} such that (u, v) \in E iff I_u \cap I_v \neq \emptyset.
+ * That is, the edges are implicitly defined by the intervals, such that instances do not allow the adding or removing
+ * of edges.
+ * <p>
+ * See <a href="https://en.wikipedia.org/wiki/Interval_graph">https://en.wikipedia.org/wiki/Interval_graph</a>.
  *
  * @param <V>          the vertex type with a corresponding interval
  * @param <E>          the edge type
  * @param <VertexType> the underlying vertex type
  * @param <T>          The underlying type for intervals
- * @author Christoph Grüne (christophgruene)
+ *
+ * @author Christoph Grüne
  * @since May 30, 2018
  */
 public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E, VertexType, T extends Comparable<T>>
@@ -45,6 +49,9 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
 
     private static final long serialVersionUID = 1112673663745683444L;
 
+    /**
+     * the underlying graph
+     */
     private Graph<V, E> graph;
 
     /**
@@ -52,9 +59,13 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
      */
     private IntervalIndex<T> intervalStructure;
     /**
-     * <code>intervalMap</code> maintains the assignment of every interval to vertex
+     * <code>intervalVertexMap</code> maintains the assignment of every interval to vertex
      */
-    private Map<Interval<T>, V> intervalMap;
+    private Map<Interval<T>, V> intervalVertexMap;
+    /**
+     * <code>intervalVertexMap</code> maintains the assignment of every vertex to interval
+     */
+    private Map<VertexType, Interval<T>> vertexIntervalMap;
 
     /**
      * stores state whether this mapping is valid
@@ -75,7 +86,8 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
     private IntervalGraphMapping(Graph<V, E> graph) {
         this.graph = graph;
         this.intervalStructure = new IntervalTreeStructure<>();
-        this.intervalMap = new HashMap<>();
+        this.intervalVertexMap = new HashMap<>();
+        this.vertexIntervalMap = new HashMap<>();
         // as we know that a this is a correctly initialized mapping, we can set this mapping to valid
         this.mappingValid = true;
         // as we know that no ListenableGraph is used, we set the mapping non-live
@@ -126,7 +138,8 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
         // add all vertices to the graph
         for (V v : vertices) {
             vertexIntervals.add(v.getInterval());
-            intervalMap.put(v.getInterval(), v);
+            intervalVertexMap.put(v.getInterval(), v);
+            vertexIntervalMap.put(v.getVertex(), v.getInterval());
             graph.addVertex(v);
         }
 
@@ -163,7 +176,8 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
         // add sorted vertices
         for (V v : vertices) {
             vertexIntervals.add(v.getInterval());
-            intervalMap.put(v.getInterval(), v);
+            intervalVertexMap.put(v.getInterval(), v);
+            vertexIntervalMap.put(v.getVertex(), v.getInterval());
             graph.addVertex(v);
         }
 
@@ -239,6 +253,36 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
     }
 
     /**
+     * Returns the interval vertex pair corresponding to <code>interval</code>.
+     *
+     * @param interval the interval corresponding to the interval vertex pair
+     * @return the interval vertex pair corresponding to <code>interval</code>
+     */
+    public V getIntervalVertexPair(Interval<T> interval) {
+        return intervalVertexMap.get(interval);
+    }
+
+    /**
+     * Returns the vertex corresponding to <code>interval</code>.
+     *
+     * @param interval the interval corresponding to the vertex
+     * @return the vertex corresponding to <code>interval</code>
+     */
+    public VertexType getVertex(Interval<T> interval) {
+        return intervalVertexMap.get(interval).getVertex();
+    }
+
+    /**
+     * Returns the interval corresponding to <code>vertexType</code>.
+     *
+     * @param vertexType the vertex corresponding to the interval
+     * @return the interval corresponding to <code>vertexType</code>
+     */
+    public Interval<T> getInterval(VertexType vertexType) {
+        return vertexIntervalMap.get(vertexType);
+    }
+
+    /**
      * Returns whether the mapping is valid.
      *
      * @return true, if mapping is valid; false, otherwise
@@ -264,11 +308,10 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
     }
 
     /**
-     * Adds a vertex to all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
+     * Adds a vertex to all data structures (graph, intervalStructure, intervalVertexMap) that are used in this mapping.
      *
      * @param v the vertex to add
      * @return <code>true</code> if this graph did not already contain the specified vertex.
-     *
      * @throws NullPointerException if the specified vertex is <code>null</code>
      */
     public boolean addVertex(V v) {
@@ -276,7 +319,7 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
 
         graph.addVertex(v);
         if (intervalStructure.add(v.getInterval())) {
-            intervalMap.put(v.getInterval(), v);
+            intervalVertexMap.put(v.getInterval(), v);
 
             addIntervalEdges(v, intervalStructure.findOverlappingIntervals(v.getInterval()));
             return true;
@@ -285,7 +328,7 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
     }
 
     /**
-     * Removes a vertex from all data structures (graph, intervalStructure, intervalMap) that are used in this mapping.
+     * Removes a vertex from all data structures (graph, intervalStructure, intervalVertexMap) that are used in this mapping.
      *
      * @param v the vertex to remove
      * @return <code>true</code> if the graph contained the specified vertex; <code>false</code> otherwise.
@@ -302,7 +345,7 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
             mappingValid = true;
         }
         if (intervalStructure.remove(v.getInterval())) {
-            intervalMap.remove(v.getInterval());
+            intervalVertexMap.remove(v.getInterval());
 
             return true;
         }
@@ -323,7 +366,7 @@ public class IntervalGraphMapping<V extends IntervalVertexPair<VertexType, T>, E
             mappingCurrentlyValid = false;
         }
         for (Interval<T> targetInterval : targetIntervals) {
-            V targetVertex = intervalMap.get(targetInterval);
+            V targetVertex = intervalVertexMap.get(targetInterval);
             if (!sourceVertex.equals(targetVertex)) {
                 graph.addEdge(sourceVertex, targetVertex);
             }

@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @param <T> the type of the interval
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalIndex<T>, Serializable {

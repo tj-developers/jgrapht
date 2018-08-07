@@ -31,7 +31,7 @@ import java.util.List;
  * @param <K> The key for the search tree
  * @param <NodeValue> The node value type
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 interface IntervalTree

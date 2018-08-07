@@ -35,8 +35,8 @@ import java.util.List;
  * @param <K> the type of the key
  * @param <NodeValue> the type of the node value
  *
- * @author Daniel Mock (danielmock)
- * @author Christoph Grüne (christophgruene)
+ * @author Daniel Mock
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 class RedBlackIntervalTree
