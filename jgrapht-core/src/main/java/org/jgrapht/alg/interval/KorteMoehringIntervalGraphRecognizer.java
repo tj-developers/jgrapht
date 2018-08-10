@@ -98,6 +98,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 			//get highest non-inf node in path
 			MPQTreeNode Nbig = getNBig(path, positiveLabels);
 
+			//this part needs to change, no need for nsmall=nbig
 			//update MPQ Tree
 			if(Nsmall.equals(Nbig))
 				addVertexToLeaf(u,path);
@@ -157,7 +158,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 	 * @param u the vertex to be added to the MPQ Tree
 	 */
 	private void addEmptyPredecessors(V u) {
-		List<V> elements = new ArrayList<>();  // to be implemented by the doubly linked circular list
+		HashSet<V> elements = new HashSet<>();  // to be implemented by the doubly linked circular list
 		elements.add(u);
 		MPQTreeNode leaf = new PNode(elements);
 		treeRoot.addChild(leaf);
@@ -252,45 +253,111 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 	 * @param u the vertex to be added
 	 * @param path the path of the leaf
 	 */
+	//here the path is modified, not the tree 
 	private void addVertexToLeaf(V u, List<MPQTreeNode> path)
 	{
-		//get the last vertex
+		//get the last vertex 
+		//todo: better naming for the varibles in terms of the paper
+		int lastIndexofPath= path.size()-1;
+		MPQTreeNode lastNodeInPath = path.get(lastIndexofPath);
+		//check if P or Q or leaf
 
-		MPQTreeNode leafNodeinPath = path.get(path.size()-1);
-		//find vertices in the MPQ leafnode
+		if(lastNodeInPath.getClass()== Leaf.class) {
 
-		HashSet<V> elementsInLeafNode = leafNodeinPath.elements;
 
-		//find vertices adjacent to u in graph G
-		List<V> neighbourVerticesofV   = Graphs.neighborListOf(graph, u);
+			HashMap<Integer, HashSet<V>> partitionedVertexSet =partitionVertexSet(u,graph, lastNodeInPath);
 
-		
+			//check if B is empty
 
-		HashMap<Integer, HashSet<V>> partitionedVertexSet =partitionVertexSet(elementsInLeafNode,neighbourVerticesofV);
-		//check if B is empty
-		
-		if(partitionedVertexSet.get(1).isEmpty()) {
-			//need to clarify this part, this will update the vertex list of the last node; 	
-			elementsInLeafNode.addAll(partitionedVertexSet.get(0));
-		}else {
-			MPQTreeNode newPNode = new PNode( partitionedVertexSet.get(0));
-			//add children in PNode, Add PNode to the tree
+			if(partitionedVertexSet.get(1).isEmpty()) {
+
+				path.get(lastIndexofPath).elements.add(u);
+				
+			}
 			
-			
-		//	((Object) newPNode).addChild();
+			else {
+				//transform the leaf containing A+B into a PNode containing A
+				
+				path.remove(lastIndexofPath);
+				MPQTreeNode newPNode = new PNode( partitionedVertexSet.get(0));
+				//Create two leaves for PNode children, add the children to the PNode
+				HashSet<V> leafElement = new HashSet<>();
+				leafElement.add(u);
+				MPQTreeNode leaf1 = new Leaf(leafElement);
+				MPQTreeNode leaf2 = new Leaf( partitionedVertexSet.get(1));
+				leaf1.parent=newPNode;
+				leaf2.parent=newPNode;
+				
+				//add children to the PNode
+				
+				//add the PNode to the tree
+
+
+			}
+
+		} else if (lastNodeInPath.getClass()== PNode.class) {
+
+			HashMap<Integer, HashSet<V>> partitionedVertexSet =partitionVertexSet(u,graph, lastNodeInPath);
+			if(partitionedVertexSet.get(1).isEmpty()) {
+				//swap P node containing A+B with P Node containing just A,since B is empty makes no change
+				HashSet<V> leafElement = new HashSet<>();
+				leafElement.add(u);
+				MPQTreeNode newLeaf= new Leaf(leafElement);
+				newLeaf.parent=lastNodeInPath;
+				
+				//add child to the PNode
+				//add the PNode to the tree
+
+			}else {
+				//update the previous PNode elements with elements in A
+			//	lastNodeInPath.elements = partitionedVertexSet.get(0);
+				path.get(lastIndexofPath).elements=partitionedVertexSet.get(0);
+				//create a new PNode and add the B set
+				HashSet<V> newPNodeElements = new HashSet<>();
+				newPNodeElements.addAll(partitionedVertexSet.get(1));
+
+				MPQTreeNode newPNode = new PNode(newPNodeElements);
+				//newPNode.parent=lastNodeInPath;
+				
+				
+				//add this to the tree
+				path.a
+				
+				
+				
+				//all children of leafNodeinPath will become newPNode's children
+				
+				
+				
+				
+
+			}
+
+
+		} else if(lastNodeInPath.getClass()== QNode.class) {
+			//do we need to check for Qsections as well}
 		}
-		
-		
-		
+
+
+
+
+
+
 
 
 
 	}
 
-	//make this less ugly
+	//make this lessless  ugly and javadoc
 
-	HashMap<Integer, HashSet<V>> partitionVertexSet(HashSet<V> elementsInNode, List<V> neighbourVerticesofV){
-		//contains the ones in neighboring vertices
+	HashMap<Integer, HashSet<V>> partitionVertexSet(V u, Graph graph, MPQTreeNode node){
+
+		//find the vertices associated with the node
+		HashSet<V> elementsInNode = node.elements;
+
+		//find vertices adjacent to u in graph G
+		List<V> neighbourVerticesofV   = Graphs.neighborListOf(graph, u);
+
 		HashSet<V> vertexPartitionSetA = new HashSet<>();
 		HashSet<V> vertexPartitionSetB = new HashSet<>();
 		Map<Integer, HashSet<V>> vertexPartitionMap= new HashMap<Integer, HashSet<V>>();
@@ -306,32 +373,32 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 			for(V vertex:elementsInNode ) {
 				V v= vertex;
 				if(neighbourVerticesofV.contains(vertex)) {
-					
+
 					vertexPartitionSetA.add(vertex);
 				}else {
 					vertexPartitionSetB.add(vertex);
 				}
 			}
-			
+
 			vertexPartitionMap.put(1,vertexPartitionSetA);
 			vertexPartitionMap.put(2,vertexPartitionSetB);
-			
-			
+
+
 		}
-		
-		
-
-		
 
 
 
-		return vertexPartitionMap;
+
+
+
+
+		return (HashMap<Integer, HashSet<V>>) vertexPartitionMap;
 
 	}
 
 	/**
 	 * TODO: better Javadoc
-	 * Checks the path for specifig patterns and changes every node accordingly
+	 * Checks the path for specific patterns and changes every node accordingly
 	 * 
 	 * @param u the vertex to add to the tree
 	 * @param path the path of vertices to be changed
@@ -340,7 +407,44 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 	 */
 	private void changedPathToTemplates(V u, List<MPQTreeNode> path, MPQTreeNode nSmall, MPQTreeNode nBig)
 	{
-		// TODO Auto-generated method stub
+		//traverse from nSmall to nBig
+		int currentIndex = path.indexOf(nSmall);
+		int maxIndex = path.indexOf(nBig);
+
+
+		//case L2
+		//for each node from nsmall to nBig, get the vertexSpit, and then do accordingly
+
+		while(currentIndex != maxIndex ) {
+
+			HashSet<V> elements = path.get(currentIndex).elements;
+			HashMap<Integer, HashSet<V>> vertexSplitMap = partitionVertexSet(u, graph, path.get(currentIndex));
+
+
+			//create a Qnode with two Q sections each containing A
+
+			QSectionNode qSectionA= new QSectionNode(vertexSplitMap.get(0));
+			QSectionNode qSectionB = qSectionA;
+			qSectionA.rightSibling=qSectionB;
+			qSectionB.leftSibling=qSectionA;
+			//how to add the elements of u? ->
+			//qSectionA.child=new Leaf();
+
+
+
+			QNode newQNode = new QNode(qSectionA); 
+			newQNode.rightmostSection = qSectionB;
+
+
+
+			// add u to one section and B to the other
+
+
+		}
+
+
+
+
 
 	}
 
