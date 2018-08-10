@@ -20,8 +20,7 @@ package org.jgrapht.util;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -31,20 +30,106 @@ import static org.junit.Assert.*;
  */
 public class RedBlackTreeTest {
 
+    private int TEST_SIZE = 10;
     private RedBlackTree<Integer, Integer> redBlackTree = new RedBlackTree<>(Integer::compare);
+    private int[] keys = new int[]{13, 8, 17, 1, 11, 15, 25, 6, 22, 27};
+    private int[] sortedKeys;
 
     @Before
     public void setUp() {
-        redBlackTree.insert(13, 13);
-        redBlackTree.insert(8, 8);
-        redBlackTree.insert(17, 17);
-        redBlackTree.insert(1, 1);
-        redBlackTree.insert(11, 11);
-        redBlackTree.insert(15, 15);
-        redBlackTree.insert(25, 25);
-        redBlackTree.insert(6, 6);
-        redBlackTree.insert(22, 22);
-        redBlackTree.insert(27, 27);
+        sortedKeys = Arrays.copyOf(keys, TEST_SIZE);
+        Arrays.sort(sortedKeys);
+
+        for (int i: keys) {
+            redBlackTree.insert(i, i);
+        }
+
+//        redBlackTree.insert(13, 13);
+//        redBlackTree.insert(8, 8);
+//        redBlackTree.insert(17, 17);
+//        redBlackTree.insert(1, 1);
+//        redBlackTree.insert(11, 11);
+//        redBlackTree.insert(15, 15);
+//        redBlackTree.insert(25, 25);
+//        redBlackTree.insert(6, 6);
+//        redBlackTree.insert(22, 22);
+//        redBlackTree.insert(27, 27);
+    }
+
+    @Test
+    public void orderingPosition() {
+        int[] array = new int[TEST_SIZE];
+        int[] expected = new int[TEST_SIZE];
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            array[i] = redBlackTree.orderingPosition(sortedKeys[i]);
+            expected[i] = i;
+        }
+        assertArrayEquals(expected, array);
+    }
+
+    @Test
+    public void orderingPosition1() {
+        assertEquals(9,redBlackTree.orderingPosition(sortedKeys[9]));
+    }
+
+
+    @Test
+    public void size() {
+        for (int min = 0; min < TEST_SIZE; min++) {
+            for (int max = min; max < TEST_SIZE; max++) {
+                assertEquals("HELP" + redBlackTree.orderingPosition(sortedKeys[min]) + " " + redBlackTree.orderingPosition(sortedKeys[max]),
+                        max - min + 1, redBlackTree.size(sortedKeys[min], sortedKeys[max]));
+            }
+        }
+    }
+
+    @Test
+    public void searchNodeWithStack() {
+        int[] array = new int[TEST_SIZE];
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            array[i] = redBlackTree.searchNodeWithStack(sortedKeys[i]).peekFirst().getKey();
+        }
+        assertArrayEquals(sortedKeys, array);
+    }
+
+    @Test
+    public void ceil() {
+        assertEquals(1, (int) redBlackTree.ceiling(1));
+        assertEquals(1, (int) redBlackTree.ceiling(0));
+        assertEquals(11, (int) redBlackTree.ceiling(9));
+    }
+
+    @Test
+    public void select() {
+        for (int i = 0; i < TEST_SIZE; i++) {
+            assertEquals(sortedKeys[i], (int) redBlackTree.select(i));
+        }
+    }
+
+    @Test
+    public void iterator() {
+        List<Integer> list = new ArrayList<>(TEST_SIZE);
+        redBlackTree.keys().forEach(list::add);
+        assertArrayEquals(sortedKeys, list.stream().mapToInt(Integer::intValue).toArray());
+
+        list.clear();
+        redBlackTree.keys(8,22).forEach(list::add);
+        System.out.println(Arrays.toString(Arrays.copyOfRange(sortedKeys, 2, 8)));
+        assertArrayEquals(Arrays.copyOfRange(sortedKeys, 2, 8), list.stream().mapToInt(Integer::intValue).toArray());
+        for (int min = 0; min < TEST_SIZE; min++) {
+            for (int max = min; max < TEST_SIZE; max++) {
+                list.clear();
+                redBlackTree.keys(sortedKeys[min], sortedKeys[max]).forEach(list::add);
+                int[] a = Arrays.copyOfRange(sortedKeys, min, max+1);
+                int[] b = list.stream().mapToInt(Integer::intValue).toArray();
+                System.out.println(Arrays.toString(a));
+                System.out.println(Arrays.toString(b));
+
+                assertArrayEquals("" + sortedKeys[min] + "" + sortedKeys[max], a, b);
+            }
+        }
     }
 
     @Test

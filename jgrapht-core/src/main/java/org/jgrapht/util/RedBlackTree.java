@@ -427,21 +427,18 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      * @param key the key of the tree node
      * @return the path (as stack) to the node containing the key, if the key is not contained, the path leads to the node that would be the parent of the searched key
      */
-    private Deque<RedBlackTreeNode<K, V>> searchNodeWithStack(K key) {
+    Deque<RedBlackTreeNode<K, V>> searchNodeWithStack(K key) {
         Deque<RedBlackTreeNode<K, V>> stack = new ArrayDeque<>();
-        RedBlackTreeNode<K, V> node = root;
+        RedBlackTreeNode<K, V> current = root;
 
-        while (node != null) {
-            stack.push(node);
-
-            if (keyComparator.compare(node.getKey(), key) < 0) {
-                node = node.getRightChild();
-            } else if (keyComparator.compare(node.getKey(), key) > 0) {
-                node = node.getLeftChild();
-            } else {
-                // TODO should we check for object equality or do we trust the comparator?
-                // key found, return
+        while (current != null) {
+            stack.push(current);
+            if (current.getKey().equals(key)) {
                 break;
+            } else if (compareKey(current.getKey(), key) < 0) {
+                current = current.getRightChild();
+            } else {
+                current = current.getLeftChild();
             }
         }
 
@@ -520,15 +517,17 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      * @inheritDoc
      */
     @Override
-    public K select(int k) {
+    public K select(int position) {
         RedBlackTreeNode<K, V> node = root;
         while (node != null) {
-            if (orderingPosition(node) == k) {
+            int size = getSize(node.getLeftChild());
+            if (size == position) {
                 return node.getKey();
-            } else if (orderingPosition(node) < k) {
-                node = node.getRightChild();
-            } else {
+            } else if (size > position) {
                 node = node.getLeftChild();
+            } else {
+                position -= size + 1;
+                node = node.getRightChild();
             }
         }
 
@@ -540,21 +539,26 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public int orderingPosition(K key) {
-        return orderingPosition(searchNode(key));
-    }
+        int position = 0;
+        Deque<RedBlackTreeNode<K, V>> stack = searchNodeWithStack(key);
 
-    /**
-     *
-     * @param node
-     * @return
-     * @throws NoSuchElementException when node is null
-     */
-    private int orderingPosition(RedBlackTreeNode<K, V> node) {
-        if (node == null) {
-            throw new NoSuchElementException();
+        if (stack.peek().getKey() != key) {
+            throw new IllegalArgumentException();
         }
 
-        return getSize(node.getLeftChild());
+        while (!stack.isEmpty()) {
+            RedBlackTreeNode<K, V> current = stack.pollLast();
+            RedBlackTreeNode<K, V> next = stack.peekLast();
+            if (current.getKey().equals(key)) {
+                position += getSize(current.getLeftChild());
+                break;
+            }
+            if (next == current.getRightChild()) {
+                position += getSize(current.getLeftChild()) + 1;
+            }
+        }
+
+        return position;
     }
 
     /**
@@ -562,23 +566,34 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public Iterable<K> keys() {
-        return new Iterable<K>() {
+        return () -> keys(root);
+    }
+
+    private Iterator<K> keys(RedBlackTreeNode<K, V> start) {
+        return new Iterator<K>() {
+            Deque<RedBlackTreeNode<K, V>> stack;
+
             @Override
-            public Iterator<K> iterator() {
-                return new Iterator<K>() {
-                    Deque<RedBlackTreeNode<K, V>> stack = new ArrayDeque<>((int) Math.ceil(Math.log(root.getSize())));
+            public boolean hasNext() {
+                if (stack == null) {
+                    stack = new ArrayDeque<>(2 * (int) Math.ceil(Math.log(root.getSize() + 1)));
+                    goToSuccessor(start);
+                }
+                return !stack.isEmpty();
+            }
 
+            @Override
+            public K next() {
+                RedBlackTreeNode<K, V> node = stack.pop();
+                goToSuccessor(node.getRightChild());
+                return node.getKey();
+            }
 
-                    @Override
-                    public boolean hasNext() {
-                        return false;
-                    }
-
-                    @Override
-                    public K next() {
-                        return null;
-                    }
-                };
+            private void goToSuccessor(RedBlackTreeNode<K, V> node) {
+                while (node != null) {
+                    stack.push(node);
+                    node = node.getLeftChild();
+                }
             }
         };
     }
@@ -588,7 +603,38 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public Iterable<K> keys(K min, K max) {
-        return null;
+        return () -> new Iterator<K>() {
+            Iterator<K> it = keys().iterator();
+            K current;
+            boolean computedNext = false;
+
+            @Override
+            public boolean hasNext() {
+                if (computedNext) {
+                    return compareKey(current, max) <= 0;
+                }
+
+                do {
+                    if (!it.hasNext())
+                        return false;
+                    current = it.next();
+                } while (compareKey(current, min) < 0);
+                computedNext = true;
+
+                return compareKey(current, max) <= 0;
+            }
+
+            @Override
+            public K next() {
+                if (!computedNext && !hasNext()) {
+                    throw new NoSuchElementException();
+                }
+
+                computedNext = false;
+                return current;
+
+            }
+        };
     }
 
     /**
@@ -596,7 +642,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
      */
     @Override
     public int size(K min, K max) {
-        return orderingPosition(max) - orderingPosition(min) + 1;
+        return orderingPosition(ceiling(max)) - orderingPosition(floor(min)) + 1;
     }
 
     /**
