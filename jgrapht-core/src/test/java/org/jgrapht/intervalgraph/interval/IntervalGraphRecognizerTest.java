@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.util.*;
+
 public class IntervalGraphRecognizerTest {
 
     /**
@@ -176,6 +178,12 @@ public class IntervalGraphRecognizerTest {
         //Every complete Graph is an interval graph
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(cg);
         assertTrue(recognizer.isIntervalGraph());
+        
+        //also test the sorting algorithm for intervals
+        ArrayList<Interval<Integer>> intervalsStartSort = recognizer.getIntervalsSortedByStartingPoint();
+        ArrayList<Interval<Integer>> intervalsEndSort = recognizer.getIntervalsSortedByEndingPoint();
+        intervalsStartSort.sort(Interval.<Integer>getEndingComparator());
+        assertEquals(intervalsStartSort, intervalsEndSort);
     }
     
     /*
@@ -201,6 +209,12 @@ public class IntervalGraphRecognizerTest {
         //Every complete Graph is an interval graph
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
         assertTrue(recognizer.isIntervalGraph());
+
+        //also test the sorting algorithm for intervals
+        ArrayList<Interval<Integer>> intervalsStartSort = recognizer.getIntervalsSortedByStartingPoint();
+        ArrayList<Interval<Integer>> intervalsEndSort = recognizer.getIntervalsSortedByEndingPoint();
+        intervalsStartSort.sort(Interval.<Integer>getEndingComparator());
+        assertEquals(intervalsStartSort, intervalsEndSort);
     }
     
     /*
@@ -226,6 +240,12 @@ public class IntervalGraphRecognizerTest {
         //Every complete Graph is an interval graph
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
         assertTrue(recognizer.isIntervalGraph());
+        
+        //also test the sorting algorithm for intervals
+        ArrayList<Interval<Integer>> intervalsStartSort = recognizer.getIntervalsSortedByStartingPoint();
+        ArrayList<Interval<Integer>> intervalsEndSort = recognizer.getIntervalsSortedByEndingPoint();
+        intervalsStartSort.sort(Interval.<Integer>getEndingComparator());
+        assertEquals(intervalsStartSort, intervalsEndSort);
     }
     
     /*
