@@ -1,21 +1,15 @@
 package org.jgrapht.alg.interval;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.print.attribute.IntegerSyntax;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.ChordalityInspector;
-import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.interval.*;
@@ -42,11 +36,6 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     
     private boolean isIntervalGraph;
     private boolean isChordal;
-    
-    private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint,
-                                         intervalsSortedByEndingPoint;
-    private Map<Interval<Integer>, V> intervalToVertexMap;
-    private Map<V, IntervalVertexPair<V, Integer>> vertexToIntervalMap;
 
     /**
      * Constructor for the algorithm
@@ -296,105 +285,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         // TODO Auto-generated method stub
         
     }
-    
-    private void computeIntervals() {
 
-    }
-    
-    
-
-    private void computeAT(V vertex) {
-        computeIntervals();
-        Interval<Integer> vertexInterval = intervalOfNeighbour(vertex);
-        List<Interval<Integer>> componentWoNeighbours = computeComponentWoNeighbours(vertex, vertexInterval);
-        List<Interval<Integer>> leftOfVertex = new ArrayList<>();
-        List<Interval<Integer>> rightOfVertex = new ArrayList<>();
-        for(Interval<Integer> interval: componentWoNeighbours) {
-            if(interval.getEnd() < vertexInterval.getStart()) {
-                leftOfVertex.add(interval);
-            }
-            if(vertexInterval.getEnd() < interval.getStart()) {
-                rightOfVertex.add(interval);
-            }
-        }
-
-    }
-    
-    private Interval<Integer> intervalOfNeighbour(V vertex){
-        List<V> neighbours = Graphs.neighborListOf(graph, vertex);
-        int minEndPoint = Integer.MAX_VALUE;
-        int maxStartPoint = Integer.MIN_VALUE;
-        for(V neighbour: neighbours) {
-            Interval<Integer> current = vertexToIntervalMap.get(neighbour).getInterval();
-            if(current.getStart() > maxStartPoint ) {
-                maxStartPoint = current.getStart();
-            }
-            if(current.getEnd() < minEndPoint ) {
-                minEndPoint = current.getEnd();
-            }
-        }
-        return new Interval<Integer>(maxStartPoint, minEndPoint);
-    }
-    
-    private List<Interval<Integer>> computeComponentWoNeighbours(V vertex, Interval<Integer> vertexInterval) {
-        List<Interval<Integer>> componentWoNeighbours = new ArrayList<>();
-        Set<Interval<Integer>> currentVertices = new HashSet<>();
-        int j = 0;
-        boolean foundComponent = false;
-        for(int i = 0; i<intervalsSortedByStartingPoint.size(); i++) {
-            while(intervalsSortedByEndingPoint.get(j).getEnd() < intervalsSortedByStartingPoint.get(i).getStart()) {
-                //the component spans vertexInterval (since we stop as soon as we now find the end of the component)
-                if(intervalsSortedByEndingPoint.get(j).getEnd() >= vertexInterval.getStart()) {
-                    foundComponent = true;
-                }
-                
-                //do not consider the neighbourhood - it still is a component since the component has an AT with vertex
-                if(!graph.containsEdge(vertex, intervalToVertexMap.get(intervalsSortedByEndingPoint.get(j)))) {
-                    componentWoNeighbours.add(intervalsSortedByEndingPoint.get(j));
-                }
-                //unmark interval
-                currentVertices.remove(intervalsSortedByEndingPoint.get(j));
-                
-            }
-            //wrong component
-            if(currentVertices.isEmpty() && !componentWoNeighbours.isEmpty() && !foundComponent) {
-                componentWoNeighbours = new ArrayList<>();
-            }
-            //correct component
-            if(currentVertices.isEmpty() && foundComponent) {
-                return componentWoNeighbours;
-            }
-            
-            currentVertices.add(intervalsSortedByStartingPoint.get(i));
-
-        }
-        return new ArrayList<>();
-    }
-    
-    private int computeR() {
-        return 0;
-    }
-    
-    private int computeL() {
-        return 0;
-    }
-    
-    private Pair<Interval<Integer>,Interval<Integer>> searchPreceedingElements(List<Interval<Integer>> x, List<Interval<Integer>> y){
-        if(x.isEmpty() || y.isEmpty())
-            return null;
-        int xi=0;
-        int yi=y.size()-1;
-        while(xi < x.size() && yi >= 0) {
-            if(x.get(xi).getStart() >= y.get(yi).getStart()) {
-                xi++;
-            }else if(x.get(xi).getEnd() >= y.get(yi).getEnd()) {
-                yi++;
-            }else {
-                return Pair.of(x.get(xi), y.get(yi));
-            }
-        }
-        return null;
-    }
     
     
     
