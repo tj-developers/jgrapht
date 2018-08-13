@@ -47,8 +47,6 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                                          intervalsSortedByEndingPoint;
     private Map<Interval<Integer>, V> intervalToVertexMap;
     private Map<V, IntervalVertexPair<V, Integer>> vertexToIntervalMap;
-    
-    private V asteroidalTriple1, asteroidalTriple2, asteroidalTriple3;
 
     /**
      * Constructor for the algorithm
@@ -302,21 +300,16 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     private void computeIntervals() {
 
     }
+    
+    
 
-    /**
-     * Computes the asteroidal triple from the conflicting, simplicial vertex of the graph up to conflict vertex 
-     * according to the perfect elimination order and the interval model up the this vertex given by
-     * intervalsSortedByStartingPoint, intervalsSortedByEndingPoint, vertexToIntervalMap, intervalToVertexMap
-     * 
-     * 
-     * @param conflictVertex
-     */
-    private void computeAT(V conflictVertex) {
-        Interval<Integer> vertexInterval = intervalOfNeighbor(conflictVertex);
-        List<Interval<Integer>> componentWoNeighbors = computeComponentWoNeighbors(conflictVertex, vertexInterval);
-        List<Interval<Integer>> leftOfVertex = new ArrayList<>(componentWoNeighbors.size());
-        List<Interval<Integer>> rightOfVertex = new ArrayList<>(componentWoNeighbors.size());
-        for(Interval<Integer> interval: componentWoNeighbors) {
+    private void computeAT(V vertex) {
+        computeIntervals();
+        Interval<Integer> vertexInterval = intervalOfNeighbour(vertex);
+        List<Interval<Integer>> componentWoNeighbours = computeComponentWoNeighbours(vertex, vertexInterval);
+        List<Interval<Integer>> leftOfVertex = new ArrayList<>();
+        List<Interval<Integer>> rightOfVertex = new ArrayList<>();
+        for(Interval<Integer> interval: componentWoNeighbours) {
             if(interval.getEnd() < vertexInterval.getStart()) {
                 leftOfVertex.add(interval);
             }
@@ -324,57 +317,15 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                 rightOfVertex.add(interval);
             }
         }
-        Map<Interval<Integer>,Integer> intervalToR = computeR(leftOfVertex,componentWoNeighbors);
-        Map<Interval<Integer>,Integer> intervalToL = computeL(rightOfVertex,componentWoNeighbors);
-        
-        //generate sorted List with R values (ascending by ending point)
-        List<Pair<Interval<Integer>,Interval<Integer>>> leftOfVertexWithRList = new ArrayList<>(leftOfVertex.size());
-        for(int i = 0; i < intervalsSortedByEndingPoint.size(); i++) {
-            Interval<Integer> currentInterval = intervalsSortedByEndingPoint.get(i);
-            if(intervalToR.containsKey(currentInterval)) {
-                Pair<Interval<Integer>,Interval<Integer>> rPair = new Pair<>(currentInterval,
-                    new Interval<>(currentInterval.getEnd(),intervalToR.get(currentInterval)));
-                leftOfVertexWithRList.add(rPair);
-            }
-        }
-        
-        //generate sorted List with L values (descending by starting point)
-        List<Pair<Interval<Integer>,Interval<Integer>>> rightOfVertexWithLList = new ArrayList<>(rightOfVertex.size());
-        for(int i = intervalsSortedByStartingPoint.size(); i >= 0; i--) {
-            Interval<Integer> currentInterval = intervalsSortedByStartingPoint.get(i);
-            if(intervalToL.containsKey(currentInterval)) {
-                Pair<Interval<Integer>,Interval<Integer>> lPair = new Pair<>(currentInterval,
-                    new Interval<>(currentInterval.getStart(),intervalToL.get(currentInterval)));
-                rightOfVertexWithLList.add(lPair);
-            }
-        }
 
-        //we found the asteroidal triple!
-        Pair<Interval<Integer>,Interval<Integer>> asteroidalPair = searchPreceedingElements(leftOfVertexWithRList, rightOfVertexWithLList);
-        
-        asteroidalTriple1 = conflictVertex;
-        asteroidalTriple2 = intervalToVertexMap.get(asteroidalPair.getFirst());
-        asteroidalTriple3 = intervalToVertexMap.get(asteroidalPair.getSecond());
-        
     }
     
-    /**
-     * Computes the interval the vertex would have got, if it would be added to the current interval model.
-     * @param vertex
-     * @return
-     */
-    private Interval<Integer> intervalOfNeighbor(V vertex){
-        List<V> neighbors = Graphs.neighborListOf(graph, vertex);
+    private Interval<Integer> intervalOfNeighbour(V vertex){
+        List<V> neighbours = Graphs.neighborListOf(graph, vertex);
         int minEndPoint = Integer.MAX_VALUE;
         int maxStartPoint = Integer.MIN_VALUE;
-        for(V neighbor: neighbors) {
-            
-            //not relevant
-            if(!vertexToIntervalMap.containsKey(neighbor)) 
-                continue;
-            
-            
-            Interval<Integer> current = vertexToIntervalMap.get(neighbor).getInterval();
+        for(V neighbour: neighbours) {
+            Interval<Integer> current = vertexToIntervalMap.get(neighbour).getInterval();
             if(current.getStart() > maxStartPoint ) {
                 maxStartPoint = current.getStart();
             }
@@ -385,14 +336,8 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         return new Interval<Integer>(maxStartPoint, minEndPoint);
     }
     
-    /**
-     * Computed the component spanning vertexInterval without the neighbor of vertex
-     * @param vertex
-     * @param vertexInterval
-     * @return
-     */
-    private List<Interval<Integer>> computeComponentWoNeighbors(V vertex, Interval<Integer> vertexInterval) {
-        List<Interval<Integer>> componentWoNeighbors = new ArrayList<>(graph.vertexSet().size());
+    private List<Interval<Integer>> computeComponentWoNeighbours(V vertex, Interval<Integer> vertexInterval) {
+        List<Interval<Integer>> componentWoNeighbours = new ArrayList<>();
         Set<Interval<Integer>> currentVertices = new HashSet<>();
         int j = 0;
         boolean foundComponent = false;
@@ -403,30 +348,21 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                     foundComponent = true;
                 }
                 
-                //do not consider the neighborhood - it still is a component since the component has an AT with vertex
+                //do not consider the neighbourhood - it still is a component since the component has an AT with vertex
                 if(!graph.containsEdge(vertex, intervalToVertexMap.get(intervalsSortedByEndingPoint.get(j)))) {
-                    componentWoNeighbors.add(intervalsSortedByEndingPoint.get(j));
+                    componentWoNeighbours.add(intervalsSortedByEndingPoint.get(j));
                 }
                 //unmark interval
                 currentVertices.remove(intervalsSortedByEndingPoint.get(j));
-                j++;
                 
             }
-            
-            //correct component
-            if(currentVertices.isEmpty() 
-                && foundComponent 
-                && intervalsSortedByStartingPoint.get(i).getStart() > vertexInterval.getEnd()) {
-                
-                return componentWoNeighbors;
-            }
-            
             //wrong component
-            if(currentVertices.isEmpty() 
-                && !componentWoNeighbors.isEmpty() 
-                && !foundComponent) {
-                
-                componentWoNeighbors = new ArrayList<>();
+            if(currentVertices.isEmpty() && !componentWoNeighbours.isEmpty() && !foundComponent) {
+                componentWoNeighbours = new ArrayList<>();
+            }
+            //correct component
+            if(currentVertices.isEmpty() && foundComponent) {
+                return componentWoNeighbours;
             }
             
             currentVertices.add(intervalsSortedByStartingPoint.get(i));
@@ -435,153 +371,26 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         return new ArrayList<>();
     }
     
-    /**
-     * computes the R value for intervalsForR based on intervalModelComponent and the class interval model and graph.
-     * @param intervalsForR
-     * @param intervalModelComponent
-     * @return
-     */
-    private Map<Interval<Integer>, Integer> computeR(
-        List<Interval<Integer>> intervalsForR, List<Interval<Integer>> intervalModelComponent)
-    {
-        List<Interval<Integer>> intervalsForRSortedByEndpoint =
-            new ArrayList<>(intervalsForR.size());
-        Set<Interval<Integer>> componentSet = new HashSet<>(intervalModelComponent);
-
-        // sort the intervals correctly
-        for (int i=0; i<intervalsSortedByEndingPoint.size();i++) {
-            Interval<Integer> interval = intervalsSortedByEndingPoint.get(i);
-            if (componentSet.contains(interval)) {
-                intervalsForRSortedByEndpoint.add(interval);
-            }
-        }
-
-        // compute inductively all R
-        Map<Interval<Integer>, Integer> intervalToR = new HashMap<>(intervalsForR.size());
-        for (int i = intervalsForRSortedByEndpoint.size() - 1; i >= 0; i--) {
-            Interval<Integer> currentInterval = intervalsForRSortedByEndpoint.get(i);
-
-            // set to inf at the start
-            int minRValue = Integer.MAX_VALUE;
-
-            // iterate over neighbors
-            List<V> neighbors =
-                Graphs.neighborListOf(graph, intervalToVertexMap.get(currentInterval));
-            for (V neighbor : neighbors) {
-                
-                //not relevant
-                if(!vertexToIntervalMap.containsKey(neighbor)) {
-                    continue;
-                }
-                
-                Interval<Integer> neighborInterval =
-                    vertexToIntervalMap.get(neighbor).getInterval();
-
-                // neighbor not in the component
-                if (!componentSet.contains(neighborInterval)) {
-                    // so it must be an neighbor of the conflict vertex
-                    int rValue = currentInterval.getEnd();
-                    if (minRValue > rValue) {
-                        minRValue = rValue;
-                    }
-                }
-                // neighbor has an arc
-                else if (neighborInterval.getEnd() > currentInterval.getEnd()) {
-                    int rValueNeighbor = intervalToR.get(neighborInterval);
-                    if (minRValue > rValueNeighbor) {
-                        minRValue = rValueNeighbor;
-                    }
-                }
-            }
-            intervalToR.put(currentInterval, minRValue);
-        }
-
-        return intervalToR;
+    private int computeR() {
+        return 0;
     }
     
-    
-    /**
-     * computes the L value for intervalsForR based on intervalModelComponent and the class interval model and graph.
-     * @param intervalsForL
-     * @param intervalModelComponent
-     * @return
-     */
-    private Map<Interval<Integer>, Integer> computeL(
-        List<Interval<Integer>> intervalsForL, List<Interval<Integer>> intervalModelComponent)
-    {
-        List<Interval<Integer>> intervalsForRSortedReverseByStarting =
-            new ArrayList<>(intervalsForL.size());
-        Set<Interval<Integer>> componentSet = new HashSet<>(intervalModelComponent);
-
-        // sort the intervals correctly
-        for (int i=intervalsSortedByStartingPoint.size()-1; i>=0; i--) {
-            Interval<Integer> interval = intervalsSortedByStartingPoint.get(i);
-            if (componentSet.contains(interval)) {
-                intervalsForRSortedReverseByStarting.add(interval);
-            }
-        }
-
-        // compute inductively all L
-        Map<Interval<Integer>, Integer> intervalToL = new HashMap<>(intervalsForL.size());
-        for (int i = 0; i < intervalsForRSortedReverseByStarting.size(); i++) {
-            Interval<Integer> currentInterval = intervalsForRSortedReverseByStarting.get(i);
-
-            // set to inf at the start
-            int maxLValue = Integer.MIN_VALUE;
-
-            // iterate over neighbors
-            List<V> neighbors =
-                Graphs.neighborListOf(graph, intervalToVertexMap.get(currentInterval));
-            for (V neighbor : neighbors) {
-                //not relevant
-                if(!vertexToIntervalMap.containsKey(neighbor)) {
-                    continue;
-                }
-                
-                Interval<Integer> neighborInterval =
-                    vertexToIntervalMap.get(neighbor).getInterval();
-
-                // neighbor not in the component
-                if (!componentSet.contains(neighborInterval)) {
-                    // so it must be an neighbor of the conflict vertex
-                    int lValue = currentInterval.getStart();
-                    if (maxLValue > lValue) {
-                        maxLValue = lValue;
-                    }
-                }
-                // neighbor has an arc
-                else if (neighborInterval.getStart() < currentInterval.getStart()) {
-                    int lValueNeighbor = intervalToL.get(neighborInterval);
-                    if (maxLValue > lValueNeighbor) {
-                        maxLValue = lValueNeighbor;
-                    }
-                }
-            }
-            intervalToL.put(currentInterval, maxLValue);
-        }
-
-        return intervalToL;
+    private int computeL() {
+        return 0;
     }
     
-    /**
-     * Search for preceedings Elements
-     * @param x
-     * @param y
-     * @return
-     */
-    private Pair<Interval<Integer>,Interval<Integer>> searchPreceedingElements(
-        List<Pair<Interval<Integer>,Interval<Integer>>> x, List<Pair<Interval<Integer>,Interval<Integer>>> y){
+    private Pair<Interval<Integer>,Interval<Integer>> searchPreceedingElements(List<Interval<Integer>> x, List<Interval<Integer>> y){
         if(x.isEmpty() || y.isEmpty())
             return null;
         int xi=0;
         int yi=y.size()-1;
         while(xi < x.size() && yi >= 0) {
-            if(x.get(xi).getSecond().getStart() >= y.get(yi).getSecond().getStart()) {
+            if(x.get(xi).getStart() >= y.get(yi).getStart()) {
                 xi++;
-            }else if(x.get(xi).getSecond().getEnd() >= y.get(yi).getSecond().getEnd()) {
+            }else if(x.get(xi).getEnd() >= y.get(yi).getEnd()) {
                 yi++;
             }else {
-                return Pair.of(x.get(xi).getFirst(), y.get(yi).getFirst());
+                return Pair.of(x.get(xi), y.get(yi));
             }
         }
         return null;
