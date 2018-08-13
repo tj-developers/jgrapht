@@ -1,6 +1,7 @@
 package org.jgrapht.alg.color;
 
 import java.util.Collections;
+import org.jgrapht.Graph;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 
 /**
