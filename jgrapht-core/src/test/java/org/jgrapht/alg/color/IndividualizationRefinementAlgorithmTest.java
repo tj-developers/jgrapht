@@ -25,6 +25,7 @@ import java.util.*;
 import org.jgrapht.*;
 import org.jgrapht.generate.*;
 import org.jgrapht.graph.*;
+import org.jgrapht.util.*;
 import org.junit.*;
 
 /**
@@ -36,7 +37,7 @@ public class IndividualizationRefinementAlgorithmTest
 {
 
     @Test
-    public void testUndirectedC5Discreteness() {
+    public void testC5Discreteness() {
         Graph<Integer, DefaultEdge> undirectedCycle5 = new SimpleGraph<>(DefaultEdge.class);
         Graph<Integer, DefaultEdge> directedCycle5 = new DefaultDirectedGraph<>(DefaultEdge.class);
 
@@ -99,7 +100,7 @@ public class IndividualizationRefinementAlgorithmTest
         for(int i = 1; i < 10; i++) {
             GnpRandomGraphGenerator<Integer, DefaultEdge> generator = new GnpRandomGraphGenerator<>(100, 0.1 * i);
             
-            Graph<Integer, DefaultEdge> randomGraph = new SimpleGraph<>(DefaultEdge.class);
+            Graph<Integer, DefaultEdge> randomGraph = new SimpleGraph<>(SupplierUtil.createIntegerSupplier(100), SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
             generator.generateGraph(randomGraph);
             
             IndividualizationRefinementAlgorithm<Integer, DefaultEdge> IR = new IndividualizationRefinementAlgorithm<>(randomGraph);

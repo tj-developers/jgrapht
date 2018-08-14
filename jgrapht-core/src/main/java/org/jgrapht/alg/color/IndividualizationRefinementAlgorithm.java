@@ -41,12 +41,6 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
         // stack for all created nodes in the search tree
         Deque<Integer> stack = new ArrayDeque<>(graph.vertexSet().size());
 
-        // comparator for the lexicographical ordering on the colorings
-        Comparator<Coloring<V>> leafComparator = getLexicographicalColoringComparator();
-        
-        // the lexicographically smallest coloring found up to now
-        Coloring<V> smallestColoring = null;
-
         // mapping from each node to its coloring
         Map<Integer, Coloring<V>> D = new HashMap<>();
         // mapping from nodes of the search tree and the depth in the search tree (length of path from root)
@@ -67,6 +61,12 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
 
         // r has to be refined
         stack.push(r);
+        
+        // comparator for the lexicographical ordering on the colorings
+        Comparator<Coloring<V>> leafComparator = getLexicographicalColoringComparator();
+        
+        // the lexicographically smallest coloring found up to now
+        Coloring<V> smallestColoring = null;
 
         // process all nodes
         while(!stack.isEmpty()) {
@@ -78,36 +78,38 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
             
             // if the coloring is discrete we found a leaf node, otherwise, we have to refine the coloring further
             if(isColoringDiscrete(currentColoring)) {
-                if(leafComparator.compare(smallestColoring, currentColoring) < 0) {
+                if(smallestColoring == null || leafComparator.compare(smallestColoring, currentColoring) < 0) {
                     smallestColoring = currentColoring;
                 }
                 stack.pop();
-            } else if (!E.containsKey(t)) { // t produces child nodes. If E does not contain t, add it.
-                // add t to E
-                E.put(t, calculateCanonicallyFirstRefineColor(currentColoring));
-                // t is processed so add it to done
-                done.put(t, new HashSet<>());
-            }
-
-            // calculate all vertices that have to be processed
-            Set<V> EMinusDone = calculateSetMinus(E.get(t), done.get(t));
-            if(!EMinusDone.isEmpty()) { // refine all non-processed vertices of coloring of node t
-                // get next vertex that has to be processed
-                V v = EMinusDone.iterator().next();
-                // add v to the processed vertices
-                done.get(t).add(v);
-                // create new node in the search tree
-                Integer u = countNodes++;
-                // refine coloring of t at v with p.get(t)
-                Coloring<V> alpha = calculateRefinedColoring(currentColoring, v, p.get(t));
-                // execute color refinement with the new refined coloring
-                D.put(u, new ColorRefinementAlgorithm<>(graph, alpha).getColoring());
-                // path length of node u is path length of t plus one because we added u after t in the search tree
-                p.put(u, p.get(t) + 1);
-                // u has to be processed further
-                stack.push(u);
-            } else { // nothing to do
-                stack.pop();
+            } else {
+                if (!E.containsKey(t)) { // t produces child nodes. If E does not contain t, add it.
+                    // add t to E
+                    E.put(t, calculateCanonicallyFirstRefineColor(currentColoring));
+                    // t is processed so add it to done
+                    done.put(t, new HashSet<>());
+                }
+                
+                // calculate all vertices that have to be processed
+                Set<V> EMinusDone = calculateSetMinus(E.get(t), done.get(t));
+                if(!EMinusDone.isEmpty()) { // refine all non-processed vertices of coloring of node t
+                    // get next vertex that has to be processed
+                    V v = EMinusDone.iterator().next();
+                    // add v to the processed vertices
+                    done.get(t).add(v);
+                    // create new node in the search tree
+                    Integer u = countNodes++;
+                    // refine coloring of t at v with p.get(t)
+                    Coloring<V> alpha = calculateRefinedColoring(currentColoring, v, p.get(t));
+                    // execute color refinement with the new refined coloring
+                    D.put(u, new ColorRefinementAlgorithm<>(graph, alpha).getColoring());
+                    // path length of node u is path length of t plus one because we added u after t in the search tree
+                    p.put(u, p.get(t) + 1);
+                    // u has to be processed further
+                    stack.push(u);
+                } else { // nothing to do
+                    stack.pop();
+                }
             }
         }
 
@@ -126,7 +128,7 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
         List<Set<V>> colorClasses = coloring.getColorClasses();
         // check whether the coloring is inconsistent - fail fast
         if(coloring.getNumberColors() != colorClasses.size()) {
-            throw new IllegalArgumentException("Individualization refinement calculated an incorrect coloring. This is a bug.");
+            throw new IllegalArgumentException("Individualization refinement calculated an incorrect coloring. This is a bug." + coloring.getNumberColors() + ", classes: " + colorClasses.size() + ", coloring: " + coloring.toString());
         }
         // return if the number of color classes is the same as the number of vertices in the graph, then it is discrete
         return graph.vertexSet().size() == colorClasses.size();

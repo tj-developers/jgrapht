@@ -154,7 +154,9 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
             }
         }
 
-        return new ColoringImpl<>(coloring, coloring.size());
+        // TODO: probably easier way to do this:
+        Set<Integer> colorsUsed = new HashSet<>(coloring.values());       
+        return new ColoringImpl<>(coloring, colorsUsed.size());
     }
 
     /**
