@@ -4,12 +4,10 @@ import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 
-import java.awt.*;
 import java.io.Serializable;
 import java.util.*;
-import java.util.List;
 
-public class IndividualizationRefinementAlgorithm<V, E> implements VertexColoringAlgorithm, Serializable {
+public class IndividualizationRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V>, Serializable {
 
     private static final long serialVersionUID = -4443873488410934998L;
 
@@ -42,8 +40,12 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
 
         // stack for all created nodes in the search tree
         Deque<Integer> stack = new ArrayDeque<>(graph.vertexSet().size());
-        // a list that stores all discrete colorings. The smallest of them is the coloring we want to have.
-        LinkedList<Coloring<V>> leaves = new LinkedList<>();
+
+        // comparator for the lexicographical ordering on the colorings
+        Comparator<Coloring<V>> leafComparator = getLexicographicalColoringComparator();
+        
+        // the lexicographically smallest coloring found up to now
+        Coloring<V> smallestColoring = null;
 
         // mapping from each node to its coloring
         Map<Integer, Coloring<V>> D = new HashMap<>();
@@ -72,13 +74,17 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
             // get node that has to be processed
             Integer t = stack.peek();
 
+            Coloring<V> currentColoring = D.get(t);
+            
             // if the coloring is discrete we found a leaf node, otherwise, we have to refine the coloring further
-            if(isColoringDiscrete(D.get(t))) {
-                leaves.add(D.get(t));
+            if(isColoringDiscrete(currentColoring)) {
+                if(leafComparator.compare(smallestColoring, currentColoring) < 0) {
+                    smallestColoring = currentColoring;
+                }
                 stack.pop();
             } else if (!E.containsKey(t)) { // t produces child nodes. If E does not contain t, add it.
                 // add t to E
-                E.put(t, calculateCanonicallyFirstRefineColor(D.get(t)));
+                E.put(t, calculateCanonicallyFirstRefineColor(currentColoring));
                 // t is processed so add it to done
                 done.put(t, new HashSet<>());
             }
@@ -93,7 +99,7 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
                 // create new node in the search tree
                 Integer u = countNodes++;
                 // refine coloring of t at v with p.get(t)
-                Coloring<V> alpha = calculateRefinedColoring(D.get(t), v, p.get(t));
+                Coloring<V> alpha = calculateRefinedColoring(currentColoring, v, p.get(t));
                 // execute color refinement with the new refined coloring
                 D.put(u, new ColorRefinementAlgorithm<>(graph, alpha).getColoring());
                 // path length of node u is path length of t plus one because we added u after t in the search tree
@@ -106,7 +112,7 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
         }
 
         // return the lexicographically smallest coloring
-        return calculateLexicographicallyFirstColoring(leaves);
+        return smallestColoring;
     }
 
     /**
@@ -222,28 +228,6 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
     }
 
     /**
-     * Calculates the lexicographically smallest coloring of all calculated discrete colorings (the leaves).
-     *
-     * @param leaves the list of all calculated discrete colorings (the leaves)
-     *
-     * @return the lexicographically smallest coloring of all calculated discrete colorings (the leaves)
-     */
-    private Coloring<V> calculateLexicographicallyFirstColoring(List<Coloring<V>> leaves) {
-        // comparator for the lexicographical ordering on the colorings
-        Comparator<Coloring<V>> leafComparator = getLexigrophicallyGraphColringComparator();
-
-        // search for lexicographical minimum
-        Coloring<V> first = leaves.get(0);
-        for(Coloring<V> leaf : leaves) {
-            if(leafComparator.compare(first, leaf) < 0) {
-                first = leaf;
-            }
-        }
-
-        return first;
-    }
-
-    /**
      * Returns a comparator to compare graph colorings lexicographically.
      * The string of the corresponding coloring, denoted by C, is defined as follows:
      *   [C(v) [C(v)C(w) : for all (v,w) in E] : for all v in V sorted by coloring C]
@@ -252,7 +236,7 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
      *
      * @return a comparator to compare graph colorings lexicographically.
      */
-    private Comparator<Coloring<V>> getLexigrophicallyGraphColringComparator() {
+    private Comparator<Coloring<V>> getLexicographicalColoringComparator() {
         return (o1, o2) -> {
             List<Set<V>> colorClasses1 = o1.getColorClasses();
             List<Set<V>> colorClasses2 = o2.getColorClasses();
@@ -322,8 +306,8 @@ public class IndividualizationRefinementAlgorithm<V, E> implements VertexColorin
     private void sortColorClasses(List<Set<V>> colorClasses, VertexColoringAlgorithm.Coloring<V> coloring) {
         colorClasses.sort((o1, o2) -> {
             if(o1.size() == o2.size()) {
-                Iterator it1 = o1.iterator();
-                Iterator it2 = o2.iterator();
+                Iterator<V> it1 = o1.iterator();
+                Iterator<V> it2 = o2.iterator();
                 if(!it1.hasNext() || !it2.hasNext()) {
                     return Integer.compare(o1.size(), o2.size());
                 }
