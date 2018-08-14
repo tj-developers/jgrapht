@@ -38,8 +38,8 @@ public class DecompositionTreeColour<V, E> implements VertexColoringAlgorithm<V>
 
     /**
      * 
-     * @param graph
-     * @param decompositionMap
+     * @param graph the input graph
+     * @param decompositionMap the input decomposition map
      */
     public DecompositionTreeColour(Graph<Integer, E> graph, Map<Integer, Set<V>> decompositionMap) {
         this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
