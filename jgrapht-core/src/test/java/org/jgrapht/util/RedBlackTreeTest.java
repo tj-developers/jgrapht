@@ -117,6 +117,7 @@ public class RedBlackTreeTest {
         list.clear();
         redBlackTree.keys(8,22).forEach(list::add);
         System.out.println(Arrays.toString(Arrays.copyOfRange(sortedKeys, 2, 8)));
+        System.out.println(Arrays.toString(list.stream().mapToInt(Integer::intValue).toArray()));
         assertArrayEquals(Arrays.copyOfRange(sortedKeys, 2, 8), list.stream().mapToInt(Integer::intValue).toArray());
         for (int min = 0; min < TEST_SIZE; min++) {
             for (int max = min; max < TEST_SIZE; max++) {

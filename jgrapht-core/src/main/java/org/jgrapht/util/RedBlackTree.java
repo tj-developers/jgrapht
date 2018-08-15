@@ -604,35 +604,56 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     @Override
     public Iterable<K> keys(K min, K max) {
         return () -> new Iterator<K>() {
-            Iterator<K> it = keys().iterator();
-            K current;
-            boolean computedNext = false;
+            Deque<RedBlackTreeNode<K, V>> stackLeft;
+            Deque<RedBlackTreeNode<K, V>> stackRight;
 
             @Override
             public boolean hasNext() {
-                if (computedNext) {
-                    return compareKey(current, max) <= 0;
+                if (stackLeft == null) {
+                    RedBlackTreeNode<K, V> topNode = root;
+                    stackLeft = searchNodeWithStack(min);
+                    stackRight = searchNodeWithStack(max);
+
+                    while (stackRight.peekLast() == stackLeft.peekLast()) {
+                        topNode = stackLeft.peekLast();
+                        stackLeft.pollLast();
+                        stackRight.pollLast();
+                        if (stackLeft.isEmpty() || stackRight.isEmpty()) {
+                            break;
+                        }
+                    }
+
+                    stackRight.addLast(topNode);
+                    stackLeft.removeIf(node -> compareKey(node.getKey(), min) < 0);
+                    stackRight.removeIf(node -> compareKey(node.getKey(), max) > 0);
                 }
-
-                do {
-                    if (!it.hasNext())
-                        return false;
-                    current = it.next();
-                } while (compareKey(current, min) < 0);
-                computedNext = true;
-
-                return compareKey(current, max) <= 0;
+                return !stackLeft.isEmpty() || !stackRight.isEmpty();
             }
 
             @Override
             public K next() {
-                if (!computedNext && !hasNext()) {
+                if (!hasNext()) {
                     throw new NoSuchElementException();
                 }
+                RedBlackTreeNode<K, V> node;
+                if (!stackLeft.isEmpty()) {
+                    node = stackLeft.pop();
+                    goToSuccessor(node.getRightChild());
+                } else {
+                    node = stackRight.pollLast();
+                    if (!stackRight.isEmpty()) {
+                        goToSuccessor(stackRight.peekLast().getLeftChild());
+                    }
+                }
 
-                computedNext = false;
-                return current;
+                return node.getKey();
+            }
 
+            private void goToSuccessor(RedBlackTreeNode<K, V> node) {
+                while (node != null) {
+                    stackLeft.push(node);
+                    node = node.getLeftChild();
+                }
             }
         };
     }
