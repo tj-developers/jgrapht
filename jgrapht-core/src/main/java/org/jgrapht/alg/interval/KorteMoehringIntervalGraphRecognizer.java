@@ -1,6 +1,5 @@
 package org.jgrapht.alg.interval;
 
-import com.sun.istack.internal.NotNull;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
@@ -12,15 +11,14 @@ import java.util.*;
 
 /**
  * TODO: better Javadoc
- * @author Ira Justus Fesefeldt (PhoenixIra)
- * @author Jiong Fu
- * @author Timofey Chudakov
  *
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
+ * @author Ira Justus Fesefeldt (PhoenixIra)
+ * @author Jiong Fu
+ * @author Timofey Chudakov
  */
-public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraphRecognizerInterface<V>
-{
+public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraphRecognizerInterface<V> {
 
     /**
      * The graph to be recognized
@@ -60,13 +58,13 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
     /**
      * TODO: better Javadoc
-     * 
+     * <p>
      * the Korte-Moehring Algorithm, which tests the graphs with an MPQ tree for an interval representation.
      * If the algorithm returns true, we can computed an interval representation of the MPQ Tree
      * If the algorithm returns false, we can computed an counter example of the MPQ Tree
      */
-    private void testIntervalGraph()
-    {
+    private void testIntervalGraph() {
+
         // if the graph is not chordal, then it is not interval
         if (!chordalInspector.isChordal()) {
             isIntervalGraph = false;
@@ -74,7 +72,6 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         }
 
         // get the perfect elimination order for the vertices in the graph
-        // TODO: reverse the perfect elimination order retrieved from the chordal inspector
         List<V> perfectEliminationOrder = chordalInspector.getPerfectEliminationOrder();
         Map<V, Integer> vertexIndexMap = getVertexIndexMap(perfectEliminationOrder);
 
@@ -91,26 +88,12 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             }
 
             // labeling
-            Queue<MPQTreeNode> treeNodeQueue = new LinkedList<>();
-
-            // phase A
-            for (V vertex : predecessors) {
-                MPQTreeNode associatedNode = getAssociatedTreeNode(vertex);
-                if (associatedNode == null) {
-                    throw new IllegalStateException("The vertex is not found in the MPQ tree.");
-                }
-
-                if (associatedNode.getClass() == QSectionNode.class) {
-                    QSectionNode qSectionNode = (QSectionNode) associatedNode;
-                    if (!qSectionNode.isLeftmostSection() && !qSectionNode.isRightmostSection()) {
-                        return; // TODO: then the input graph is not an interval graph, return false here in the future
-                    }
-                }
-
-                removeVertexFromAssociatedTreeNode(vertex, associatedNode);
-
-                // put the node or the outer section on a queue
-                treeNodeQueue.add(associatedNode);
+            Queue<MPQTreeNode> treeNodeQueue = null;
+            try {
+                treeNodeQueue = getTreeNodeQueue(predecessors);
+            } catch (RuntimeException e) {
+                isIntervalGraph = false;
+                return;
             }
 
             // phase B
@@ -130,36 +113,55 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                 }
             }
 
-            Map<MPQTreeNode,Integer> positiveLabels = getPositiveLabels(predecessors);
-            
-            // test phase:
-            // check for path of positive labels
-            if(!testPath(positiveLabels.keySet()) 
-            //check if outer sections of Q nodes N contain predecessors intersection V(N)
-                | !testOuterSectionsOfQNodes(positiveLabels.keySet(), predecessors))
-            {
-                //then this is not an interval graph
-                isIntervalGraph = false;
-                return;
-            }
-            
             // update phase:
             // generate the path
-            List<MPQTreeNode> path = getPath(positiveLabels.keySet());
-            
+//            List<MPQTreeNode> path = getPath(positiveLabels.keySet());
+
             //get lowest positive node in path
-            MPQTreeNode smallestNode = getSmallN(path, positiveLabels);
-            
+//            MPQTreeNode smallestNode = getSmallN(path, positiveLabels);
+
             //get highest non-inf node in path
-            MPQTreeNode biggestNode = getBigN(path, positiveLabels);
-            
+//            MPQTreeNode biggestNode = getBigN(path, positiveLabels);
+
             //update MPQ Tree
-            if(smallestNode.equals(biggestNode))
-                addVertexToLeaf(u,path);
-            else
-                changedPathToTemplates(u,path,smallestNode,biggestNode);
+//            if(smallestNode.equals(biggestNode))
+//                addVertexToLeaf(u,path);
+//            else
+//                changedPathToTemplates(u,path,smallestNode,biggestNode);
 
         }
+    }
+
+    /**
+     * In labeling phase A, a tree node queue is returned
+     *
+     * @param predecessors adjacent vertices of a node
+     * @return
+     */
+    private Queue<MPQTreeNode> getTreeNodeQueue(Set<V> predecessors) {
+        Queue<MPQTreeNode> treeNodeQueue = new LinkedList<>();
+
+        // phase A
+        for (V vertex : predecessors) {
+            MPQTreeNode associatedNode = getAssociatedTreeNode(vertex);
+            if (associatedNode == null) {
+                throw new IllegalStateException("The vertex is not found in the MPQ tree.");
+            }
+
+            if (associatedNode.getClass() == QSectionNode.class) {
+                QSectionNode qSectionNode = (QSectionNode) associatedNode;
+                if (!qSectionNode.isLeftmostSection() && !qSectionNode.isRightmostSection()) {
+                    throw new RuntimeException("The associated Q-section node is not the outermost.");
+                }
+            }
+
+            removeVertexFromAssociatedTreeNode(vertex, associatedNode);
+
+            // put the node or the outer section on a queue
+            treeNodeQueue.add(associatedNode);
+        }
+
+        return treeNodeQueue;
     }
 
     /**
@@ -203,40 +205,14 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * Changed the MPQ Tree if u has no predecessors.
      * Adds a new leaf node with the bag of this vertex to the root.
-     * 
+     *
      * @param u the vertex to be added to the MPQ Tree
      */
     private void addEmptyPredecessors(V u) {
-        HashSet<V> elements = new HashSet<>();  // to be implemented by the doubly linked circular list
-        elements.add(u);
-        MPQTreeNode leaf = new PNode(elements);
+        CircularListNode<V> currentNode = new CircularListNode<>(u);
+        MPQTreeNode leaf = new PNode(currentNode);
         // add leaf to the tree root
         leaf.parent = treeRoot;
-    }
-
-    /**
-     * Get positive labels of the modified PQ-tree
-     *
-     * @return the map of the tree node and the positive label
-     */
-    private Map<MPQTreeNode, Integer> getPositiveLabels(Set<V> predecessors) {
-        labelTree(predecessors);
-        return null;
-    }
-
-    /**
-     * Label every node N and every section S of a Q-node
-     * according to the relation between the vertex u and the vertices of N or S
-     * <p>
-     * the label is:
-     * - 2, if u is adjacent to all vertices from N or S
-     * - 1, if u is adjacent to some vertices from N or S
-     * - 0, if u is adjacent to no vertices from N or S
-     *
-     * @param predecessors the predecessors which are used to label the vertices in the tree
-     */
-    private void labelTree(Set<V> predecessors) {
-
     }
 
     /**
@@ -258,8 +234,19 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             return associatedPositions.iterator().next();
         }
 
-        // if the associated position set contains more than one element
-        throw new IllegalStateException("The vertex is associated with more than one node in the MPQ tree.");
+        // if the associated position set contains more than one element, then the associated tree node should be a Q-node
+        MPQTreeNode associatedQNode = null;
+        for (MPQTreeNode associatedPosition : associatedPositions) {
+            if (associatedPosition.getClass() != QSectionNode.class) {
+                throw new RuntimeException("Associated position must be a Q section node in this case.");
+            }
+            if (associatedQNode != null && associatedPosition.parent != associatedQNode) {
+                throw new RuntimeException("Associated parent is node unique.");
+            }
+            associatedQNode = associatedPosition.parent;
+        }
+
+        return associatedQNode;
     }
 
     /**
@@ -267,25 +254,38 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      *
      * @param vertex   the vertex to be removed
      * @param treeNode the associated node of the vertex
-     * @return true if the vertex is successfully removed from the associated node, false otherwise
      */
-    private boolean removeVertexFromAssociatedTreeNode(V vertex, MPQTreeNode treeNode) {
-        if (treeNode.elements == null) {
+    private void removeVertexFromAssociatedTreeNode(V vertex, MPQTreeNode treeNode) {
+        if (treeNode.currentVertex == null) {
             throw new IllegalStateException("The element set in the associated node is null.");
         }
-        return treeNode.elements.remove(vertex);
+
+        CircularListNode current = treeNode.currentVertex.next();
+        while(treeNode.currentVertex != current) {
+
+            // if vertex to be deleted is found
+            if (current.element().equals(vertex)) {
+                current.remove();
+                return;
+            }
+
+            current = current.next();
+        }
     }
 
     /**
-     * TODO: Better Javadoc
-     * tests if positiveLabels form a path
+     * Test if the input tree node list forms a path
      *
-     * @param positiveLabels the vertices which should form a path
-     * @return true iff it forms a path
+     * @param treeNodes the input tree node list to be tested
+     * @return true if the input tree node list forms a path, false otherwise
      */
-    private boolean testPath(Set<MPQTreeNode> positiveLabels) {
-        // TODO Auto-generated method stub
-        return false;
+    private boolean isPath(List<MPQTreeNode> treeNodes) {
+        for (MPQTreeNode treeNode : treeNodes) {
+            if (!treeNode.hasAtMostOneSon()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -312,12 +312,12 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     /**
      * TODO: better Javadoc
      * computes the smallest vertex N of the Tree which has a positive label
      *
-     * @param path the path from root to leaf
+     * @param path           the path from root to leaf
      * @param positiveLabels the map from nodes to positive labels
      * @return smalles vertex N with positive label
      */
@@ -338,88 +338,80 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     /**
      * TODO: better Javadoc
      * Adds the vertex u to the leaf of the path
-     * 
-     * @param u the vertex to be added
+     *
+     * @param u    the vertex to be added
      * @param path the path of the leaf
      */
-    private void addVertexToLeaf(V u, List<MPQTreeNode> path)
-    {
+    private void addVertexToLeaf(V u, List<MPQTreeNode> path) {
         // TODO Auto-generated method stub
-        
+
     }
 
     /**
      * TODO: better Javadoc
      * Checks the path for specifig patterns and changes every node accordingly
-     * 
-     * @param u the vertex to add to the tree
-     * @param path the path of vertices to be changed
+     *
+     * @param u      the vertex to add to the tree
+     * @param path   the path of vertices to be changed
      * @param nSmall the smalles positive node in path
-     * @param nBig the highest non-empty, non-inf node in path
+     * @param nBig   the highest non-empty, non-inf node in path
      */
-    private void changedPathToTemplates(V u, List<MPQTreeNode> path, MPQTreeNode nSmall, MPQTreeNode nBig)
-    {
+    private void changedPathToTemplates(V u, List<MPQTreeNode> path, MPQTreeNode nSmall, MPQTreeNode nBig) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public boolean isIntervalGraph()
-    {
+    public boolean isIntervalGraph() {
         return isIntervalGraph;
     }
-    
+
     @Override
-    public List<Interval<Integer>> getIntervalsSortedByStartingPoint()
-    {
+    public List<Interval<Integer>> getIntervalsSortedByStartingPoint() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Map<V, IntervalVertexPair<V, Integer>> getVertexToIntervalMap()
-    {
+    public Map<V, IntervalVertexPair<V, Integer>> getVertexToIntervalMap() {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     @Override
-    public Map<Interval<Integer>, V> getIntervalToVertexMap()
-    {
+    public Map<Interval<Integer>, V> getIntervalToVertexMap() {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     /**
      * TODO: better javadoc
-     * 
+     * <p>
      * the hole in the graph as an counter example for chordality
+     *
      * @return a hole if the graph is not chordal, or null if the graph is chordal.
      */
-    public GraphPath<V,E> getHole()
-    {
+    public GraphPath<V, E> getHole() {
         return chordalInspector.getHole();
     }
-    
+
     /**
      * TODO: better javadoc
-     * 
+     * <p>
      * the Umbrella sub graph in the graph iff the graph is chordal but not an interval graph
+     *
      * @return an umbrella if the graph is not an intervalgraph, or null if the graph is an intervalgraph.
      */
-    public Graph<V,E> getUmbrellaSubGraph()
-    {
+    public Graph<V, E> getUmbrellaSubGraph() {
         // TODO implement
         return null;
     }
 
-    /**
-     * Modified PQ-tree data structure
-     */
+    // Modified PQ-tree data structure
 
     /**
      * A node of a modified PQ-tree
@@ -432,28 +424,26 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         MPQTreeNode parent;
 
         /**
-         * The graph vertices associated with the current tree node
-         *
-         * The associated set of vertices is given by a doubly linked circular list
+         * The graph vertex list associated with the current tree node stored in a doubly linked circular list
          */
-        HashSet<V> elements = null;
+        CircularListNode currentVertex;
 
         /**
          * Instantiate a tree node associating with no graph vertex
          */
-        MPQTreeNode() { }
-
-        /**
-         * Instantiate a tree node associating with a set of graph vertices
-         * TODO: replace this with an addElement method later
-         *
-         * @param elements a set of graph vertices associated with this tree node
-         */
-        MPQTreeNode(HashSet<V> elements) {
-            this.elements = elements;
+        MPQTreeNode() {
         }
 
-        // abstract boolean containsAtMostOneSon();
+        /**
+         * Instantiate a tree node associated with a graph vertex list
+         *
+         * @param currentVertex the current node in the associated graph vertex list
+         */
+        MPQTreeNode(CircularListNode currentVertex) {
+            this.currentVertex = currentVertex;
+        }
+
+        abstract boolean hasAtMostOneSon();
 
     }
 
@@ -467,15 +457,20 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
          * <p>
          * P-node has a pointer of the current child as the entrance to this list
          */
-        MPQTreeNode currentChild;
+        CircularListNode currentChild;
 
         /**
-         * Instantiate a P node associating with a set of graph vertices
+         * Instantiate a P node associating with a graph vertex list
          *
-         * @param elements a set of graph vertices associated with this P node
+         * @param currentVertex the current node in the associated graph vertex list
          */
-        PNode(HashSet<V> elements) {
-            super(elements);
+        PNode(CircularListNode currentVertex) {
+            super(currentVertex);
+        }
+
+        @Override
+        boolean hasAtMostOneSon() {
+            return false;
         }
 
         /**
@@ -499,8 +494,8 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
          * <p>
          * Q-node has two pointers of the outermost sections as the entrances to this list
          */
-        @NotNull QSectionNode leftmostSection;
-        @NotNull QSectionNode rightmostSection;
+        QSectionNode leftmostSection;
+        QSectionNode rightmostSection;
 
         /**
          * Instantiate a Q node associating with a set of graph vertices
@@ -513,6 +508,10 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             this.rightmostSection = section;
         }
 
+        @Override
+        boolean hasAtMostOneSon() {
+            return false;
+        }
     }
 
     /**
@@ -536,8 +535,18 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         QSectionNode leftSibling;
         QSectionNode rightSibling;
 
-        QSectionNode(HashSet<V> elements) {
-            super(elements);
+        /**
+         * Initiating a section node of a Q-node associating with a graph vertex list
+         *
+         * @param currentVertex the current node in the associated graph vertex list
+         */
+        QSectionNode(CircularListNode currentVertex) {
+            super(currentVertex);
+        }
+
+        @Override
+        boolean hasAtMostOneSon() {
+            return false;
         }
 
         /**
@@ -565,8 +574,18 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      */
     private class Leaf extends MPQTreeNode {
 
-        Leaf(HashSet<V> elements) {
-            this.elements = elements;
+        /**
+         * Initiating a leaf node associating with a graph vertex list
+         *
+         * @param currentVertex the current node in the associated graph vertex list
+         */
+        Leaf(CircularListNode currentVertex) {
+            super(currentVertex);
+        }
+
+        @Override
+        boolean hasAtMostOneSon() {
+            return true;
         }
 
     }
