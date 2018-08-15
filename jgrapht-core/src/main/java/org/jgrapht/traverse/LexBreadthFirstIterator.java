@@ -71,13 +71,13 @@ public class LexBreadthFirstIterator<V, E>
     /**
      * Lookup tables for a static vertex numbering used to store the vertices.
      */
-    private Map<Integer, V> vertexNumbering = new HashMap<Integer, V>();
-    private Map<V, Integer> inverseVertexNumbering = new HashMap<V, Integer>();
+    private Map<Integer, V> vertexNumbering = new HashMap<>();
+    private Map<V, Integer> inverseVertexNumbering = new HashMap<>();
 
     /**
      * Lookup tables for the sorted neighborhoods according to the imposed tiebreaking orders.
      */
-    private Map<V, List<V>> sortedNeighbors = null;
+    private Map<V, List<V>> sortedNeighbors;
     private Map<V, List<V>> sortedNeighborsB = null;
 
     /**
@@ -115,7 +115,7 @@ public class LexBreadthFirstIterator<V, E>
         bucketList = new BucketList(copyOfSet, priority);
 
         // Invert priorities
-        HashMap<Integer, V> inversePriority = new HashMap<Integer, V>();
+        HashMap<Integer, V> inversePriority = new HashMap<>();
 
         for (V vertex : graph.vertexSet()) {
             inversePriority.put(priority.get(vertex), vertex);
@@ -162,8 +162,8 @@ public class LexBreadthFirstIterator<V, E>
             copyOfSet, priorityA, priorityB, neighborIndexA, neighborIndexB, aSets, bSets);
 
         // Invert priorities
-        HashMap<Integer, V> inversePriorityA = new HashMap<Integer, V>();
-        HashMap<Integer, V> inversePriorityB = new HashMap<Integer, V>();
+        HashMap<Integer, V> inversePriorityA = new HashMap<>();
+        HashMap<Integer, V> inversePriorityB = new HashMap<>();
 
         for (V vertex : graph.vertexSet()) {
             inversePriorityA.put(priorityA.get(vertex), vertex);
@@ -188,7 +188,7 @@ public class LexBreadthFirstIterator<V, E>
     private HashMap<V, List<V>> computeSortedNeighborhoods(
         Graph<V, E> graph, Map<Integer, V> inversePriority)
     {
-        HashMap<V, List<V>> neighborhoodMap = new HashMap<V, List<V>>();
+        HashMap<V, List<V>> neighborhoodMap = new HashMap<>();
 
         for (int priority = graph.vertexSet().size() - 1; priority >= 0; priority--) {
             // get vertex with priority
@@ -196,7 +196,7 @@ public class LexBreadthFirstIterator<V, E>
 
             // if needed, initialize the neighbor list of this vertex
             if (!neighborhoodMap.containsKey(vertex)) {
-                neighborhoodMap.put(vertex, new LinkedList<V>());
+                neighborhoodMap.put(vertex, new LinkedList<>());
             }
 
             // add vertex to the neighbor lists of its neighbors
@@ -204,7 +204,7 @@ public class LexBreadthFirstIterator<V, E>
                 if (neighborhoodMap.containsKey(neighbor)) {
                     neighborhoodMap.get(neighbor).add(vertex);
                 } else {
-                    List<V> neighborList = new LinkedList<V>();
+                    List<V> neighborList = new LinkedList<>();
                     neighborList.add(vertex);
 
                     neighborhoodMap.put(neighbor, neighborList);
@@ -378,9 +378,8 @@ public class LexBreadthFirstIterator<V, E>
         }
 
         /**
-         * The constructor used for the LBFS* variant (see {@link #LexBreadthFirstIterator(Graph<V,
-         * E>, HashMap<V, Integer>, HashMap<V, Integer>, HashMap<V, Integer>, HashMap<V, Integer>,
-         * HashMap<V, Set<V>>, HashMap<V, Set<V>>) the paper linked above}). Creates a
+         * The constructor used for the LBFS* variant (see {@link #LexBreadthFirstIterator(Graph, HashMap, HashMap,
+         * HashMap, HashMap, HashMap, HashMap) the paper linked above}). Creates a
          * {@code BucketList} with a single bucket and all specified {@code vertices} in it and sets
          * the corresponding parameters.
          * 
@@ -474,11 +473,11 @@ public class LexBreadthFirstIterator<V, E>
         void updateBuckets(V vertex)
         {
             HashSet<Bucket> bucketsToUpdate = new HashSet<>();
-            Map<Bucket, List<V>> intersectionLists = new HashMap<Bucket, List<V>>();
+            Map<Bucket, List<V>> intersectionLists = new HashMap<>();
             Map<Bucket, List<V>> intersectionListsB = null;
 
             List<V> sortedNeighborsOfVertex = sortedNeighbors.get(vertex);
-            List<V> sortedNeighborsOfVertexB = null;
+            List<V> sortedNeighborsOfVertexB;
 
             for (V neighbor : sortedNeighborsOfVertex) {
                 // If this vertex was already traversed (and was thus deleted from the bucketMap),
@@ -493,7 +492,7 @@ public class LexBreadthFirstIterator<V, E>
                 // which holds the intersection of B and N(vertex)
                 if (!bucketsToUpdate.contains(b)) {
                     bucketsToUpdate.add(bucketMap.get(neighbor));
-                    intersectionLists.put(b, new LinkedList<V>());
+                    intersectionLists.put(b, new LinkedList<>());
                 }
 
                 // Add neighbor to said intersection list
@@ -502,7 +501,7 @@ public class LexBreadthFirstIterator<V, E>
 
             if (sortedNeighborsB != null) {
                 sortedNeighborsOfVertexB = sortedNeighborsB.get(vertex);
-                intersectionListsB = new HashMap<Bucket, List<V>>();
+                intersectionListsB = new HashMap<>();
 
                 for (V neighbor : sortedNeighborsOfVertexB) {
                     // If this vertex was already traversed (and was thus deleted from the
@@ -514,7 +513,7 @@ public class LexBreadthFirstIterator<V, E>
                     Bucket b = bucketMap.get(neighbor);
 
                     if (!intersectionListsB.containsKey(b)) {
-                        intersectionListsB.put(b, new LinkedList<V>());
+                        intersectionListsB.put(b, new LinkedList<>());
                     }
 
                     // Add neighbor to intersection list B
@@ -639,8 +638,7 @@ public class LexBreadthFirstIterator<V, E>
 
             /**
              * Creates a new bucket with all {@code vertices} stored in it. If no (or only one for
-             * LBFS+) priority is needed, please use {@link Bucket(Collection<V>, HashMap<V,
-             * Integer>)} instead.
+             * LBFS+) priority is needed, please use {@link Bucket(Collection, HashMap)} instead.
              * 
              * @param vertices Vertices to store in this bucket.
              * @param priorityA The A-priorities of the vertices for tiebreaking (this is needed for
@@ -686,7 +684,7 @@ public class LexBreadthFirstIterator<V, E>
              * 
              * @param splitVertices The vertices to be removed from this bucket, sorted according to
              *        the (A)-priority used.
-             * @param splitVertices The vertices to be removed from this bucket, sorted according to
+             * @param splitVerticesB The vertices to be removed from this bucket, sorted according to
              *        the (B)-priority used.
              * @return A new bucket containing the vertices that were removed from this bucket.
              */
