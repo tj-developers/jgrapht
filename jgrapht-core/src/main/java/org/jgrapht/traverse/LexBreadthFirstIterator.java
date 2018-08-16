@@ -163,8 +163,7 @@ public class LexBreadthFirstIterator<V, E>
      * @param graph the graph to be iterated.
      */
     public LexBreadthFirstIterator(Graph<V, E> graph) {
-        super(graph);
-        GraphTests.requireUndirected(graph);
+        this(graph, new Ordering<>(graph.vertexSet()));
 
         this.mode = Mode.Lbfs;
     }
