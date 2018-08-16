@@ -59,7 +59,7 @@ public class LexBreadthFirstIterator<V, E>
         AbstractGraphIterator<V, E>
 {
 
-    private static enum Mode {
+    private enum Mode {
         Lbfs,
         LbfsPlus,
         LbfsStar
@@ -75,6 +75,10 @@ public class LexBreadthFirstIterator<V, E>
      */
     private V current;
 
+
+    /*
+     *  Attributed needed for LBFS+, LBFS*, not LBFS
+     */
     /**
      * Lookup tables for the sorted neighborhoods according to the imposed tiebreaking orders.
      */
@@ -97,7 +101,7 @@ public class LexBreadthFirstIterator<V, E>
 
 
     /**
-     * Creates new lexicographical breadth-first iterator with a static priority list for
+     * Creates new lexicographical breadth-first (LBFS*) iterator with a static priority list for
      * {@code graph}.
      *
      * This is a variant for the LBFS* algorithm used for interval graph detection, the terminology
@@ -108,12 +112,8 @@ public class LexBreadthFirstIterator<V, E>
      * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart.
      *
      * @param graph the graph to be iterated.
-     * @param priorityA A mapping containing the A priorities of the vertices. The priority mapping
-     *        must be a permutation of $\{0, ..., n - 1\}$ where $n$ is the number of vertices of
-     *        the graph.
-     * @param priorityB A mapping containing the B priorities of the vertices. The priority mapping
-     *        must be a permutation of $\{0, ..., n - 1\}$ where $n$ is the number of vertices of
-     *        the graph.
+     * @param priorityA An ordering of the vertices resulting from a previous LBFS run.
+     * @param priorityB An ordering of the vertices resulting from a previous LBFS run.
      * @param neighborIndexA The A neighboring list
      * @param neighborIndexB The B neighboring list
      * @param aSets The A sets
@@ -157,13 +157,24 @@ public class LexBreadthFirstIterator<V, E>
         this.sortedNeighborsB = computeSortedNeighborhoods(priorityB);
     }
 
+    /**
+     * Creates a new lexical breadth-first search (LBFS) iterator from {@code graph}.
+     *
+     * @param graph the graph to be iterated.
+     */
     public LexBreadthFirstIterator(Graph<V, E> graph) {
-        this(graph, new Ordering<>(graph.vertexSet()));
-        this.mode = Mode.Lbfs;
+        super(graph);
+        GraphTests.requireUndirected(graph);
 
+        this.mode = Mode.Lbfs;
     }
 
-    // LBFS+
+    /**
+     * The LBFS+ Iterator. A previous LBFS ordering is needed. Instead of ties arbitrarily when choosing a vertex with
+     * lexicographically the largest label, LBFS+ chooses the last vertex in the ordering.
+     * @param graph the graph to be iterated.
+     * @param priority An ordering of the vertices resulting from a previous LBFS run.
+     */
     public LexBreadthFirstIterator(Graph<V, E> graph, Ordering<V> priority) {
         super(graph);
         GraphTests.requireUndirected(graph);
@@ -171,6 +182,7 @@ public class LexBreadthFirstIterator<V, E>
         this.mode = Mode.LbfsPlus;
 
         // check that orderings and vertex set are compatible
+        // not really necessary
         boolean k = priority.size() == graph.vertexSet().size();
         for (V vertex: graph.vertexSet()) {
             k &= priority.contains(vertex);
@@ -188,23 +200,21 @@ public class LexBreadthFirstIterator<V, E>
     }
 
 
-
     /**
-     * Helper function to compute the neighborhoods sorted by the vertex priority for efficiency.
+     * Helper function to compute the neighborhoods sorted by the vertex ordering for efficiency.
      * Must be called before using the iterator. Uses linear, i.e. O(|V| + |E|) time.
      *
-     * @param inversePriority A mapping from the priorities to the vertex set. It is assumed that
-     *        the priorities are a permutation of $\{0, ..., n - 1\}$.
+     * @param ordering The ordering.
      * @return A map from the vertices to lists containing their neighborhoods (sorted by the vertex
-     *         priorities)
+     *         ordering)
      */
-    private HashMap<V, List<V>> computeSortedNeighborhoods(Ordering<V> inversePriority)
+    private HashMap<V, List<V>> computeSortedNeighborhoods(Ordering<V> ordering)
     {
         HashMap<V, List<V>> neighborhoodMap = new HashMap<>();
 
         for (int priority = graph.vertexSet().size() - 1; priority >= 0; priority--) {
             // get vertex with priority
-            V vertex = inversePriority.getElementAt(priority);
+            V vertex = ordering.getElementAt(priority);
 
             // if needed, initialize the neighbor list of this vertex
             if (!neighborhoodMap.containsKey(vertex)) {
@@ -526,17 +536,18 @@ public class LexBreadthFirstIterator<V, E>
             Bucket split(List<V> splitVertices, List<V> splitVerticesB)
             {
                 LinkedHashSet<V> newVertices = split(vertices, splitVertices);
-                LinkedHashSet<V> newVerticesB = split(verticesB, splitVerticesB);
+                LinkedHashSet<V> newVerticesB;
+                newVerticesB = split(verticesB, splitVerticesB);
                 return new Bucket(newVertices, newVerticesB);
 
             }
 
             /**
-             * Splits the LinkedHashSet along the given vertices.
-             * The returned LinkedHashSet is ordered by the ordering of the vertices.
-             * @param vertices
-             * @param splitVertices
-             * @return
+             * Splits the LinkedHashSet along the given vertices. The splitVertices are removed from vertices and added
+             * to the returned LinkedHashSet. It is ordered by the order from splitVertices.
+             * @param vertices The vertices to be split.
+             * @param splitVertices The vertices to be moved.
+             * @return The vertices from the intersection from vertices and splitVertices.
              */
             private LinkedHashSet<V> split(LinkedHashSet<V> vertices, List<V> splitVertices)
             {
