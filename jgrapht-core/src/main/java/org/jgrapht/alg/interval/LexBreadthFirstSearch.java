@@ -19,6 +19,7 @@ package org.jgrapht.alg.interval;
 
 import org.jgrapht.*;
 import org.jgrapht.traverse.*;
+import org.jgrapht.util.Ordering;
 
 import java.util.*;
 
@@ -40,14 +41,21 @@ final class LexBreadthFirstSearch
      */
     static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph)
     {
-       HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
-       LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
-       
-       for(int i = 0; i < graph.vertexSet().size(); i++) {
-           result.put(lbfIterator.next(), i);
-       }
-       
-       return result;
+//        HashMap<V, Integer> h = new HashMap<>();
+//        int j = 0;
+//        for (V vertex: graph.vertexSet()) {
+//            h.put(vertex, j++);
+//        }
+//        return lexBreadthFirstSearchStar(graph, h, h);
+
+        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
+        LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
+
+        for(int i = 0; i < graph.vertexSet().size(); i++) {
+            result.put(lbfIterator.next(), i);
+        }
+
+        return result;
     }
     
     /**
@@ -62,14 +70,15 @@ final class LexBreadthFirstSearch
     
     static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
     {
-       HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
-       LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, priority);
-       
-       for(int i = 0; i < graph.vertexSet().size(); i++) {
+        //return lexBreadthFirstSearchStar(graph, priority, priority);
+        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
+        LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, new Ordering<V>(priority));
+
+        for(int i = 0; i < graph.vertexSet().size(); i++) {
            result.put(lbfIterator.next(), i);
-       }
-       
-       return result;
+        }
+
+        return result;
     }
     
     /**
@@ -127,7 +136,8 @@ final class LexBreadthFirstSearch
        }
        
        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size()); 
-       LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, priorityA, priorityB, neighborIndexA, neighborIndexB, ASets, BSets);
+       LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, new Ordering<>(priorityA),
+               new Ordering<>(priorityB), new Ordering<>(neighborIndexA), new Ordering<>(neighborIndexB), ASets, BSets);
        
        for(int i = 0; i < graph.vertexSet().size(); i++) {
            result.put(lbfIterator.next(), i);

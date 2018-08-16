@@ -51,13 +51,20 @@ import java.util.*;
  * @author Timofey Chudakov
  * @author Oliver Feith
  * @author Dennis Fischer
+ * @author Daniel Mock
  * @since March 2018
  */
 public class LexBreadthFirstIterator<V, E>
-    extends
-    AbstractGraphIterator<V, E>
+        extends
+        AbstractGraphIterator<V, E>
 {
 
+    private static enum Mode {
+        Lbfs,
+        LbfsPlus,
+        LbfsStar
+    }
+    private Mode mode;
     /**
      * Reference to the {@code BucketList} that contains unvisited vertices.
      */
@@ -69,61 +76,25 @@ public class LexBreadthFirstIterator<V, E>
     private V current;
 
     /**
-     * Lookup tables for a static vertex numbering used to store the vertices.
-     */
-    private Map<Integer, V> vertexNumbering = new HashMap<>();
-    private Map<V, Integer> inverseVertexNumbering = new HashMap<>();
-
-    /**
      * Lookup tables for the sorted neighborhoods according to the imposed tiebreaking orders.
      */
     private Map<V, List<V>> sortedNeighbors;
-    private Map<V, List<V>> sortedNeighborsB = null;
+    private Map<V, List<V>> sortedNeighborsB = null; // only LBFS*
+
+    private Ordering<V> priorityA;
+    private Ordering<V> priorityB; // only LBFS*
+
 
     /**
-     * Creates new lexicographical breadth-first iterator for {@code graph}.
-     *
-     * @param graph the graph to be iterated.
+     * LBFS(*) static parameters
      */
-    public LexBreadthFirstIterator(Graph<V, E> graph)
-    {
-        super(graph);
-        GraphTests.requireUndirected(graph);
-        labelVertices(graph.vertexSet());
-        bucketList = new BucketList(graph.vertexSet());
+    private Ordering<V> neighborIndexA = null;
+    private Ordering<V> neighborIndexB = null;
 
-        // Precompute sorted neighborhoods
-        this.sortedNeighbors = computeSortedNeighborhoods(graph, vertexNumbering);
-    }
+    private HashMap<V, Set<V>> aSets = null;
+    private HashMap<V, Set<V>> bSets = null;
 
-    /**
-     * Creates new lexicographical breadth-first iterator with a static priority list for
-     * {@code graph}.
-     *
-     * @param graph The graph to be iterated.
-     * @param priority A mapping containing the priorities of the vertices. The priority mapping
-     *        must be a permutation of $\{0, ..., n - 1\}$ where $n$ is the number of vertices of
-     *        the graph.
-     */
-    public LexBreadthFirstIterator(Graph<V, E> graph, HashMap<V, Integer> priority)
-    {
-        super(graph);
-        GraphTests.requireUndirected(graph);
 
-        Set<V> copyOfSet = new HashSet<>(graph.vertexSet());
-        labelVertices(graph.vertexSet());
-        bucketList = new BucketList(copyOfSet, priority);
-
-        // Invert priorities
-        HashMap<Integer, V> inversePriority = new HashMap<>();
-
-        for (V vertex : graph.vertexSet()) {
-            inversePriority.put(priority.get(vertex), vertex);
-        }
-
-        // Precompute sorted neighborhoods
-        this.sortedNeighbors = computeSortedNeighborhoods(graph, inversePriority);
-    }
 
     /**
      * Creates new lexicographical breadth-first iterator with a static priority list for
@@ -149,50 +120,91 @@ public class LexBreadthFirstIterator<V, E>
      * @param bSets The B sets
      */
     public LexBreadthFirstIterator(
-        Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB,
-        HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB,
-        HashMap<V, Set<V>> aSets, HashMap<V, Set<V>> bSets)
+            Graph<V, E> graph, Ordering<V> priorityA, Ordering<V> priorityB,
+            Ordering<V> neighborIndexA, Ordering<V> neighborIndexB,
+            HashMap<V, Set<V>> aSets, HashMap<V, Set<V>> bSets)
     {
         super(graph);
         GraphTests.requireUndirected(graph);
 
-        Set<V> copyOfSet = new HashSet<>(graph.vertexSet());
-        labelVertices(graph.vertexSet());
-        bucketList = new BucketList(
-            copyOfSet, priorityA, priorityB, neighborIndexA, neighborIndexB, aSets, bSets);
+        this.mode = Mode.LbfsStar;
 
-        // Invert priorities
-        HashMap<Integer, V> inversePriorityA = new HashMap<>();
-        HashMap<Integer, V> inversePriorityB = new HashMap<>();
-
-        for (V vertex : graph.vertexSet()) {
-            inversePriorityA.put(priorityA.get(vertex), vertex);
-            inversePriorityB.put(priorityB.get(vertex), vertex);
+        // check that orderings and vertex set are compatible
+        boolean k = priorityA.size() == priorityB.size();
+        k &= priorityA.size() == graph.vertexSet().size();
+        for (V vertex: graph.vertexSet()) {
+            k &= priorityA.contains(vertex);
+            k &= priorityB.contains(vertex);
+            if (!k) {
+                throw new IllegalArgumentException();
+            }
         }
+        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
+        LinkedHashSet<V> verticesB = new LinkedHashSet<>(graph.vertexSet().size());
+        priorityA.forEach(verticesA::add);
+        priorityB.forEach(verticesB::add);
+        bucketList = new BucketList(verticesA, verticesB);
+
+        this.priorityA = priorityA;
+        this.priorityB = priorityB;
+        this.neighborIndexA = neighborIndexA;
+        this.neighborIndexB = neighborIndexB;
+        this.aSets = aSets;
+        this.bSets = bSets;
 
         // Precompute sorted neighborhoods
-        this.sortedNeighbors = computeSortedNeighborhoods(graph, inversePriorityA);
-        this.sortedNeighborsB = computeSortedNeighborhoods(graph, inversePriorityB);
+        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
+        this.sortedNeighborsB = computeSortedNeighborhoods(priorityB);
     }
+
+    public LexBreadthFirstIterator(Graph<V, E> graph) {
+        this(graph, new Ordering<>(graph.vertexSet()));
+        this.mode = Mode.Lbfs;
+
+    }
+
+    // LBFS+
+    public LexBreadthFirstIterator(Graph<V, E> graph, Ordering<V> priority) {
+        super(graph);
+        GraphTests.requireUndirected(graph);
+
+        this.mode = Mode.LbfsPlus;
+
+        // check that orderings and vertex set are compatible
+        boolean k = priority.size() == graph.vertexSet().size();
+        for (V vertex: graph.vertexSet()) {
+            k &= priority.contains(vertex);
+            if (!k) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
+        priorityA = priority;
+        priorityA.forEach(verticesA::add);
+        bucketList = new BucketList(verticesA, null);
+
+        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
+    }
+
+
 
     /**
      * Helper function to compute the neighborhoods sorted by the vertex priority for efficiency.
      * Must be called before using the iterator. Uses linear, i.e. O(|V| + |E|) time.
-     * 
-     * @param graph The graph we are to iterate over
+     *
      * @param inversePriority A mapping from the priorities to the vertex set. It is assumed that
      *        the priorities are a permutation of $\{0, ..., n - 1\}$.
      * @return A map from the vertices to lists containing their neighborhoods (sorted by the vertex
      *         priorities)
      */
-    private HashMap<V, List<V>> computeSortedNeighborhoods(
-        Graph<V, E> graph, Map<Integer, V> inversePriority)
+    private HashMap<V, List<V>> computeSortedNeighborhoods(Ordering<V> inversePriority)
     {
         HashMap<V, List<V>> neighborhoodMap = new HashMap<>();
 
         for (int priority = graph.vertexSet().size() - 1; priority >= 0; priority--) {
             // get vertex with priority
-            V vertex = inversePriority.get(priority);
+            V vertex = inversePriority.getElementAt(priority);
 
             // if needed, initialize the neighbor list of this vertex
             if (!neighborhoodMap.containsKey(vertex)) {
@@ -213,22 +225,6 @@ public class LexBreadthFirstIterator<V, E>
         }
 
         return neighborhoodMap;
-    }
-
-    /**
-     * Helper method to compute some fixed numbering of the vertices. Takes linear, i.e. O(|V|)
-     * time.
-     * 
-     * @param vertices The vertex set of the graph we are to iterate over.
-     */
-    private void labelVertices(Set<V> vertices)
-    {
-        int label = 0;
-        for (V vertex : vertices) {
-            vertexNumbering.put(label, vertex);
-            inverseVertexNumbering.put(vertex, label);
-            label++;
-        }
     }
 
     /**
@@ -328,93 +324,23 @@ public class LexBreadthFirstIterator<V, E>
         private Map<V, Bucket> bucketMap;
 
         /**
-         * LBFS(+,*) static parameters
-         */
-        private HashMap<V, Integer> neighborIndexA = null;
-        private HashMap<V, Integer> neighborIndexB = null;
-
-        private HashMap<V, Set<V>> aSets = null;
-        private HashMap<V, Set<V>> bSets = null;
-
-        private HashMap<V, Integer> priorityA = null;
-        private HashMap<V, Integer> priorityB = null;
-
-        /**
          * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in
          * it.
+         * The Sets have to contain the same elements.
          *
-         * @param vertices The vertices of the graph, that should be stored in the {@code head}
-         *        bucket.
+         * @param verticesA The vertices sorted by the first ordering
+         * @param verticesB The vertices sorted by the second ordering
          */
-        BucketList(Collection<V> vertices)
+        BucketList(LinkedHashSet<V> verticesA, LinkedHashSet<V> verticesB)
         {
-            head = new Bucket(vertices, null); // We do not use explicit tiebraking, thus the
-                                               // priority map is nulled
+            head = new Bucket(verticesA, verticesB);
 
-            bucketMap = new HashMap<>(vertices.size());
-            for (V vertex : vertices) {
+            bucketMap = new HashMap<>(verticesA.size());
+            for (V vertex : verticesA) {
                 bucketMap.put(vertex, head);
             }
         }
 
-        /**
-         * Creates a {@code BucketList} with a single bucket and all specified {@code vertices} in
-         * it.
-         *
-         * @param vertices The vertices of the graph, that should be stored in the {@code head}
-         *        bucket.
-         * @param priority A mapping which defines a priority for tiebreaking. The priorities must
-         *        be normalized to be $\{0, ..., n - 1\}$ where $n$ is the number of vertices.
-         */
-        BucketList(Collection<V> vertices, HashMap<V, Integer> priority)
-        {
-            this.priorityA = priority;
-            head = new Bucket(vertices, priority);
-
-            bucketMap = new HashMap<>(vertices.size());
-            for (V vertex : vertices) {
-                bucketMap.put(vertex, head);
-            }
-        }
-
-        /**
-         * The constructor used for the LBFS* variant (see {@link #LexBreadthFirstIterator(Graph, HashMap, HashMap,
-         * HashMap, HashMap, HashMap, HashMap) the paper linked above}). Creates a
-         * {@code BucketList} with a single bucket and all specified {@code vertices} in it and sets
-         * the corresponding parameters.
-         * 
-         * @param vertices The vertices of the graph, that should be stored in the {@code head}
-         *        bucket.
-         * @param priorityA A mapping containing the A priorities of the vertices. The priority
-         *        mapping must be a permutation of $\{0, ..., n - 1\}$ where $n$ is the number of
-         *        vertices of the graph.
-         * @param priorityB A mapping containing the B priorities of the vertices. The priority
-         *        mapping must be a permutation of $\{0, ..., n - 1\}$ where $n$ is the number of
-         *        vertices of the graph.
-         * @param neighborIndexA The A neighboring list.
-         * @param neighborIndexB The B neighboring list.
-         * @param aSets The A sets.
-         * @param bSets The B sets.
-         */
-        BucketList(
-            Collection<V> vertices, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB,
-            HashMap<V, Integer> neighborIndexA, HashMap<V, Integer> neighborIndexB,
-            HashMap<V, Set<V>> aSets, HashMap<V, Set<V>> bSets)
-        {
-            this.neighborIndexA = neighborIndexA;
-            this.neighborIndexB = neighborIndexB;
-            this.aSets = aSets;
-            this.bSets = bSets;
-            this.priorityA = priorityA;
-            this.priorityB = priorityB;
-
-            head = new Bucket(vertices, priorityA, priorityB);
-
-            bucketMap = new HashMap<>(vertices.size());
-            for (V vertex : vertices) {
-                bucketMap.put(vertex, head);
-            }
-        }
 
         /**
          * Checks whether there exists a bucket with the specified {@code vertex}.
@@ -440,27 +366,20 @@ public class LexBreadthFirstIterator<V, E>
          */
         V poll()
         {
-            if (bucketMap.size() > 0) {
-                V res;
-
-                // Poll the vertex according to the tiebreaking rules
-                if (neighborIndexA == null) {
-                    res = head.poll(false);
-                } else {
-                    res = head.poll(true);
-                }
-
-                bucketMap.remove(res);
-                if (head.isEmpty()) {
-                    head = head.next;
-                    if (head != null) {
-                        head.prev = null;
-                    }
-                }
-                return res;
-            } else {
+            if (bucketMap.size() <= 0) {
                 return null;
             }
+            // Poll the vertex according to the tiebreaking rules
+            V res = head.poll();
+
+            bucketMap.remove(res);
+            if (head.isEmpty()) {
+                head = head.next;
+                if (head != null) {
+                    head.prev = null;
+                }
+            }
+            return res;
         }
 
         /**
@@ -532,7 +451,7 @@ public class LexBreadthFirstIterator<V, E>
                 } else {
                     // We are doing LBFS* and thus have to update both queues accordingly
                     newBucket =
-                        bucket.split(intersectionLists.get(bucket), intersectionListsB.get(bucket));
+                            bucket.split(intersectionLists.get(bucket), intersectionListsB.get(bucket));
                 }
 
                 // ... and insert the resulting new bucket before the old one
@@ -543,8 +462,7 @@ public class LexBreadthFirstIterator<V, E>
                 }
 
                 // Update the bucketMap with the changes made
-                for (Integer i : newBucket.vertices) {
-                    V updatedVertex = vertexNumbering.get(i);
+                for (V updatedVertex : newBucket.vertices) {
                     bucketMap.put(updatedVertex, newBucket);
                 }
 
@@ -575,113 +493,30 @@ public class LexBreadthFirstIterator<V, E>
             /**
              * Set of vertices currently stored in this bucket.
              */
-            private SubSplitQueue vertices;
+            private LinkedHashSet<V> vertices;
             /**
              * Set of vertices currently stored in this bucket (sorted by other order).
              */
-            private SubSplitQueue verticesB = null;
+            private LinkedHashSet<V> verticesB;
 
             /**
              * Creates a new bucket with all {@code vertices} stored in it.
-             * 
+             *
              * @param vertices A SplitQueue (sorted to priority A) holding the vertices to store in
              *        this bucket.
              * @param verticesB A SplitQueue (sorted to priority B) holding the vertices to store in
              *        this bucket.
              */
-            Bucket(SubSplitQueue vertices, SubSplitQueue verticesB)
+            Bucket(LinkedHashSet<V> vertices, LinkedHashSet<V> verticesB)
             {
                 this.vertices = vertices;
                 this.verticesB = verticesB;
             }
 
-            // LBFS+ variant
-
-            /**
-             * Creates a new bucket with all {@code vertices} stored in it.
-             *
-             * @param vertices Vertices to store in this bucket.
-             * @param priority The priorities of the vertices for tiebreaking (this is needed for
-             *        LBFS+). If this parameter is nulled, some static ordering is used.
-             */
-            Bucket(Collection<V> vertices, HashMap<V, Integer> priority)
-                throws IllegalArgumentException
-            {
-                int[] vertexIndexArray = new int[vertices.size()];
-
-                if (priority == null) {
-                    // No priority is specified, so we use the static ordering that we computed
-                    for (V vertex : vertices) {
-                        int vertexIndex = inverseVertexNumbering.get(vertex);
-                        vertexIndexArray[vertexIndex] = vertexIndex;
-                    }
-                } else {
-                    // Compute the indices of the vertices and order them according to the priority
-                    // (descending)
-                    for (V vertex : vertices) {
-                        int vertexPriority = priority.get(vertex);
-
-                        if (vertexPriority < 0 || vertexPriority > vertices.size() - 1) {
-                            throw new IllegalArgumentException(
-                                "The priorities must be a permutation of {0, ..., n - 1}");
-                        }
-
-                        vertexIndexArray[priority.get(vertex)] = inverseVertexNumbering.get(vertex);
-                    }
-                }
-
-                this.vertices =
-                    SubSplitQueue.subSplitQueueFactory(graph.vertexSet().size(), vertexIndexArray);
-            }
-
-            // LBFS* variant
-
-            /**
-             * Creates a new bucket with all {@code vertices} stored in it. If no (or only one for
-             * LBFS+) priority is needed, please use {@link Bucket(Collection, HashMap)} instead.
-             * 
-             * @param vertices Vertices to store in this bucket.
-             * @param priorityA The A-priorities of the vertices for tiebreaking (this is needed for
-             *        LBFS*).
-             * @param priorityB The B-priorities of the vertices for tiebreaking (this is needed for
-             *        LBFS*).
-             */
-            Bucket(
-                Collection<V> vertices, HashMap<V, Integer> priorityA,
-                HashMap<V, Integer> priorityB)
-                throws IllegalArgumentException
-            {
-                int[] vertexIndexArrayA = new int[vertices.size()];
-                int[] vertexIndexArrayB = new int[vertices.size()];
-
-                // Compute the indices of the vertices and order them according to the priorities
-                // (descending)
-                for (V vertex : vertices) {
-                    int vertexPriorityA = priorityA.get(vertex);
-                    int vertexPriorityB = priorityB.get(vertex);
-
-                    if (vertexPriorityA < 0 || vertexPriorityA > vertices.size() - 1) {
-                        throw new IllegalArgumentException(
-                            "The A-priorities must be a permutation of {0, ..., n - 1}");
-                    } else if (vertexPriorityB < 0 || vertexPriorityB > vertices.size() - 1) {
-                        throw new IllegalArgumentException(
-                            "The B-priorities must be a permutation of {0, ..., n - 1}");
-                    }
-
-                    vertexIndexArrayA[priorityA.get(vertex)] = inverseVertexNumbering.get(vertex);
-                    vertexIndexArrayB[priorityB.get(vertex)] = inverseVertexNumbering.get(vertex);
-                }
-
-                this.vertices =
-                    SubSplitQueue.subSplitQueueFactory(graph.vertexSet().size(), vertexIndexArrayA);
-                this.verticesB =
-                    SubSplitQueue.subSplitQueueFactory(graph.vertexSet().size(), vertexIndexArrayB);
-            }
-
             /**
              * Splits this bucket $B$ along the passed sorted list $S$ of vertices into $B \cap S$
              * and $B \setminus S$.
-             * 
+             *
              * @param splitVertices The vertices to be removed from this bucket, sorted according to
              *        the (A)-priority used.
              * @param splitVerticesB The vertices to be removed from this bucket, sorted according to
@@ -690,28 +525,32 @@ public class LexBreadthFirstIterator<V, E>
              */
             Bucket split(List<V> splitVertices, List<V> splitVerticesB)
             {
-                int[] vertexArray = new int[splitVertices.size()];
+                LinkedHashSet<V> newVertices = split(vertices, splitVertices);
+                LinkedHashSet<V> newVerticesB = split(verticesB, splitVerticesB);
+                return new Bucket(newVertices, newVerticesB);
 
-                // Build sorted arrays from the lists
-                int i = 0;
-                for (V vertex : splitVertices) {
-                    vertexArray[i] = inverseVertexNumbering.get(vertex);
+            }
+
+            /**
+             * Splits the LinkedHashSet along the given vertices.
+             * The returned LinkedHashSet is ordered by the ordering of the vertices.
+             * @param vertices
+             * @param splitVertices
+             * @return
+             */
+            private LinkedHashSet<V> split(LinkedHashSet<V> vertices, List<V> splitVertices)
+            {
+                if (splitVertices == null) {
+                    return null;
                 }
 
-                SubSplitQueue newVertices = vertices.split(vertexArray);
-
-                if (splitVerticesB != null) {
-                    int[] vertexArrayB = new int[splitVerticesB.size()];
-
-                    for (V vertex : splitVerticesB) {
-                        vertexArrayB[i] = inverseVertexNumbering.get(vertex);
+                LinkedHashSet<V> newVertices = new LinkedHashSet<>();
+                for (V vertex: splitVertices) {
+                    if (vertices.remove(vertex)) {
+                        newVertices.add(vertex);
                     }
-
-                    SubSplitQueue newVerticesB = verticesB.split(vertexArrayB);
-                    return new Bucket(newVertices, newVerticesB);
                 }
-
-                return new Bucket(newVertices, null);
+                return newVertices;
             }
 
             /**
@@ -749,46 +588,52 @@ public class LexBreadthFirstIterator<V, E>
             /**
              * Retrieves one vertex from this bucket (without special priorities).
              *
-             * @param useStarTiebreaking Set to <tt>false</tt> if normal tiebreaking (according to
-             *        static ordering) should be used and set to <tt>true</tt> if LBFS* tiebreaking
-             *        should be used.
              * @return The vertex that was removed from this bucket, null if the bucket was empty.
              */
-            V poll(boolean useStarTiebreaking)
+            V poll()
             {
                 if (vertices.isEmpty()) {
                     return null;
-                } else {
-                    if (!useStarTiebreaking) {
-                        return vertexNumbering.get(vertices.poll());
-                    } else {
-                        int idxAlpha = vertices.peek();
-                        int idxBeta = verticesB.peek();
-
-                        V alpha = vertexNumbering.get(idxAlpha);
-                        V beta = vertexNumbering.get(idxBeta);
-
-                        if (neighborIndexA.get(alpha) > priorityA.get(alpha)) {
-                            vertices.remove(idxBeta);
-                            return vertexNumbering.get(verticesB.poll()); // return Beta
-                        } else if (neighborIndexB.get(beta) > priorityB.get(beta)) {
-                            verticesB.remove(idxAlpha);
-                            return vertexNumbering.get(vertices.poll()); // return Alpha
-                        } else if (bSets.get(beta).isEmpty() || !aSets.get(alpha).isEmpty()) {
-                            vertices.remove(idxBeta);
-                            return vertexNumbering.get(verticesB.poll()); // return Beta
-                        } else if (Objects.equals(
-                            neighborIndexA.get(bSets.get(beta).iterator().next()),
-                            priorityA.get(alpha)))
-                        {
-                            vertices.remove(idxBeta);
-                            return vertexNumbering.get(verticesB.poll()); // return Beta
-                        } else {
-                            verticesB.remove(idxAlpha);
-                            return vertexNumbering.get(vertices.poll()); // return Alpha
-                        }
-                    }
                 }
+
+                // When LBFS or LBFS+ is used
+                if (mode != Mode.LbfsStar) {
+                    Iterator<V> it = vertices.iterator();
+                    V alpha = it.next();
+                    it.remove();
+
+                    return alpha;
+                }
+                // For LBFS*
+
+                // The first element of vertices and verticesB are peeked
+                Iterator<V> it = vertices.iterator();
+                Iterator<V> itB = verticesB.iterator();
+
+                V alpha = it.next();
+                V beta = itB.next();
+
+                V result;
+
+                // Choose the vertex according to Section 7
+                if (neighborIndexA.getPositionOf(alpha) > priorityA.getPositionOf(alpha)) {
+                    result = beta; // return Beta
+                } else if (neighborIndexB.getPositionOf(beta) > priorityB.getPositionOf(beta)) {
+                    result = alpha; // return Alpha
+                } else if (bSets.get(beta).isEmpty() || !aSets.get(alpha).isEmpty()) {
+                    result = beta; // return Beta
+                } else if (Objects.equals(
+                        neighborIndexA.getPositionOf(bSets.get(beta).iterator().next()),
+                        priorityA.getPositionOf(alpha)))
+                {
+                    result = beta; // return Beta
+                } else {
+                    result = alpha; // return Alpha
+                }
+                // remove the chosen vertex
+                vertices.remove(result);
+                verticesB.remove(result);
+                return result;
             }
 
             /**
@@ -798,7 +643,7 @@ public class LexBreadthFirstIterator<V, E>
              */
             boolean isEmpty()
             {
-                return vertices.getSize() == 0;
+                return vertices.size() == 0;
             }
         }
     }
