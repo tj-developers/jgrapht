@@ -15,13 +15,12 @@
  * (b) the terms of the Eclipse Public License v1.0 as published by
  * the Eclipse Foundation.
  */
-package org.jgrapht.alg.decompostion;
+package org.jgrapht.alg.decomposition;
 
 
 import static org.junit.Assert.assertTrue;
 
 import org.jgrapht.*;
-import org.jgrapht.alg.decomposition.*;
 import org.jgrapht.generate.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.builder.*;
@@ -29,11 +28,11 @@ import org.jgrapht.util.SupplierUtil;
 import org.junit.*;
 
 /**
- * Tests for the {@link ChordalNiceDecompositionBuilder}
+ * Tests for the {@link ChordalNiceTreeDecomposition}
  *
  * @author Ira Justus Fesefeldt (PhoenixIra)
  */
-public class ChordalityNiceDecompositionBuilderTest
+public class ChordalityNiceTreeDecompositionTest
 {
 
     private Graph<Integer, DefaultEdge> makeCompleteGraph(int n)
@@ -51,11 +50,11 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeCompleteGraph(i);
-            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                new ChordalNiceDecompositionBuilder<>(graph);
-            assertTrue(NiceDecompositionBuilderTestUtil
+            ChordalNiceTreeDecomposition<Integer, DefaultEdge> decompBuild =
+                new ChordalNiceTreeDecomposition<>(graph);
+            assertTrue(NiceTreeDecompositionTestUtil
                 .isDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap()));
-            assertTrue(NiceDecompositionBuilderTestUtil.isNiceDecomposition(
+            assertTrue(NiceTreeDecompositionTestUtil.isNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot()));
         }
     }
@@ -86,11 +85,11 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeGraphsWithTriangles(i);
-            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                new ChordalNiceDecompositionBuilder<>(graph);
-            assertTrue(NiceDecompositionBuilderTestUtil
+            ChordalNiceTreeDecomposition<Integer, DefaultEdge> decompBuild =
+                new ChordalNiceTreeDecomposition<>(graph);
+            assertTrue(NiceTreeDecompositionTestUtil
                 .isDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap()));
-            assertTrue(NiceDecompositionBuilderTestUtil.isNiceDecomposition(
+            assertTrue(NiceTreeDecompositionTestUtil.isNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot()));
         }
     }
@@ -109,11 +108,11 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeDisconnectedGraph(i);
-            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                new ChordalNiceDecompositionBuilder<>(graph);
-            assertTrue(NiceDecompositionBuilderTestUtil
+            ChordalNiceTreeDecomposition<Integer, DefaultEdge> decompBuild =
+                new ChordalNiceTreeDecomposition<>(graph);
+            assertTrue(NiceTreeDecompositionTestUtil
                 .isDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap()));
-            assertTrue(NiceDecompositionBuilderTestUtil.isNiceDecomposition(
+            assertTrue(NiceTreeDecompositionTestUtil.isNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot()));
         }
     }
@@ -140,11 +139,11 @@ public class ChordalityNiceDecompositionBuilderTest
     {
         for (int i = 0; i < 10; i++) {
             Graph<Integer, DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
-            ChordalNiceDecompositionBuilder<Integer, DefaultEdge> decompBuild =
-                new ChordalNiceDecompositionBuilder<>(graph);
-            assertTrue(NiceDecompositionBuilderTestUtil
+            ChordalNiceTreeDecomposition<Integer, DefaultEdge> decompBuild =
+                new ChordalNiceTreeDecomposition<>(graph);
+            assertTrue(NiceTreeDecompositionTestUtil
                 .isDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap()));
-            assertTrue(NiceDecompositionBuilderTestUtil.isNiceDecomposition(
+            assertTrue(NiceTreeDecompositionTestUtil.isNiceDecomposition(
                 decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot()));
         }
     }

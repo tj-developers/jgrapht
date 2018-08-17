@@ -23,7 +23,7 @@ import org.jgrapht.*;
 import org.jgrapht.alg.cycle.*;
 
 /**
- * A builder for a nice decomposition for chordal graphs. See {@link NiceDecompositionBuilder} for
+ * A builder for a nice decomposition for chordal graphs. See {@link NiceTreeDecompositionBase} for
  * an explanation of nice decomposition.
  * <p>
  * This builder uses the perfect elimination order from {@link ChordalityInspector} to iterate over
@@ -32,8 +32,8 @@ import org.jgrapht.alg.cycle.*;
  * greatest predecessor was introduced.
  * <p>
  * The complexity of this algorithm is in $\mathcal{O}(|V|(|V|+|E|))$.<br>
- * Consider the every node in the nice tree decomposition: There are exactly $|V|$ many forget
- * nodes. There are at most $2|V|$ additionally nodes because of a join nodes. Every join node
+ * Consider the every node in the nice tree decomposition: There are exactly $|V|-1$ many forget
+ * nodes. There are at most $2(|V|-1)$ additionally nodes because of a join nodes. Every join node
  * creates one additional path from root to a leaf, every such path can contain for every vertex at
  * most one introduce node, which yields $|V|^2$ introduce nodes. Now considering the bags of the
  * introduce nodes. On a path from root to a leaf we have at most one introduce node for every
@@ -53,9 +53,9 @@ import org.jgrapht.alg.cycle.*;
  * @param <V> the vertex type of the graph
  * @param <E> the edge type of the graph
  */
-public class ChordalNiceDecompositionBuilder<V, E>
+public class ChordalNiceTreeDecomposition<V, E>
     extends
-    NiceDecompositionBuilder<V>
+    NiceTreeDecompositionBase<V>
 {
     // the chordal graph
     private Graph<V, E> graph;
@@ -73,7 +73,7 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * @throws IllegalArgumentException if the graph is not chordal.
      * @param graph the chordal graph for which a decomposition should be created
      */
-    public ChordalNiceDecompositionBuilder(Graph<V, E> graph)
+    public ChordalNiceTreeDecomposition(Graph<V, E> graph)
     {
         super();
         ChordalityInspector<V, E> inspec = new ChordalityInspector<>(graph);
@@ -82,7 +82,6 @@ public class ChordalNiceDecompositionBuilder<V, E>
         this.graph = graph;
         this.perfectOrder = inspec.getPerfectEliminationOrder();
         vertexInOrder = getVertexInOrder();
-        computeNiceDecomposition();
     }
 
     /**
@@ -94,12 +93,12 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * @param graph the chordal graph for which a decomposition should be created
      * @param perfectEliminationOrder the perfect elimination order of the graph
      */
-    public ChordalNiceDecompositionBuilder(Graph<V, E> graph, List<V> perfectEliminationOrder)
+    public ChordalNiceTreeDecomposition(Graph<V, E> graph, List<V> perfectEliminationOrder)
     {
         super();
         this.graph = graph;
         this.perfectOrder = perfectEliminationOrder;
-        computeNiceDecomposition();
+        vertexInOrder = getVertexInOrder();
     }
 
     /**
@@ -107,13 +106,15 @@ public class ChordalNiceDecompositionBuilder<V, E>
      * of the chordal graph and try to add a node containing the predecessors regarding the
      * perfect elimination as a bag to the tree
      */
-    private void computeNiceDecomposition()
+    protected void computeLazyNiceTreeDecomposition()
     {
-        // map from vertices to decomposition-nodes where the decomposition-node has all its
-        // predecessors
+        /*
+         * Map from the vertices of the graph to the forget nodes from the decomposition tree. The mapping 
+         * is one-to-one and each decomposition node contains corresponding vertex and all its predecessors.
+         */
         Map<V, Integer> forgetNodeMap = new HashMap<>(graph.vertexSet().size());
 
-        //iterate over the perfect order
+        //iterator over the perfect elimination order
         Iterator<V> iterator = perfectOrder.iterator();
         
         //empty graph
@@ -131,7 +132,11 @@ public class ChordalNiceDecompositionBuilder<V, E>
             // get the predecessors regarding the perfect elimination order
             List<V> predecessors = getOrderPredecessors(vertexInOrder, vertex);
 
-            // calculate nearest successors according to perfect elimination order
+            /**
+             * Calculate the nearest predecessor according to the perfect elimination order.
+             * The nearest predecessor means here the predecessor of the vertex, for which the forget node
+             * was created last and thus is the highest predecessor (and nearest to the vertex).
+             */
             V lastVertex = null;
             for (V predecessor : predecessors) {
                 if (lastVertex == null)

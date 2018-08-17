@@ -24,17 +24,18 @@ import org.jgrapht.alg.util.*;
 import org.jgrapht.graph.*;
 
 /**
- * An abstract builder class for nice tree decompositions, which builds the tree decomposition in a
- * top-down manner.
+ * An abstract class for building a nice tree decomposition in a top-down manner.
  * <p>
-* A tree-decomposition of a graph $G = (V, E)$ is a pair $(X, T) = (\{X_i\ |\ i\in I\}, (I, F))$ where
+ * A tree decomposition of a graph $G = (V, E)$ is a pair $(X, T) = (\{X_i\ |\ i\in I\}, (I, F))$ where
  * $X = \{X_i\ |\ i \in I \}$ is a family of subsets of $V$, and $T = (I, F)$ is a tree, such that
  * <ul>
- * <li>Union of the sets $X_i$ equals to $V$</li>
+ * <li>union of the sets $X_i$ equals to $V$</li>
  * <li>for every edge $e = (u,v)$ there exists a set $X_i$ such that $u \in X_i$ and $v \in X_i$</li>
  * <li>if both $X_i$ and $X_j$ contain a vertex $v$ then every set $X_k$ on the simple path from $X_i$ to $X_j$
  * contains vertex $v$.</li>
  * </ul>
+ * In the following we will use the map $b:I \rightarrow X$ with $b(i)=X_i$ to denote the set $X_i \in X$ of a 
+ * tree decomposition node $i \in I$.
  * <br>
  * A nice tree decomposition is a special tree decomposition, which satisfies the properties:
  * <ul>
@@ -58,7 +59,7 @@ import org.jgrapht.graph.*;
  *
  * @param <V> the vertices of the graph
  */
-abstract public class NiceDecompositionBuilder<V>
+abstract public class NiceTreeDecompositionBase<V>
 {
 
     // resulting decomposition
@@ -72,19 +73,30 @@ abstract public class NiceDecompositionBuilder<V>
 
     // next integer for vertex generation
     private int nextInteger;
-
+    
+    // flag that checks whether computeNiceTreeDecomposition was already called
+    private boolean hasLazyComputed;
+    
     /**
      * Constructor for all methods used in the abstract method. This constructor instantiates the
      * tree of the decomposition, the map from tree vertices to vertex sets and adds the root to the
      * tree.
      */
-    protected NiceDecompositionBuilder()
+    protected NiceTreeDecompositionBase()
     {
         // creating objects
         decomposition = new DefaultDirectedGraph<>(DefaultEdge.class);
         decompositionMap = new HashMap<>();
         nextInteger = 0;
+        hasLazyComputed = false;
     }
+    
+    /**
+     * Method for computing the nice tree decomposition for the given graph lazy. This method is called whenever 
+     * a getter is called and should compute {@code root}, {@code decomposition} and {@code decompositionMap}. 
+     * The implementation must be done in the concrete class.
+     */
+    protected abstract void computeLazyNiceTreeDecomposition();
 
     /**
      * Getter for the next integer, which is not yet used as a node in the decomposition. 
@@ -138,13 +150,13 @@ abstract public class NiceDecompositionBuilder<V>
         // create first/left new child of node
         int vertexChildLeft = getNextInteger();
         decomposition.addVertex(vertexChildLeft);
-        currentVertexBag = new HashSet<V>(decompositionMap.get(node));
+        currentVertexBag = new HashSet<>(decompositionMap.get(node));
         decompositionMap.put(vertexChildLeft, currentVertexBag);
 
         // create second/right new child of node
         int vertexChildRight = getNextInteger();
         decomposition.addVertex(vertexChildRight);
-        currentVertexBag = new HashSet<V>(decompositionMap.get(node));
+        currentVertexBag = new HashSet<>(decompositionMap.get(node));
         decompositionMap.put(vertexChildRight, currentVertexBag);
 
         // redirect all edges to new parent, the second/right element
@@ -231,7 +243,7 @@ abstract public class NiceDecompositionBuilder<V>
      */
     protected void leafClosure()
     {
-        Set<Integer> vertices = new HashSet<Integer>(decomposition.vertexSet());
+        Set<Integer> vertices = new HashSet<>(decomposition.vertexSet());
         // make leaf nodes
         for (Integer leaf : vertices) {
             // node is not a leaf
@@ -256,6 +268,10 @@ abstract public class NiceDecompositionBuilder<V>
      */
     public Graph<Integer, DefaultEdge> getDecomposition()
     {
+        if(!hasLazyComputed) {
+            computeLazyNiceTreeDecomposition();
+            hasLazyComputed = true;
+        }
         return new AsUnmodifiableGraph<>(decomposition);
     }
 
@@ -267,6 +283,10 @@ abstract public class NiceDecompositionBuilder<V>
      */
     public Map<Integer, Set<V>> getMap()
     {
+        if(!hasLazyComputed) {
+            computeLazyNiceTreeDecomposition();
+            hasLazyComputed = true;
+        }
         return Collections.unmodifiableMap(decompositionMap);
     }
 
@@ -277,6 +297,10 @@ abstract public class NiceDecompositionBuilder<V>
      */
     public int getRoot()
     {
+        if(!hasLazyComputed) {
+            computeLazyNiceTreeDecomposition();
+            hasLazyComputed = true;
+        }
         return root;
     }
 
@@ -286,6 +310,10 @@ abstract public class NiceDecompositionBuilder<V>
     @Override
     public String toString()
     {
+        if(!hasLazyComputed) {
+            computeLazyNiceTreeDecomposition();
+            hasLazyComputed = true;
+        }
         return getDecomposition() + "\n " + getMap();
     }
 }

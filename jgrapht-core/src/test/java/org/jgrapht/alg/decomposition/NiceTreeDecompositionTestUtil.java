@@ -15,7 +15,7 @@
  * (b) the terms of the Eclipse Public License v1.0 as published by
  * the Eclipse Foundation.
  */
-package org.jgrapht.alg.decompostion;
+package org.jgrapht.alg.decomposition;
 
 
 import java.util.*;
@@ -29,10 +29,10 @@ import org.jgrapht.graph.*;
  *
  * @author Ira Justus Fesefeldt (PhoenixIra)
  */
-public final class NiceDecompositionBuilderTestUtil
+public final class NiceTreeDecompositionTestUtil
 {
     //static class
-    private NiceDecompositionBuilderTestUtil() {}
+    private NiceTreeDecompositionTestUtil() {}
     
     /**
      * Tests whether the tree decomposition, consisting of the {@code decomposition} and the {@code map} 
