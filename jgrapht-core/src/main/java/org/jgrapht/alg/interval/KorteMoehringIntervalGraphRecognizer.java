@@ -350,11 +350,10 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     //here the path is modified, not the tree 
     private void addVertexToLeaf(V u, List<MPQTreeNode> path)
     {
-        //get the last vertex 
-        //todo: better naming for the varibles in terms of the paper
+        //TODO: better naming for the varibles in terms of the paper
         int lastIndexofPath= path.size()-1;
         MPQTreeNode lastNodeInPath = path.get(lastIndexofPath);
-        HashMap<Integer, HashSet<V>> partitionedVertexSet =partitionVertexSet(u,graph, lastNodeInPath);
+        HashMap<Integer, HashSet<V>> partitionedVertexSet = partitionVertexSet(u,graph, lastNodeInPath);
 
         //check if lastnodeInPath is P or Q or leaf
 
@@ -371,25 +370,21 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
             else {
                 //transform the leaf containing A+B into a PNode containing A
-
-                path.remove(lastIndexofPath);
                 PNode newPNode = new PNode( partitionedVertexSet.get(0));
                 //Create two leaves for PNode children, add the children to the PNode
-                HashSet<V> leafElement = new HashSet<>();
-                leafElement.add(u);
 
-                //check later
-                Leaf leaf1 = new Leaf(leafElement);
+                Leaf leaf1 = new Leaf(u);
                 Leaf leaf2 = new Leaf( partitionedVertexSet.get(1));
                 leaf1.parent=newPNode;
                 leaf2.parent=newPNode;
                 //add children to the PNode
                 //need to implement the add child option
+
+
+
                 newPNode.addChild(leaf1);
                 newPNode.addChild(leaf2);
-                //add the PNode to the tree or add the PNode to the path?
-
-                //adding the PNode to the path for now, later add it to the tree(if needed)
+                path.remove(lastIndexofPath);
 
                 path.add(newPNode);
 
@@ -399,52 +394,40 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         } 
 
 
-        //Addition if the last node is the PNode
+        //Addition if the last node in path is the PNode
         else if (lastNodeInPath.getClass()== PNode.class) {
 
+            PNode tempPNode = (KorteMoehringIntervalGraphRecognizer<V, E>.PNode) lastNodeInPath;
             if(partitionedVertexSet.get(1).isEmpty()) {
                 //swap P node containing A+B with P Node containing just A,since B is empty makes no change
                 //keep it the same, just add the new leaves there
-                HashSet<V> leafElement = new HashSet<>();
-                leafElement.add(u);
-                Leaf newLeaf= new Leaf(leafElement);
-                newLeaf.parent=lastNodeInPath;
+                Leaf newLeaf= new Leaf(u);
+                newLeaf.parent=tempPNode;
+                tempPNode.addChild(newLeaf);
+                tempPNode.currentChild=newLeaf;
 
-
-                //add child to the PNode, for this I can either remove the lastNodeInPath and create a new PNOde and add the rest
-                //-> If I do this, I need to recognize all the subtrees of the lastNodeInPath and then add them to the new PNode
-
-                //or create a Add child method in the MPQ tree node itself
-                //->better because I dont need to deal with the other subtrees
-
-
-                lastNodeInPath.addChild(newLeaf);
-
-                //add the PNode to the tree -> Maybe not needed here
-
+                path.remove(lastIndexofPath);
+                path.add(tempPNode);
 
 
             }else {
                 //update the previous PNode elements with elements in A
-                //	lastNodeInPath.elements = partitionedVertexSet.get(0);
-                path.get(lastIndexofPath).elements=partitionedVertexSet.get(0);
+
+                PNode newPNodeA= new PNode(partitionedVertexSet.get(0));
                 //create a new PNode and add the B set
-                HashSet<V> newPNodeElements = new HashSet<>();
-                newPNodeElements.addAll(partitionedVertexSet.get(1));
 
-                PNode newPNode = new PNode(newPNodeElements);
-                lastNodeInPath.addChild(newPNode);
-                //add u as the leaf here				
+                PNode newPNodeB = tempPNode;
+                newPNodeB.elements.removeAll(partitionedVertexSet.get(0));
+                newPNodeA.addChild(newPNodeB);
+                newPNodeB.parent=newPNodeA;
 
-                //newPNode.parent=lastNodeInPath;
+                Leaf newChildLeaf = new Leaf(u);
+                newPNodeA.addChild(newChildLeaf);
+                newChildLeaf.parent=newPNodeA;
 
-
-                //add this to the tree
-
-
-
-                //all children of leafNodeinPath will become newPNode's children
-
+                newPNodeA.currentChild=newChildLeaf;
+                path.remove(lastIndexofPath);
+                path.add(newPNodeA);
 
 
 
@@ -465,7 +448,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
             // remove the lastNodeinPath and need to perform some addition
             QNode currentQNode = (KorteMoehringIntervalGraphRecognizer<V, E>.QNode) lastNodeInPath ;
-            boolean containsA = allSectionsContainselementSet(currentQNode, partitionedVertexSet.get(0));
+            boolean containsA = allSectionsContainsElementSet(currentQNode, partitionedVertexSet.get(0));
             //if containsA == true Q1, else Q2 (both the cases of Q2)
 
 
@@ -473,16 +456,24 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                 //Q1
 
                 //create a new PNode A 
-                PNode newChildPNode = new PNode(partitionedVertexSet.get(0));
-                Leaf newLeaf = new Leaf(u);
-                QNode newChildQNode = extractQNodeElements(currentQNode,partitionedVertexSet.get(0) );
-                newChildPNode.addChild(newLeaf);
-                newChildPNode.addChild(newChildQNode); 
-                newChildPNode.currentChild = newLeaf;
-                path.remove(currentQNode);
-                path.add(newChildPNode);
+                PNode newElementPNode = new PNode(partitionedVertexSet.get(0));
 
-                //TODO: set the existing Qnode as its another child -> careful in setting a Qnode as a child
+                Leaf newLeaf = new Leaf(u);
+                newElementPNode.addChild(newLeaf);
+                newLeaf.parent=newElementPNode;
+                newElementPNode.addChild(newLeaf);
+                newLeaf.parent=newElementPNode;
+
+
+
+                QNode newChildQNode = extractQNodeElements(currentQNode,partitionedVertexSet.get(0) );
+                newElementPNode.addChild(newChildQNode); 
+                newChildQNode.parent=newElementPNode;
+
+
+                path.remove(currentQNode);
+                path.add(newElementPNode);
+
 
             }else {
 
@@ -493,13 +484,21 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                 if(partitionedVertexSet.get(1).isEmpty()) {
 
                     PNode newChildPNode = new PNode (null);
+
                     //take the existing childsubtree of the QNode and add it to the PNode
                     newChildPNode.addChild(currentQNode.leftmostSection.child);
+                    currentQNode.leftmostSection.child.parent=newChildPNode;
+
+
                     Leaf newChildLeaf = new Leaf (u);
                     newChildPNode.addChild(newChildLeaf);
+                    newChildLeaf.parent=newChildPNode;
                     newChildPNode.currentChild=  newChildLeaf;
-                    path.remove(currentQNode);
-                    path.add(newChildPNode);
+
+
+                    currentQNode.leftmostSection.child=newChildPNode;
+                    newChildPNode.parent=currentQNode.leftmostSection;
+
 
 
                 }else {
@@ -511,7 +510,9 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                     currentQNode.leftmostSection.leftSibling=newQSectionNode;
                     currentQNode.leftmostSection=newQSectionNode;
 
-                    currentQNode.leftmostSection.child=new Leaf(u);
+                    Leaf newChildLeaf = new Leaf (u);
+                    currentQNode.leftmostSection.child=newChildLeaf;
+                    newChildLeaf.parent=currentQNode.leftmostSection;
 
                 }
 
@@ -524,24 +525,20 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     }
     //make this lessless  ugly and javadoc
 
-    //need to make this faster
     private QNode extractQNodeElements(QNode qNode, HashSet<V> elementSet) {
 
-        QNode newQNode;
-        //  newQNode.leftmostSection=qNode.leftmostSection;
-
-        //iterate over every section of the qNode and change accordingly
-
+        for(QSectionNode curerntQSectionNode = qNode.leftmostSection; curerntQSectionNode.rightSibling!=null; curerntQSectionNode= curerntQSectionNode.rightSibling ) {
+            curerntQSectionNode.elements.removeAll(elementSet);
+        }
 
 
 
-        return null;
+        return qNode;
     }
 
-    //make this ok, this is currently not ok
 
 
-    private boolean allSectionsContainselementSet(QNode newQNode, HashSet<V> elements) {
+    private boolean allSectionsContainsElementSet(QNode newQNode, HashSet<V> elements) {
         //traverse all sections of the QNode and check if every section contains an A
         //should there be a section identifier
 
@@ -561,34 +558,48 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
             }
 
+            else {
+                isContained = false;
+            }
+
 
         }
 
-        return true;
+        return isContained;
     }
 
+
+
+    /**
+     * @param Vertex u
+     * @param Interval Graph graph
+     * @param MPQTree Node node
+     * @return HashMap containing the partitioned vertex sets
+     */
     HashMap<Integer, HashSet<V>> partitionVertexSet(V u, Graph graph, MPQTreeNode node){
 
-        //find the vertices associated with the node
+        //find all the vertices associated with the node
         HashSet<V> elementsInNode = node.elements;
 
+
         //find vertices adjacent to u in graph G
-        List<V> neighbourVerticesofV   = Graphs.neighborListOf(graph, u);
+        @SuppressWarnings("unchecked")
+        HashSet<V> neighbourVerticesofV = new HashSet<V>(Graphs.neighborListOf(graph, u));
 
         HashSet<V> vertexPartitionSetA = new HashSet<>();
         HashSet<V> vertexPartitionSetB = new HashSet<>();
         Map<Integer, HashSet<V>> vertexPartitionMap= new HashMap<Integer, HashSet<V>>();
 
-        //make this better //check complexity
-        if(elementsInNode.size() == neighbourVerticesofV.size() && elementsInNode.containsAll(neighbourVerticesofV) ) {
-            //if this fails, change the list to hashset
-            vertexPartitionSetA =  (HashSet<V>) neighbourVerticesofV; 
-            vertexPartitionMap.put(0,(HashSet<V>) vertexPartitionSetA);
-            vertexPartitionMap.put(1,(HashSet<V>) vertexPartitionSetB);
 
-        }else {
+        if(neighbourVerticesofV.equals(elementsInNode)) {
+
+            vertexPartitionSetA =  neighbourVerticesofV; 
+            vertexPartitionMap.put(0,vertexPartitionSetA);
+            vertexPartitionMap.put(1, vertexPartitionSetB);
+
+        }
+        else {
             for(V vertex:elementsInNode ) {
-                V v= vertex;
                 if(neighbourVerticesofV.contains(vertex)) {
 
                     vertexPartitionSetA.add(vertex);
@@ -599,13 +610,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
             vertexPartitionMap.put(0,vertexPartitionSetA);
             vertexPartitionMap.put(1,vertexPartitionSetB);
-
-
         }
-
-
-
-
 
 
 
@@ -632,14 +637,15 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         int maxIndex = path.indexOf(nBig);
         //   while(currentIndex != maxIndex )  
 
-        for(int i = currentIndex; i<maxIndex; i++){
+        for(int i = currentIndex; i<=maxIndex; i++){
 
+            MPQTreeNode currentNode = path.get(currentIndex);
             //split the vertex initially
-            HashMap<Integer, HashSet<V>> partitionedVertexSet  = partitionVertexSet(u, graph, path.get(currentIndex));
+            HashMap<Integer, HashSet<V>> partitionedVertexSet  = partitionVertexSet(u, graph, currentNode);
 
 
             //CHECK the type of node
-            if(path.get(currentIndex).getClass()==Leaf.class) {
+            if(currentNode.getClass()==Leaf.class) {
 
                 //just make a check about the current index being equal to nSmall, remove later -> TODO
 
@@ -647,28 +653,34 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
                     //create a Qnode with 2 section nodes 
 
-                    QSectionNode newChildQSectionNode1 = new QSectionNode(partitionedVertexSet.get(0));                  
-                    QSectionNode newChildQSectionNode2 = newChildQSectionNode1;
+                    QSectionNode newQSection1 = new QSectionNode(partitionedVertexSet.get(0));                  
+                    QSectionNode newQSection2 = new QSectionNode(partitionedVertexSet.get(0));
 
-                    QNode newQNode = new QNode(newChildQSectionNode1);
-                    newQNode.leftmostSection=newChildQSectionNode1;
-                    newQNode.rightmostSection=newChildQSectionNode2;
-                    newChildQSectionNode1.rightSibling=newChildQSectionNode2;
-                    newChildQSectionNode2.leftSibling=newChildQSectionNode1;
+                    QNode newElementQNode = new QNode(newQSection1);
+                    newElementQNode.addChild(newQSection2);
+                    newElementQNode.leftmostSection=newQSection1;
+                    newElementQNode.rightmostSection=newQSection2;
 
-                    Leaf leftChildLeaf = new Leaf(u);
-                    Leaf rightChildLeaf = new Leaf(partitionedVertexSet.get(1));
+                    newQSection1.rightSibling=newQSection2;
+                    newQSection1.parent=newElementQNode;
 
-                    newChildQSectionNode1.child=leftChildLeaf;
-                    newChildQSectionNode2.child=rightChildLeaf;
+                    newQSection2.leftSibling=newQSection1;
+                    newQSection2.parent=newElementQNode;
 
 
-                    //TODO: Remove this part if necessary
-                    leftChildLeaf.parent=newChildQSectionNode1;
-                    rightChildLeaf.parent=newChildQSectionNode2;
+                    Leaf leftSectionChildLeaf = new Leaf(u);
+                    Leaf righSectiontChildLeaf = new Leaf(partitionedVertexSet.get(1));
+
+                    newQSection1.child=leftSectionChildLeaf;
+                    leftSectionChildLeaf.parent=newQSection1;
+
+                    newQSection2.child=righSectiontChildLeaf;
+                    righSectiontChildLeaf.parent=newQSection2;
+
+
 
                     path.remove(currentIndex);
-                    path.add(newQNode);
+                    path.add(newElementQNode);
 
 
 
@@ -684,27 +696,32 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
                 if(currentIndex==minIndex) {
 
-                    QSectionNode newChildQSectionNode1 = new QSectionNode(partitionedVertexSet.get(0));                  
-                    QSectionNode newChildQSectionNode2 = newChildQSectionNode1;
+                    QSectionNode newQSectionNode1 = new QSectionNode(partitionedVertexSet.get(0));                  
+                    QSectionNode newQSectionNode2 = new QSectionNode(partitionedVertexSet.get(0));
 
-                    QNode newQNode = new QNode(newChildQSectionNode1);
-                    newQNode.leftmostSection=newChildQSectionNode1;
-                    newQNode.rightmostSection=newChildQSectionNode2;
-                    newChildQSectionNode1.rightSibling=newChildQSectionNode2;
-                    newChildQSectionNode2.leftSibling=newChildQSectionNode1;
+                    QNode newQNode = new QNode(newQSectionNode1);
+                    newQNode.addChild(newQSectionNode2);
+
+                    newQNode.leftmostSection=newQSectionNode1;
+                    newQSectionNode1.parent=newQNode;
+
+                    newQNode.rightmostSection=newQSectionNode2;
+                    newQSectionNode2.parent=newQNode;
+
+                    newQSectionNode1.rightSibling=newQSectionNode2;
+                    newQSectionNode2.leftSibling=newQSectionNode1;
 
                     Leaf leftChildLeaf = new Leaf(u);
-                    PNode rightChildPNode = new PNode(partitionedVertexSet.get(1));
 
-                    newChildQSectionNode1.child=leftChildLeaf;
-                    newChildQSectionNode2.child=rightChildPNode;
+                    PNode rightChildPNode = tempPNode;
+                    rightChildPNode.elements.remove(partitionedVertexSet.get(0));
 
+                    newQSectionNode1.addChild(leftChildLeaf);
+                    leftChildLeaf.parent=newQSectionNode1;
 
-                    //TODO: Remove this part if necessary
-                    leftChildLeaf.parent=newChildQSectionNode1;
-                    rightChildPNode.parent=newChildQSectionNode2;
+                    newQSectionNode2.addChild(rightChildPNode);
+                    rightChildPNode.parent=newQSectionNode2;
 
-                    rightChildPNode.currentChild=tempPNode.currentChild;
 
                     path.remove(currentIndex);
                     path.add(newQNode);
@@ -715,40 +732,47 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
 
                 }
-                //TODO
                 else {
                     //TODO: implement helper classes here
-                    QSectionNode rightMostSection = new QSectionNode(tempPNode.elements);
-                    //TODO: set the children of the rightmostSectionChildPNode
-                    PNode rightmostSectionChildPNode = new PNode(null);
+                    QSectionNode rightMostQSection = new QSectionNode(tempPNode.elements);
+                    PNode rightmostQSectionChildPNode = tempPNode;
+                    rightmostQSectionChildPNode.elements.removeAll(tempPNode.elements);
+                    rightMostQSection.addChild(rightmostQSectionChildPNode);
+                    rightmostQSectionChildPNode.parent=rightMostQSection;
 
                     QNode tempQNode = (KorteMoehringIntervalGraphRecognizer<V, E>.QNode) tempPNode.currentChild;
-                    QNode newQNode = new QNode(rightMostSection);
-                    newQNode.rightmostSection=rightMostSection;
+                    QNode newElementQNode = tempQNode;
 
 
-                    QSectionNode currentSection = tempQNode.leftmostSection;
+                    ;
 
-                    while(currentSection!=tempQNode.rightmostSection) {
+                    for(QSectionNode currentSection = newElementQNode.leftmostSection; currentSection.rightSibling!=null; currentSection= currentSection.rightSibling) {
 
-                        HashSet<V> elementsForNewSection = currentSection.elements  ; 
-                        elementsForNewSection.addAll(partitionedVertexSet.get(0));
-                        QSectionNode newSection = new QSectionNode(elementsForNewSection);
-
-                        if(currentSection == tempQNode.leftmostSection ) {
+                        if(currentSection == newElementQNode.leftmostSection ) {
 
 
-                            newQNode.leftmostSection=newSection;
+                            currentSection.elements.addAll(partitionedVertexSet.get(0));
 
 
                         }
 
                         else {
 
+                            currentSection.elements.addAll(tempPNode.elements);
+
                         }
                     }
 
 
+                    //need to add addSection for QNode here
+
+                    newElementQNode.rightmostSection.rightSibling=rightMostQSection;
+                    rightMostQSection.leftSibling=newElementQNode.rightmostSection;
+                    newElementQNode.rightmostSection=rightMostQSection;
+
+
+                    path.remove(tempPNode);
+                    path.add(newElementQNode);
 
 
                 }
@@ -762,7 +786,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             }
 
             else if (path.get(currentIndex).getClass()==QNode.class) {
-                
+
                 QNode tempQNode = (KorteMoehringIntervalGraphRecognizer<V, E>.QNode) path.get(currentIndex);
 
                 //first check:current node = NSmall, second check A is present in everything
@@ -770,84 +794,91 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
                 if(currentIndex==minIndex) {
 
-                    if(allSectionsContainselementSet(tempQNode, partitionedVertexSet.get(0))) {
-                           //create Qnode1
-                        
+                    //second check A is present in everything
+
+                    if(allSectionsContainsElementSet(tempQNode, partitionedVertexSet.get(0))) {
+                        //create Qnode1
+
                         QSectionNode rightMostSection = new QSectionNode(partitionedVertexSet.get(0));
                         QSectionNode leftMostSection = new QSectionNode(partitionedVertexSet.get(0));
 
-                        QNode newQNode1 = new QNode(leftMostSection);
-                       newQNode1.leftmostSection=leftMostSection;
-                       newQNode1.rightmostSection=rightMostSection;
-                       
-                       leftMostSection.rightSibling=rightMostSection;
-                       rightMostSection.leftSibling=leftMostSection;
-                       
-                       Leaf newChild = new Leaf(u);
-                       leftMostSection.child=newChild;
-                       newChild.parent=leftMostSection;
+                        QNode newQNodeA = new QNode(leftMostSection);
+                        //need to add rightmost section in newQNodeA
+                        newQNodeA.leftmostSection=leftMostSection;
+                        newQNodeA.rightmostSection=rightMostSection;
 
-                        
+                        leftMostSection.rightSibling=rightMostSection;
+                        rightMostSection.leftSibling=leftMostSection;
+
+                        Leaf newChild = new Leaf(u);
+
+                        leftMostSection.addChild(newChild);
+                        leftMostSection.child=newChild;
+                        newChild.parent=leftMostSection;
+
+
                         //create QNode2
-                       
-                       
-                       
-                       QNode newQNode2 = tempQNode;
-                       
-                       //TODO: check this part,
-                       
-                       for(QSectionNode currentSection = newQNode2.leftmostSection; currentSection.rightSibling != null; currentSection = currentSection.rightSibling ) {
-                           
-                           
-                       currentSection.elements.removeAll(partitionedVertexSet.get(0));
-                           
-                       }
-                       
-                       rightMostSection.child=newQNode2;
-                       newQNode2.parent=rightMostSection;
-                       
-                            
-                       path.remove(tempQNode);
-                       path.add(newQNode1);
+
+
+
+                        QNode newQNodeB = tempQNode;
+
+                        //TODO: check this part,
+
+                        for(QSectionNode currentSection = newQNodeB.leftmostSection; currentSection.rightSibling != null; currentSection = currentSection.rightSibling ) {
+
+
+                            currentSection.elements.removeAll(partitionedVertexSet.get(0));
+
+                        }
+
+                        rightMostSection.addChild(newQNodeB);
+                        rightMostSection.child=newQNodeB;
+                        newQNodeB.parent=rightMostSection;
+
+
+                        path.remove(tempQNode);
+                        path.add(newQNodeA);
 
 
                     }else {
 
-                        
+
                         QSectionNode qSectionNode= new QSectionNode(partitionedVertexSet.get(0));
                         tempQNode.leftmostSection.leftSibling=qSectionNode;
                         qSectionNode.rightSibling=tempQNode.leftmostSection;
                         tempQNode.leftmostSection=qSectionNode;
-                        
-                        tempQNode.addChild(new Leaf(u));
-                        
-                        
-                        
+
+                        Leaf newChild = new Leaf(u); 
+                        tempQNode.addChild(newChild);
+                        newChild.parent=tempQNode;
+
+
                     }
 
 
                 }
                 else {
 
-                            QNode tempChildQNode=(KorteMoehringIntervalGraphRecognizer<V, E>.QNode) tempQNode.leftmostSection.child;
-                            
-                            for(QSectionNode currentSection = tempChildQNode.leftmostSection; currentSection.rightSibling != null; currentSection = currentSection.rightSibling ) {
-                                if(currentSection==tempChildQNode.leftmostSection) {
-                                    
-                                    currentSection.elements.addAll(partitionedVertexSet.get(0));
-                                    }
-                                
-                                else {
-                                    currentSection.elements.addAll(tempQNode.leftmostSection.elements);
-                                }
-                                
-                                tempChildQNode.rightmostSection.rightSibling=tempQNode.leftmostSection.rightSibling;
-                                tempQNode.leftmostSection= tempChildQNode.leftmostSection;
-                                
-                                
-                                }
-                            
-                            
+                    QNode tempChildQNode=(KorteMoehringIntervalGraphRecognizer<V, E>.QNode) tempQNode.leftmostSection.child;
+
+                    for(QSectionNode currentSection = tempChildQNode.leftmostSection; currentSection.rightSibling != null; currentSection = currentSection.rightSibling ) {
+                        if(currentSection==tempChildQNode.leftmostSection) {
+
+                            currentSection.elements.addAll(partitionedVertexSet.get(0));
+                        }
+
+                        else {
+                            currentSection.elements.addAll(tempQNode.leftmostSection.elements);
+                        }
+
+                        tempChildQNode.rightmostSection.rightSibling=tempQNode.leftmostSection.rightSibling;
+                        tempQNode.leftmostSection= tempChildQNode.leftmostSection;
+
+
+                    }
+
+
                 }
 
 
@@ -865,17 +896,6 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
 
         }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -969,7 +989,6 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
         }
 
 
-        //need to confirm
         void addChild(MPQTreeNode child) {
             // TODO: add child according to the template operations
         }
@@ -1007,8 +1026,15 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
          * @param child the child node to be added
          */
         void addChild(MPQTreeNode child) {
-            // TODO: add child according to the template operations
+            
+            
+
+
+
         }
+
+
+
 
     }
 
