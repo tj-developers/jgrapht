@@ -21,6 +21,7 @@ package org.jgrapht.alg.decomposition;
 import static org.junit.Assert.assertTrue;
 
 import org.jgrapht.*;
+import org.jgrapht.alg.cycle.ChordalityInspector;
 import org.jgrapht.generate.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.builder.*;
@@ -141,6 +142,21 @@ public class ChordalityNiceTreeDecompositionTest
             Graph<Integer, DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
             ChordalNiceTreeDecomposition<Integer, DefaultEdge> decompBuild =
                 new ChordalNiceTreeDecomposition<>(graph);
+            assertTrue(NiceTreeDecompositionTestUtil
+                .isDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap()));
+            assertTrue(NiceTreeDecompositionTestUtil.isNiceDecomposition(
+                decompBuild.getDecomposition(), decompBuild.getMap(), decompBuild.getRoot()));
+        }
+    }
+    
+    @Test
+    public void testLekkerkerkerBolandFamilyPerfectEliminationOrder()
+    {
+        for (int i = 0; i < 10; i++) {
+            Graph<Integer, DefaultEdge> graph = makeLekkerkerkerBolandFamily(i);
+            ChordalityInspector<Integer, DefaultEdge> inspec = new ChordalityInspector<>(graph);
+            ChordalNiceTreeDecomposition<Integer, DefaultEdge> decompBuild =
+                new ChordalNiceTreeDecomposition<>(graph, inspec.getPerfectEliminationOrder());
             assertTrue(NiceTreeDecompositionTestUtil
                 .isDecomposition(graph, decompBuild.getDecomposition(), decompBuild.getMap()));
             assertTrue(NiceTreeDecompositionTestUtil.isNiceDecomposition(
