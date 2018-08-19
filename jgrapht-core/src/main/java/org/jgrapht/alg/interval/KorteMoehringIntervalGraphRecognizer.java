@@ -33,7 +33,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * The root of the MPQ tree
      */
-    private MPQTreeNode treeRoot;
+    private MPQTreeNode treeRoot = null;
 
     /**
      * The mapping from a vertex in the graph to a set of nodes in the MPQ tree, in order to reach the associated node quickly
@@ -53,22 +53,20 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     public KorteMoehringIntervalGraphRecognizer(Graph<V, E> graph) {
         this.graph = graph;
         chordalInspector = new ChordalityInspector<>(graph);
-        treeRoot = new PNode(null);
     }
 
     /**
-     * TODO: better Javadoc
+     * The concrete implementation of Korte-Moehring Algorithm, which tests if the graph is an interval graph with the help of MPQ tree.
      * <p>
-     * the Korte-Moehring Algorithm, which tests the graphs with an MPQ tree for an interval representation.
-     * If the algorithm returns true, we can computed an interval representation of the MPQ Tree
-     * If the algorithm returns false, we can computed an counter example of the MPQ Tree
+     * If the graph is proved to be an interval graph, the interval graph representation is calculated.
+     * If the graph is proved not to be an interval graph, the maximal clique is calculated as counter example.
      */
-    private void testIntervalGraph() {
+    private boolean testIntervalGraph() {
 
         // if the graph is not chordal, then it is not interval
         if (!chordalInspector.isChordal()) {
             isIntervalGraph = false;
-            return;
+            return false;
         }
 
         // get the perfect elimination order for the vertices in the graph
@@ -101,7 +99,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
                     QSectionNode qSectionNode = (QSectionNode) associatedNode;
                     if (!qSectionNode.isLeftmostSection() && !qSectionNode.isRightmostSection()) {
                         isIntervalGraph = false;
-                        return;
+                        return false;
                     }
                 }
 
@@ -134,7 +132,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             if (!isPath(markedTreeNodes)) {
                 // if not, the marked tree nodes do not actually form a path
                 isIntervalGraph = false;
-                return;
+                return false;
             }
 
             //get lowest positive node in path
@@ -191,25 +189,27 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     }
 
     /**
-     * Adds a new leaf node with the bag of this vertex to the root.
+     * Adds a new leaf node with the bag of this vertex
      *
-     * @param u the vertex to be added to the MPQ Tree
+     * @param vertex the vertex to be added onto the MPQ Tree
      */
-    private void addEmptyPredecessors(V u) {
+    private void addEmptyPredecessors(V vertex) {
 
-        // create element list for the new node
-        CircularListNode<V> elementList = new CircularListNode<>(u);
+        MPQTreeNode leaf = new Leaf(new CircularListNode<>(vertex));
 
-        // create the new node and add it to the tree root
-        MPQTreeNode leaf = new PNode(elementList);
-        leaf.parent = treeRoot;
+        if (treeRoot == null) {
+            // if the tree root is null, make the leaf the tree root
+            treeRoot = leaf;
+        }else {
+            leaf.parent = treeRoot;
+        }
 
         // create associated node set for the vertex
         Set<MPQTreeNode> nodeSet = new HashSet<>();
         nodeSet.add(leaf);
 
         // put the vertex - associated node set to the map
-        vertexNodeMap.put(u, nodeSet);
+        vertexNodeMap.put(vertex, nodeSet);
     }
 
     /**
@@ -294,19 +294,6 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             }
         }
         return true;
-    }
-
-    /**
-     * TODO: Better Javadoc
-     * tests if an outer section of every Q nodes N in positive labels contains predecessors intersection V(N)
-     *
-     * @param positiveLabels the positive vertices
-     * @param predecessors   the predecessors of u
-     * @return true iff it fulfills the condition
-     */
-    private boolean testOuterSectionsOfQNodes(Set<MPQTreeNode> positiveLabels, Set<V> predecessors) {
-        // TODO Auto-generated method stub
-        return false;
     }
 
     /**
