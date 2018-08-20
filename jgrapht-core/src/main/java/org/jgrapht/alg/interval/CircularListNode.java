@@ -2,6 +2,8 @@ package org.jgrapht.alg.interval;
 
 /**
  * A node in a doubly linked circular list
+ *
+ * @author Jiong Fu (magnificent_tony)
  */
 public class CircularListNode<E> {
 
@@ -106,8 +108,4 @@ public class CircularListNode<E> {
         return this;
     }
 
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> implement circular list node

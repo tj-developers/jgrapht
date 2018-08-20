@@ -38,7 +38,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * The mapping from a vertex in the graph to a set of nodes in the MPQ tree, in order to reach the associated node quickly
      */
-    private HashMap<V, Set<MPQTreeNode>> vertexNodeMap;
+    private HashMap<V, Set<MPQTreeNode>> vertexNodeMap = null;
 
     /**
      * The boolean flag indicating if the input graph is an interval graph
@@ -53,6 +53,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     public KorteMoehringIntervalGraphRecognizer(Graph<V, E> graph) {
         this.graph = graph;
         this.chordalInspector = new ChordalityInspector<>(graph);
+        this.vertexNodeMap = new HashMap<>();
         this.isIntervalGraph = testIntervalGraph();
     }
 
@@ -71,16 +72,17 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
 
         // get the perfect elimination order for the vertices in the graph
         List<V> perfectEliminationOrder = chordalInspector.getPerfectEliminationOrder();
+//        System.err.println(perfectEliminationOrder);
         Map<V, Integer> vertexIndexMap = getVertexIndexMap(perfectEliminationOrder);
 
         // iterate over the perfect elimination order
         for (V u : perfectEliminationOrder) {
 
-            // get the predecessors of the vertex u
-            Set<V> predecessors = getPrecedingNeighbors(vertexIndexMap, u);
+            // get preceding neighbors of the vertex u
+            Set<V> precedingNeighbors = getPrecedingNeighbors(vertexIndexMap, u);
 
-            // special case for predecessors is empty
-            if (predecessors.isEmpty()) {
+            // special case for preceding neighbors is empty
+            if (precedingNeighbors.isEmpty()) {
                 addEmptyPredecessors(u);
                 continue;
             }
@@ -89,7 +91,8 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             Queue<MPQTreeNode> treeNodeQueue = new LinkedList<>();
 
             // phase A
-            for (V vertex : predecessors) {
+            for (V vertex : precedingNeighbors) {
+                System.err.println("Current " + u + " Neighbor " + vertex);
                 MPQTreeNode associatedNode = getAssociatedTreeNode(vertex);
                 if (associatedNode == null) {
                     throw new IllegalStateException("The vertex is not found in the MPQ tree.");
@@ -196,6 +199,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      */
     private void addEmptyPredecessors(V vertex) {
 
+        // compose MPQ tree node
         HashSet<V> vertexSet = new HashSet<>();
         vertexSet.add(vertex);
         MPQTreeNode leaf = new Leaf(vertexSet);
@@ -204,14 +208,13 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
             // if the tree root is null, make the leaf the tree root
             treeRoot = leaf;
         } else {
+            // if the tree root is not null, make the leaf a new branch from the tree root
             leaf.parent = treeRoot;
         }
 
-        // create associated node set for the vertex
+        // compose <vertex, tree node set> entry
         Set<MPQTreeNode> nodeSet = new HashSet<>();
         nodeSet.add(leaf);
-
-        // put the vertex - associated node set to the map
         vertexNodeMap.put(vertex, nodeSet);
     }
 
@@ -222,14 +225,16 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
      * @return the associated node in the MPQ tree
      */
     private MPQTreeNode getAssociatedTreeNode(V vertex) {
-        Set<MPQTreeNode> associatedPositions = vertexNodeMap.get(vertex);
-
-        // if the associated position set is empty, then the associated tree node is not found
-        if (associatedPositions.isEmpty()) {
-            return null;
+        if (!vertexNodeMap.containsKey(vertex)) {
+            throw new IllegalStateException("Vertex entry cannot be found in the map.");
         }
 
-        // if the associated position set contains only one element, then the associated tree node is unique
+        Set<MPQTreeNode> associatedPositions = vertexNodeMap.get(vertex);
+
+        if (associatedPositions.isEmpty()) {
+            throw new IllegalStateException("Associated position set cannot be found in the map.");
+        }
+
         if (associatedPositions.size() == 1) {
             return associatedPositions.iterator().next();
         }
