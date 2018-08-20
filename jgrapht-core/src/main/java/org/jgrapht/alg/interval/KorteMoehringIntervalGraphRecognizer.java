@@ -396,7 +396,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * A node of a modified PQ-tree
      */
-    private abstract class MPQTreeNode {
+    abstract class MPQTreeNode {
 
         /**
          * The parent of the current node
@@ -435,7 +435,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * A P-node of a modified PQ-tree
      */
-    private class PNode extends MPQTreeNode {
+    class PNode extends MPQTreeNode {
 
         /**
          * The children of a P-node are stored with a doubly linked circular list
@@ -472,7 +472,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * A Q-node of a modified PQ-tree
      */
-    private class QNode extends MPQTreeNode {
+    class QNode extends MPQTreeNode {
 
         /**
          * The children of a Q-node are stored with a doubly linked list
@@ -503,7 +503,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * A section node of a Q-node
      */
-    private class QSectionNode extends MPQTreeNode {
+    class QSectionNode extends MPQTreeNode {
 
         /**
          * The child of the current Q section node
@@ -558,7 +558,7 @@ public class KorteMoehringIntervalGraphRecognizer<V, E> implements IntervalGraph
     /**
      * A leaf node of a modified PQ-tree
      */
-    private class Leaf extends MPQTreeNode {
+    class Leaf extends MPQTreeNode {
 
         /**
          * Initiating a leaf node associating with a graph vertex set
