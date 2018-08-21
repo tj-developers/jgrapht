@@ -213,6 +213,7 @@ final class MPQTreeUpdater {
             pNode.addChild(leaf1);
 
             // link the old leaf containing setB with the new P node
+            leaf.getSetA().forEach(element -> removeFromVertexNodeMap(element, leaf, vertexNodeMap));
             leaf.getSetB().forEach(element -> addToVertexNodeMap(element, leaf, vertexNodeMap));
             leaf.setParent(pNode);
             pNode.addChild(leaf);
@@ -254,6 +255,7 @@ final class MPQTreeUpdater {
         sectionNode2.setParent(qNode);
         sectionNode2.getSetB().forEach(element -> addToVertexNodeMap(element, sectionNode2, vertexNodeMap));
         Leaf<V> leaf2 = new Leaf<>(leaf.getSetB());
+        leaf.getSetA().forEach(element -> removeFromVertexNodeMap(element, leaf, vertexNodeMap));
         leaf2.getSetB().forEach(element -> addToVertexNodeMap(element, leaf2, vertexNodeMap));
         leaf2.setParent(sectionNode2);
         sectionNode2.setChild(leaf2);
