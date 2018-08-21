@@ -27,7 +27,7 @@ import java.util.*;
  * @author Oliver Feith
  * @author Dennis Fischer
  */
-final class LexBreadthFirstSearch
+public final class LexBreadthFirstSearch
 {
     
     /**
@@ -38,7 +38,7 @@ final class LexBreadthFirstSearch
      * @param graph the graph we want to perform LBFS on
      * @return an array of vertices representing the order in which the vertices were found
      */
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph)
+    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph)
     {
         HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
         LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
@@ -60,7 +60,7 @@ final class LexBreadthFirstSearch
      * @return an array of vertices representing the order in which the vertices were found
      */
     
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
+    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
     {
         HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
         LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, new Ordering<>(priority));
@@ -83,7 +83,7 @@ final class LexBreadthFirstSearch
      * @return an array of vertices representing the order in which the vertices were found
      */
     
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
+    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
     {
        HashMap<V, Integer> neighborIndexA = new HashMap<>(); 
        HashMap<V, Integer> neighborIndexB = new HashMap<>();

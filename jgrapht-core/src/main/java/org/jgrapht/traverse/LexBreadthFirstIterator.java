@@ -60,9 +60,9 @@ public class LexBreadthFirstIterator<V, E>
 {
 
     private enum Mode {
-        Lbfs,
-        LbfsPlus,
-        LbfsStar
+        LBFS,
+        LBFS_PLUS,
+        LBFS_STAR
     }
     private Mode mode;
     /**
@@ -124,27 +124,70 @@ public class LexBreadthFirstIterator<V, E>
             Ordering<V> neighborIndexA, Ordering<V> neighborIndexB,
             HashMap<V, Set<V>> aSets, HashMap<V, Set<V>> bSets)
     {
+        this(graph, priorityA, priorityB, neighborIndexA, neighborIndexB, aSets, bSets, Mode.LBFS_STAR);
+//        super(graph);
+//        GraphTests.requireUndirected(graph);
+//
+//        this.mode = Mode.LBFS_STAR;
+//
+//        // check that orderings and vertex set are compatible
+//        boolean k = priorityA.size() == priorityB.size();
+//        k &= priorityA.size() == graph.vertexSet().size();
+//        for (V vertex: graph.vertexSet()) {
+//            k &= priorityA.contains(vertex);
+//            k &= priorityB.contains(vertex);
+//            if (!k) {
+//                throw new IllegalArgumentException();
+//            }
+//        }
+//        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
+//        LinkedHashSet<V> verticesB = new LinkedHashSet<>(graph.vertexSet().size());
+//        priorityA.forEach(verticesA::add);
+//        priorityB.forEach(verticesB::add);
+//        bucketList = new BucketList(verticesA, verticesB);
+//
+//        this.priorityA = priorityA;
+//        this.priorityB = priorityB;
+//        this.neighborIndexA = neighborIndexA;
+//        this.neighborIndexB = neighborIndexB;
+//        this.aSets = aSets;
+//        this.bSets = bSets;
+//
+//        // Precompute sorted neighborhoods
+//        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
+//        this.sortedNeighborsB = computeSortedNeighborhoods(priorityB);
+    }
+
+    private LexBreadthFirstIterator(
+            Graph<V, E> graph, Ordering<V> priorityA, Ordering<V> priorityB,
+            Ordering<V> neighborIndexA, Ordering<V> neighborIndexB,
+            HashMap<V, Set<V>> aSets, HashMap<V, Set<V>> bSets, Mode mode)
+    {
         super(graph);
         GraphTests.requireUndirected(graph);
 
-        this.mode = Mode.LbfsStar;
-
         // check that orderings and vertex set are compatible
-        boolean k = priorityA.size() == priorityB.size();
-        k &= priorityA.size() == graph.vertexSet().size();
-        for (V vertex: graph.vertexSet()) {
-            k &= priorityA.contains(vertex);
-            k &= priorityB.contains(vertex);
-            if (!k) {
-                throw new IllegalArgumentException();
+        if (mode != Mode.LBFS) {
+            boolean k = priorityA.size() == graph.vertexSet().size();
+            for (V vertex: graph.vertexSet()) {
+                k &= priorityA.contains(vertex);
+                if (!k) {
+                    throw new IllegalArgumentException();
+                }
+            }
+
+            if (mode == Mode.LBFS_STAR) {
+                k &= priorityB.size() == priorityA.size();
+                for (V vertex: graph.vertexSet()) {
+                    k &= priorityA.contains(vertex);
+                    if (!k) {
+                        throw new IllegalArgumentException();
+                    }
+                }
             }
         }
-        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
-        LinkedHashSet<V> verticesB = new LinkedHashSet<>(graph.vertexSet().size());
-        priorityA.forEach(verticesA::add);
-        priorityB.forEach(verticesB::add);
-        bucketList = new BucketList(verticesA, verticesB);
 
+        this.mode = mode;
         this.priorityA = priorityA;
         this.priorityB = priorityB;
         this.neighborIndexA = neighborIndexA;
@@ -152,10 +195,31 @@ public class LexBreadthFirstIterator<V, E>
         this.aSets = aSets;
         this.bSets = bSets;
 
+        LinkedHashSet<V> verticesA;
+        LinkedHashSet<V> verticesB = null;
+        if (mode == Mode.LBFS) {
+            verticesA = new LinkedHashSet<>(graph.vertexSet());
+        } else {
+            verticesA = new LinkedHashSet<>(graph.vertexSet().size());
+            priorityA.forEach(verticesA::add);
+
+            if (mode == Mode.LBFS_STAR) {
+                verticesB = new LinkedHashSet<>(graph.vertexSet().size());
+                priorityB.forEach(verticesB::add);
+            }
+        }
+
+        bucketList = new BucketList(verticesA, verticesB);
+
         // Precompute sorted neighborhoods
-        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
-        this.sortedNeighborsB = computeSortedNeighborhoods(priorityB);
+        if (mode != Mode.LBFS) {
+            this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
+            if (mode == Mode.LBFS_STAR) {
+                this.sortedNeighborsB = computeSortedNeighborhoods(priorityB);
+            }
+        }
     }
+
 
     /**
      * Creates a new lexical breadth-first search (LBFS) iterator from {@code graph}.
@@ -163,9 +227,10 @@ public class LexBreadthFirstIterator<V, E>
      * @param graph the graph to be iterated.
      */
     public LexBreadthFirstIterator(Graph<V, E> graph) {
-        this(graph, new Ordering<>(graph.vertexSet()));
-
-        this.mode = Mode.Lbfs;
+        this(graph, null, null, null, null, null, null, Mode.LBFS);
+//        this(graph, new Ordering<>(graph.vertexSet()));
+//
+//        this.mode = Mode.LBFS;
     }
 
     /**
@@ -175,27 +240,28 @@ public class LexBreadthFirstIterator<V, E>
      * @param priority An ordering of the vertices resulting from a previous LBFS run.
      */
     public LexBreadthFirstIterator(Graph<V, E> graph, Ordering<V> priority) {
-        super(graph);
-        GraphTests.requireUndirected(graph);
-
-        this.mode = Mode.LbfsPlus;
-
-        // check that orderings and vertex set are compatible
-        // not really necessary
-        boolean k = priority.size() == graph.vertexSet().size();
-        for (V vertex: graph.vertexSet()) {
-            k &= priority.contains(vertex);
-            if (!k) {
-                throw new IllegalArgumentException();
-            }
-        }
-
-        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
-        priorityA = priority;
-        priorityA.forEach(verticesA::add);
-        bucketList = new BucketList(verticesA, null);
-
-        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
+        this(graph, priority, null, null, null, null, null, Mode.LBFS_PLUS);
+//        super(graph);
+//        GraphTests.requireUndirected(graph);
+//
+//        this.mode = Mode.LBFS_PLUS;
+//
+//        // check that orderings and vertex set are compatible
+//        // not really necessary
+//        boolean k = priority.size() == graph.vertexSet().size();
+//        for (V vertex: graph.vertexSet()) {
+//            k &= priority.contains(vertex);
+//            if (!k) {
+//                throw new IllegalArgumentException();
+//            }
+//        }
+//        priorityA = priority;
+//
+//        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
+//        priorityA.forEach(verticesA::add);
+//        bucketList = new BucketList(verticesA, null);
+//
+//        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
     }
 
 
@@ -217,7 +283,7 @@ public class LexBreadthFirstIterator<V, E>
 
             // if needed, initialize the neighbor list of this vertex
             if (!neighborhoodMap.containsKey(vertex)) {
-                neighborhoodMap.put(vertex, new LinkedList<>());
+                neighborhoodMap.put(vertex, new ArrayList<>(graph.inDegreeOf(vertex)));
             }
 
             // add vertex to the neighbor lists of its neighbors
@@ -225,7 +291,7 @@ public class LexBreadthFirstIterator<V, E>
                 if (neighborhoodMap.containsKey(neighbor)) {
                     neighborhoodMap.get(neighbor).add(vertex);
                 } else {
-                    List<V> neighborList = new LinkedList<>();
+                    List<V> neighborList = new ArrayList<>(graph.inDegreeOf(neighbor));
                     neighborList.add(vertex);
 
                     neighborhoodMap.put(neighbor, neighborList);
@@ -400,87 +466,76 @@ public class LexBreadthFirstIterator<V, E>
          */
         void updateBuckets(V vertex)
         {
-            HashSet<Bucket> bucketsToUpdate = new HashSet<>();
-            Map<Bucket, List<V>> intersectionLists = new HashMap<>();
-            Map<Bucket, List<V>> intersectionListsB = null;
-
-            List<V> sortedNeighborsOfVertex = sortedNeighbors.get(vertex);
-            List<V> sortedNeighborsOfVertexB;
-
-            for (V neighbor : sortedNeighborsOfVertex) {
-                // If this vertex was already traversed (and was thus deleted from the bucketMap),
-                // do not consider it.
-                if (!bucketMap.containsKey(neighbor)) {
-                    continue;
-                }
-
-                Bucket b = bucketMap.get(neighbor);
-
-                // If necessary, memorize that we need to update B and initialize a sorted list
-                // which holds the intersection of B and N(vertex)
-                if (!bucketsToUpdate.contains(b)) {
-                    bucketsToUpdate.add(bucketMap.get(neighbor));
-                    intersectionLists.put(b, new LinkedList<>());
-                }
-
-                // Add neighbor to said intersection list
-                intersectionLists.get(b).add(neighbor);
+            // Initialize the neighbors
+            List<V> neighbors;
+            if (mode == Mode.LBFS) {
+                neighbors = getUnvisitedNeighbours(vertex);
+            }
+            else { // if LBFS+ or LBFS*
+                neighbors = sortedNeighbors.get(vertex);
+                neighbors.removeIf(n -> !containsBucketWith(n)); // remove visited neighbors
+                // a vertex which was visited is not in a bucket
             }
 
-            if (sortedNeighborsB != null) {
-                sortedNeighborsOfVertexB = sortedNeighborsB.get(vertex);
-                intersectionListsB = new HashMap<>();
+            Set<Bucket> visitedBuckets = new HashSet<>(neighbors.size());
 
-                for (V neighbor : sortedNeighborsOfVertexB) {
-                    // If this vertex was already traversed (and was thus deleted from the
-                    // bucketMap), do not consider it.
-                    if (!bucketMap.containsKey(neighbor)) {
-                        continue;
-                    }
-
-                    Bucket b = bucketMap.get(neighbor);
-
-                    if (!intersectionListsB.containsKey(b)) {
-                        intersectionListsB.put(b, new LinkedList<>());
-                    }
-
-                    // Add neighbor to intersection list B
-                    intersectionListsB.get(b).add(neighbor);
-                }
-            }
-
-            for (Bucket bucket : bucketsToUpdate) {
-                Bucket newBucket;
-
-                // Split the bucket...
-                if (intersectionListsB == null) {
-                    // We do not use a B-priority (i.e. we are doing LBFS/LBFS+), so we only split
-                    // one queue -- the second one is nulled
-                    newBucket = bucket.split(intersectionLists.get(bucket), null);
+            for (V v : neighbors) {
+                Bucket bucket = bucketMap.get(v);
+                if (visitedBuckets.contains(bucket)) {
+                    bucket.prev.vertices.add(v);
+                    bucketMap.put(v, bucket.prev);
                 } else {
-                    // We are doing LBFS* and thus have to update both queues accordingly
-                    newBucket =
-                            bucket.split(intersectionLists.get(bucket), intersectionListsB.get(bucket));
+                    visitedBuckets.add(bucket);
+                    Bucket newBucket = new Bucket(new LinkedHashSet<>(), mode == Mode.LBFS_STAR ? new LinkedHashSet<>() : null);
+                    newBucket.vertices.add(v);
+                    newBucket.insertBefore(bucket);
+                    bucketMap.put(v, newBucket);
+                    if (head == bucket) {
+                        head = newBucket;
+                    }
                 }
-
-                // ... and insert the resulting new bucket before the old one
-                newBucket.insertBefore(bucket);
-
-                if (head == bucket) {
-                    head = newBucket;
+                bucket.vertices.remove(v);
+                if (mode == Mode.LBFS_STAR) {
+                    bucket.verticesB.remove(v);
                 }
-
-                // Update the bucketMap with the changes made
-                for (V updatedVertex : newBucket.vertices) {
-                    bucketMap.put(updatedVertex, newBucket);
-                }
-
-                // If necessary, remove the bucket
                 if (bucket.isEmpty()) {
+                    visitedBuckets.remove(bucket);
                     bucket.removeSelf();
                 }
             }
+
+            if (mode == Mode.LBFS_STAR) {
+                assert sortedNeighborsB != null;
+                List<V> neighborsB = sortedNeighborsB.get(vertex);
+                neighborsB.removeIf(n -> !containsBucketWith(n)); // remove visited neighbors
+                for (V neighbor: neighborsB) {
+                    Bucket bucket = bucketMap.get(neighbor);
+                    bucket.verticesB.add(neighbor);
+                }
+            }
+
         }
+
+        /**
+         * Computes and returns neighbours of {@code vertex} which haven't been visited by this
+         * iterator.
+         *
+         * @param vertex the vertex, whose neighbours are being explored.
+         * @return neighbours of {@code vertex} which have yet to be visited by this iterator.
+         */
+        private List<V> getUnvisitedNeighbours(V vertex)
+        {
+            List<V> unmapped = new ArrayList<>();
+            Set<E> edges = graph.edgesOf(vertex);
+            for (E edge : edges) {
+                V oppositeVertex = Graphs.getOppositeVertex(graph, edge, vertex);
+                if (bucketList.containsBucketWith(oppositeVertex)) {
+                    unmapped.add(oppositeVertex);
+                }
+            }
+            return unmapped;
+        }
+
 
         /**
          * Plays the role of the container of vertices. All vertices stored in a bucket have
@@ -520,47 +575,6 @@ public class LexBreadthFirstIterator<V, E>
             {
                 this.vertices = vertices;
                 this.verticesB = verticesB;
-            }
-
-            /**
-             * Splits this bucket $B$ along the passed sorted list $S$ of vertices into $B \cap S$
-             * and $B \setminus S$.
-             *
-             * @param splitVertices The vertices to be removed from this bucket, sorted according to
-             *        the (A)-priority used.
-             * @param splitVerticesB The vertices to be removed from this bucket, sorted according to
-             *        the (B)-priority used.
-             * @return A new bucket containing the vertices that were removed from this bucket.
-             */
-            Bucket split(List<V> splitVertices, List<V> splitVerticesB)
-            {
-                LinkedHashSet<V> newVertices = split(vertices, splitVertices);
-                LinkedHashSet<V> newVerticesB;
-                newVerticesB = split(verticesB, splitVerticesB);
-                return new Bucket(newVertices, newVerticesB);
-
-            }
-
-            /**
-             * Splits the LinkedHashSet along the given vertices. The splitVertices are removed from vertices and added
-             * to the returned LinkedHashSet. It is ordered by the order from splitVertices.
-             * @param vertices The vertices to be split.
-             * @param splitVertices The vertices to be moved.
-             * @return The vertices from the intersection from vertices and splitVertices.
-             */
-            private LinkedHashSet<V> split(LinkedHashSet<V> vertices, List<V> splitVertices)
-            {
-                if (splitVertices == null) {
-                    return null;
-                }
-
-                LinkedHashSet<V> newVertices = new LinkedHashSet<>();
-                for (V vertex: splitVertices) {
-                    if (vertices.remove(vertex)) {
-                        newVertices.add(vertex);
-                    }
-                }
-                return newVertices;
             }
 
             /**
@@ -607,7 +621,7 @@ public class LexBreadthFirstIterator<V, E>
                 }
 
                 // When LBFS or LBFS+ is used
-                if (mode != Mode.LbfsStar) {
+                if (mode != Mode.LBFS_STAR) {
                     Iterator<V> it = vertices.iterator();
                     V alpha = it.next();
                     it.remove();
