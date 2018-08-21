@@ -3,6 +3,7 @@ package org.jgrapht.alg.interval;
 /**
  * A node in a doubly linked circular list
  *
+ * @param <E> the element type of the node
  * @author Jiong Fu (magnificent_tony)
  */
 public class CircularListNode<E> {

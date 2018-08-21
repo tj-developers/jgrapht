@@ -146,7 +146,7 @@ final class MPQTreeUpdater {
      * @param vertexNodeMap the vertex to tree node map for quick access
      */
     private static <V> void templateP3(PNode<V> pNode, HashMap<V, Set<MPQTreeNode<V>>> vertexNodeMap) {
-        MPQTreeNode<V> currentChild = pNode.getCurrentChild();
+        MPQTreeNode<V> currentChild = pNode.getCurrentElement();
         QNode<V> qNodeChild = (QNode<V>) currentChild;
         qNodeChild.setParent(pNode.getParent());
 
@@ -196,9 +196,8 @@ final class MPQTreeUpdater {
      */
     private static <V> void templateL1(V vertex, Leaf<V> leaf, HashMap<V, Set<MPQTreeNode<V>>> vertexNodeMap) {
         if (leaf.getSetB().isEmpty()) {
-            leaf.addSetAToSetB();
+            leaf.moveSetAToSetB();
             leaf.addToSetB(vertex);
-            leaf.clearSetA();
             leaf.getSetB().forEach(element -> addToVertexNodeMap(element, leaf, vertexNodeMap));
         } else {
             // compose a new P node

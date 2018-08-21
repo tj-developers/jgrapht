@@ -4,6 +4,10 @@ import java.util.HashSet;
 
 /**
  * A leaf node of a modified PQ-tree
+ *
+ * @param <V> the element type of the leaf node
+ * @author Jiong Fu (magnificent_tony)
+ * @author Ira Justus Fesefeldt (PhoenixIra)
  */
 public final class Leaf<V> extends MPQTreeNode<V> {
 
@@ -13,9 +17,7 @@ public final class Leaf<V> extends MPQTreeNode<V> {
      * @param vertex the graph vertex to be associated with
      */
     public Leaf(V vertex) {
-        HashSet<V> vertexSet = new HashSet<>();
-        vertexSet.add(vertex);
-        this.setB = vertexSet;
+        this.setB.add(vertex);
     }
 
     /**
@@ -25,11 +27,6 @@ public final class Leaf<V> extends MPQTreeNode<V> {
      */
     public Leaf(HashSet<V> vertexSet) {
         super(vertexSet);
-    }
-
-    @Override
-    public boolean hasAtMostOneSon() {
-        return true;
     }
 
 }

@@ -6,6 +6,10 @@ import java.util.HashSet;
 
 /**
  * A P-node of a modified PQ-tree
+ *
+ * @param <V> the element type of the P-node
+ * @author Jiong Fu (magnificent_tony)
+ * @author Ira Justus Fesefeldt (PhoenixIra)
  */
 public final class PNode<V> extends MPQTreeNode<V> {
 
@@ -25,11 +29,6 @@ public final class PNode<V> extends MPQTreeNode<V> {
         super(vertexSet);
     }
 
-    @Override
-    public boolean hasAtMostOneSon() {
-        return currentChild == null || currentChild == currentChild.next();
-    }
-
     /**
      * Add a child to the current P-node
      *
@@ -45,31 +44,12 @@ public final class PNode<V> extends MPQTreeNode<V> {
     }
 
     /**
-     * Remove the current child from the current P-node
+     * Get the containing element of the current child
+     *
+     * @return the containing element of the current child
      */
-    public CircularListNode<MPQTreeNode<V>> removeCurrentChild() {
-        CircularListNode<MPQTreeNode<V>> result = null;
-        if (currentChild != null) {
-            result = currentChild;
-
-            if (currentChild.next() != null) {
-                // if there are more elements in the child list, set the current child pointer to the next child
-                currentChild = currentChild.next();
-            } else {
-                // otherwise, set the current child pointer to null
-                currentChild = null;
-            }
-        }
-
-        return result.remove();
-    }
-
-    public MPQTreeNode<V> getCurrentChild() {
+    public MPQTreeNode<V> getCurrentElement() {
         return currentChild.element();
-    }
-
-    public void setCurrentChild(CircularListNode<MPQTreeNode<V>> currentChild) {
-        this.currentChild = currentChild;
     }
 
 }
