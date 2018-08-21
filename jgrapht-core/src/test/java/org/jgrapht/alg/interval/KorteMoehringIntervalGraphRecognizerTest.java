@@ -6,6 +6,7 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.graph.builder.GraphBuilder;
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -32,7 +33,7 @@ public class KorteMoehringIntervalGraphRecognizerTest {
         builder.addEdge('B', 'D');
         builder.addEdge('C', 'D');
         KorteMoehringIntervalGraphRecognizer<Character, DefaultEdge> recognizer = new KorteMoehringIntervalGraphRecognizer<>(builder.build());
-        System.err.println(recognizer.isIntervalGraph());
+        assertTrue(recognizer.isIntervalGraph());
     }
 
     @Test
@@ -49,7 +50,7 @@ public class KorteMoehringIntervalGraphRecognizerTest {
         builder.addEdge('D', 'F');
         builder.addEdge('E', 'F');
         KorteMoehringIntervalGraphRecognizer<Character, DefaultEdge> recognizer = new KorteMoehringIntervalGraphRecognizer<>(builder.build());
-        System.err.println(recognizer.isIntervalGraph());
+        assertFalse(recognizer.isIntervalGraph());
     }
 
 }

@@ -3,8 +3,12 @@ package org.jgrapht.alg.interval;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
+/**
+ * Unit tests for CircularListNode
+ *
+ * @author Jiong Fu (magnificent_tony)
+ */
 public class CircularListTest {
 
     @Test
