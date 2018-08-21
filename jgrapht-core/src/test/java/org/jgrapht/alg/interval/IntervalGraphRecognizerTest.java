@@ -23,6 +23,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.jgrapht.graph.builder.GraphBuilder;
+import org.jgrapht.traverse.LBFSIteratorOld;
 import org.jgrapht.util.SupplierUtil;
 import org.junit.Test;
 
@@ -151,8 +152,46 @@ public class IntervalGraphRecognizerTest {
         builder.addEdge(n, 4);
         
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+//        Graph<Integer, DefaultEdge> graph = builder.build();
+//        LBFSIteratorOld<Integer, DefaultEdge> l = new LBFSIteratorOld<>(graph);
+//        for (int i = 0; i < graph.vertexSet().size(); i++) {
+//            l.next();
+//        }
         assertFalse(recognizer.isIntervalGraph());
     }
+
+    @Test
+    public void testOld() {
+        int n = 7;
+        GraphBuilder<Integer, DefaultEdge, ? extends SimpleGraph<Integer, DefaultEdge>> builder
+                = SimpleGraph.createBuilder(DefaultEdge.class);
+
+        //asteroidal triple: 1,3,5
+        builder.addEdge(0, 1);
+        builder.addEdge(1, 2);
+        builder.addEdge(2, 3);
+        builder.addEdge(3, 4);
+        builder.addEdge(4, 5);
+        builder.addEdge(5, n);
+
+        for (int i=5; i<n; i++) {
+            builder.addEdge(i, i+1);
+            builder.addEdge(i, 2);
+            builder.addEdge(i, 4);
+        }
+        builder.addEdge(n, 2);
+        builder.addEdge(n, 4);
+
+        IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
+        Graph<Integer, DefaultEdge> graph = builder.build();
+        LBFSIteratorOld<Integer, DefaultEdge> l = new LBFSIteratorOld<>(graph);
+        for (int i = 0; i < graph.vertexSet().size(); i++) {
+            l.next();
+        }
+        //assertFalse(recognizer.isIntervalGraph());
+    }
+
+
     
     /**
      * Fourth of five cases given by Lekkerkerker and Boland 
@@ -161,6 +200,7 @@ public class IntervalGraphRecognizerTest {
     @Test
     public void testForbiddenSubgraphLekkerkerkerBolandFamily2() {
         for(int n = 6; n < 20; n++) {
+            //System.out.println("Lekker " + n);
             testForbiddenSubgraphLekkerkerkerBolandFamily2(n);
         }
     }
