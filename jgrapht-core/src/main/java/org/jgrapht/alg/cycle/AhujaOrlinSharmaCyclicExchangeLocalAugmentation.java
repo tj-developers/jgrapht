@@ -209,7 +209,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      */
     private boolean checkDominatedPathsOfLengthKplus1(LabeledPath<V> path, Map<PathSetKey<V>, LabeledPath<V>> pathsLengthKplus1) {
         // simulates domination test by using the index structure
-        LabeledPath<V> pathToCheck = pathsLengthKplus1.get(PathSetKey.of(path.getHead(), path.getTail(), path.getLabels()));
+        LabeledPath<V> pathToCheck = pathsLengthKplus1.get(new PathSetKey<>(path.getHead(), path.getTail(), path.getLabels()));
         if (pathToCheck != null) {
             return pathToCheck.getCost() < path.getCost();
         }
@@ -231,7 +231,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
         for(Integer label : path.getLabels()) {
             modifiableLabelSet.remove(label);
             // simulates domination test by using the index structure
-            LabeledPath<V> pathToCheck = pathsLengthK.get(PathSetKey.of(path.getHead(), path.getTail(), modifiableLabelSet));
+            LabeledPath<V> pathToCheck = pathsLengthK.get(new PathSetKey<>(path.getHead(), path.getTail(), modifiableLabelSet));
             if (pathToCheck != null) {
                 if(pathToCheck.getCost() < path.getCost()) {
                     return true;
@@ -250,7 +250,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @param path the path to add
      */
     private void updatePathIndex(Map<PathSetKey<V>, LabeledPath<V>> paths, LabeledPath<V> path) {
-        PathSetKey<V> currentKey = PathSetKey.of(path.getHead(), path.getTail(), path.getLabels());
+        PathSetKey<V> currentKey = new PathSetKey<>(path.getHead(), path.getTail(), path.getLabels());
         paths.put(currentKey, path);
     }
 
@@ -263,7 +263,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @author Christoph Grüne
      * @since June 7, 2018
      */
-    private static class LabeledPath<V> implements Cloneable {
+    private class LabeledPath<V> implements Cloneable {
 
         /**
          * the vertices in the path
@@ -391,7 +391,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @author Christoph Grüne
      * @since June 7, 2018
      */
-    private static class PathSetKey<V> {
+    private class PathSetKey<V> {
         /**
          * the head of the paths indexed by this key
          */
@@ -416,19 +416,6 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
             this.head = head;
             this.tail = tail;
             this.labels = labels;
-        }
-
-        /**
-         * Constructs a new PathSetKey object
-         *
-         * @param head the head of the path indexed by this key
-         * @param tail the tail of the path indexed by this key
-         * @param labels the label set of the path indexed by this key
-         * @param <V> the vertex type
-         * @return a new PathSetKey object
-         */
-        public static <V> PathSetKey<V> of(V head, V tail, Set<Integer> labels) {
-            return new PathSetKey<>(head, tail, labels);
         }
 
         @Override

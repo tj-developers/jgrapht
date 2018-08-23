@@ -792,7 +792,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
      */
     @Test
     public void testInstanceVertexAndSubtreeTabu() {
-        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(40);
+        Pair<Graph<Integer, DefaultWeightedEdge>, Map<Integer, Double>> graph = generateComplicatedTestExample(100);
 
         double capacity = 30.0;
 
@@ -809,7 +809,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
                 true,
                 true,
                 10,
-                15
+                50
         );
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst

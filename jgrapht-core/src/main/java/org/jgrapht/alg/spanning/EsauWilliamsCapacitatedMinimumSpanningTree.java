@@ -76,7 +76,11 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
      */
     @Override
     public CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree() {
-        return getSolution().calculateResultingSpanningTree();
+        CapacitatedSpanningTree<V, E> cmst = getSolution().calculateResultingSpanningTree();
+        if(cmst.isCapacacitatedSpanningTree(graph, root, capacity, demands)) {
+            throw new IllegalArgumentException("This graph does not have a capacitated minimum spanning tree with the given capacity and demands.");
+        }
+        return cmst;
     }
 
     /**
