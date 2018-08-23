@@ -56,6 +56,11 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
     private final int numberOfOperationsParameter;
 
     /**
+     * contains whether the algorithm was executed
+     */
+    private boolean isAlgorithmExecuted;
+
+    /**
      * Constructs an Esau-Williams GRASP algorithm instance.
      *
      * @param graph                       the graph
@@ -67,6 +72,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
     public EsauWilliamsCapacitatedMinimumSpanningTree(Graph<V, E> graph, V root, double capacity, Map<V, Double> weights, int numberOfOperationsParameter) {
         super(graph, root, capacity, weights);
         this.numberOfOperationsParameter = numberOfOperationsParameter;
+        this.isAlgorithmExecuted = false;
     }
 
     /**
@@ -76,8 +82,13 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
      */
     @Override
     public CapacitatedSpanningTree<V, E> getCapacitatedSpanningTree() {
-        CapacitatedSpanningTree<V, E> cmst = getSolution().calculateResultingSpanningTree();
-        if(cmst.isCapacacitatedSpanningTree(graph, root, capacity, demands)) {
+        if(isAlgorithmExecuted) {
+            return bestSolution.calculateResultingSpanningTree();
+        }
+        bestSolution = getSolution();
+        CapacitatedSpanningTree<V, E> cmst = bestSolution.calculateResultingSpanningTree();
+        isAlgorithmExecuted = true;
+        if(!cmst.isCapacitatedSpanningTree(graph, root, capacity, demands)) {
             throw new IllegalArgumentException("This graph does not have a capacitated minimum spanning tree with the given capacity and demands.");
         }
         return cmst;
@@ -90,7 +101,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
      *
      * @return a representation of the partition of the capacitated spanning tree that has non-negative labels.
      */
-    protected SolutionRepresentation getSolution() {
+    protected CapacitatedSpanningTreeSolutionRepresentation getSolution() {
         /*
          * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
          * in the input graph: the vertex indicating the vertex itself and the vertex indicating the subtree.
@@ -117,7 +128,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
         /*
          * construct a new solution representation with the initialized labels and partition
          */
-        bestSolution = new SolutionRepresentation(labels, partition);
+        bestSolution = new CapacitatedSpanningTreeSolutionRepresentation(labels, partition);
 
         /*
          * map that contains the current savings for all vertices
@@ -214,7 +225,7 @@ public class EsauWilliamsCapacitatedMinimumSpanningTree<V, E> extends AbstractCa
             }
         }
 
-        SolutionRepresentation result = new SolutionRepresentation(labels, partition);
+        CapacitatedSpanningTreeSolutionRepresentation result = new CapacitatedSpanningTreeSolutionRepresentation(labels, partition);
 
         result.cleanUp();
         Set<Integer> labelSet = new HashSet<>(result.getLabels());
