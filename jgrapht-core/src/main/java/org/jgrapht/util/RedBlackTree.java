@@ -136,7 +136,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
 
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public V get(K key) {
@@ -149,7 +149,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public boolean contains(K key) {
@@ -157,7 +157,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void insert(K key, V val) {
@@ -211,7 +211,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public boolean delete(K key) {
@@ -300,7 +300,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void deleteMin() {
@@ -332,7 +332,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void deleteMax() {
@@ -366,7 +366,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public int height() {
@@ -378,7 +378,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public K min() {
@@ -396,7 +396,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public K max() {
@@ -414,7 +414,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public K floor(K key) {
@@ -476,7 +476,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public K ceiling(K key) {
@@ -514,7 +514,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public K select(int position) {
@@ -535,7 +535,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public int orderingPosition(K key) {
@@ -562,7 +562,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public Iterable<K> keys() {
@@ -599,7 +599,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public Iterable<K> keys(K min, K max) {
@@ -659,13 +659,13 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public int size(K min, K max) {
         return orderingPosition(ceiling(max)) - orderingPosition(floor(min)) + 1;
     }
-    
+
     private int size(RedBlackTreeNode<K,V> node) {
         if (node == null) {
             return 0;
