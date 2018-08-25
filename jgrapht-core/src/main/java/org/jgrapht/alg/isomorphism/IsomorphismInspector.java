@@ -31,8 +31,14 @@ public interface IsomorphismInspector<V, E>
 {
     /**
      * Get an iterator over all calculated (isomorphic) mappings between two graphs.
+<<<<<<< HEAD
      * 
      * @return an iterator over all calculated (isomorphic) mappings between two graphs
+=======
+     *
+     * @return an iterator over all calculated (isomorphic) mappings between two graphs
+     * @throws IsomorphismUndecidableException
+>>>>>>> project
      */
     Iterator<GraphMapping<V, E>> getMappings();
 
@@ -40,6 +46,10 @@ public interface IsomorphismInspector<V, E>
      * Check if an isomorphism exists.
      *
      * @return true if there is an isomorphism, false if there is no isomorphism
+<<<<<<< HEAD
+=======
+     * @throws IsomorphismUndecidableException
+>>>>>>> project
      */
     boolean isomorphismExists();
 }

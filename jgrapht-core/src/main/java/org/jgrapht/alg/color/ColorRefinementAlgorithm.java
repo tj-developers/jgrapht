@@ -20,8 +20,6 @@ package org.jgrapht.alg.color;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
-
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -45,9 +43,15 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      */
     protected final Graph<V, E> graph;
 
+    /**
+     * The input coloring that should be refined
+     */
     private Coloring<V> alpha;
 
-    private Integer k;
+    /**
+     * The number of colors (it is maintained while the algorithm runs)
+     */
+    private Integer numberOfColorsInCurrentColoring;
 
     /**
      * Construct a new coloring algorithm.
@@ -81,21 +85,25 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
     public Coloring<V> getColoring() {
         Integer n = graph.vertexSet().size();
         // number of colors used
-        k = alpha.getNumberColors();
+        numberOfColorsInCurrentColoring = alpha.getNumberColors();
 
         // mapping from all colors to their classes
-        HashMap<Integer, List<V>> C = new HashMap<>(n + 1);
+        HashMap<Integer, List<V>> colorToColorClassMapping = new HashMap<>(n);
         // mapping from color to their classes, whereby every vertex in the classes has colorDegree(v) >= 1
-        HashMap<Integer, List<V>> A = new HashMap<>(n + 1);
+        HashMap<Integer, List<V>> colorToColorClassDegreeGreater1Mapping = new HashMap<>(n);
 
-        // mapping from color to its maximum color degree
-        int[] maxColorDegree = new int[n + 1];
-        // mapping from color to its minimum color degree
-        int[] minColorDegree = new int[n + 1];
+        /*
+         * mapping from color to its maximum color degree (colors are decreased by one because of off by one of Java arrays)
+         */
+        int[] maxColorDegree = new int[n];
+        /*
+         * mapping from color to its minimum color degree (colors are decreased by one because of off by one of Java arrays)
+         */
+        int[] minColorDegree = new int[n];
         // mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
-        Map<V, Integer> colorDegree = new HashMap<>();
+        Map<V, Integer> colorDegree = new HashMap<>(n);
         // stores the coloring (that is returned in the end)
-        Map<V, Integer> coloring = new HashMap<>();
+        Map<V, Integer> coloring = new HashMap<>(n);
 
         for(int c = 1; c <= n; ++c) {
             /*
@@ -103,8 +111,8 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
              * init color classes with colorDegree(v) >= 1
              * the maximum color degree is already initialised with 0
              */
-            C.put(c, new ArrayList<>());
-            A.put(c, new ArrayList<>());
+            colorToColorClassMapping.put(c, new ArrayList<>());
+            colorToColorClassDegreeGreater1Mapping.put(c, new ArrayList<>());
         }
         for(V v : graph.vertexSet()) {
             /*
@@ -112,7 +120,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
              * init the color degree for every vertex with 0
              * assign a color to every vertex (for initialization)
              */
-            C.get(alpha.getColors().get(v)).add(v);
+            colorToColorClassMapping.get(alpha.getColors().get(v)).add(v);
             colorDegree.put(v, 0);
             coloring.put(v, alpha.getColors().get(v));
         }
@@ -125,27 +133,28 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
             Integer r = refineStack.pop(); // analyze the next color
 
             //calculate number of neighbours of v of color r, and calculate maximum and minimum degree of all colors
-            calculateColorDegree(r, coloring, C, A, adjacentColors, maxColorDegree, minColorDegree, colorDegree);
+            calculateColorDegree(r, coloring, colorToColorClassMapping, colorToColorClassDegreeGreater1Mapping, adjacentColors, maxColorDegree, minColorDegree, colorDegree);
 
             //calculate new partition of the colors and update the color classes correspondingly
-            calculateColorPartition(coloring, C, A, refineStack, adjacentColors, maxColorDegree, minColorDegree, colorDegree);
+            calculateColorPartition(coloring, colorToColorClassMapping, colorToColorClassDegreeGreater1Mapping, refineStack, adjacentColors, maxColorDegree, minColorDegree, colorDegree);
 
             //reset attributes for new iteration such that the invariants are still correct
             Iterator<Integer> adjColorIterator = adjacentColors.iterator();
-            
+
             while(adjColorIterator.hasNext()) {
                 Integer c = adjColorIterator.next();
-                
-                for(V v : A.get(c)) {
+
+                for(V v : colorToColorClassDegreeGreater1Mapping.get(c)) {
                     colorDegree.put(v, 0);
                 }
-                maxColorDegree[c] = 0;
-                A.put(c, new ArrayList<>());
+                maxColorDegree[c - 1] = 0;
+                colorToColorClassDegreeGreater1Mapping.put(c, new ArrayList<>());
                 adjColorIterator.remove();
             }
         }
-
-        return new ColoringImpl<>(coloring, coloring.size());
+        // TODO: probably easier way to do this:
+        Set<Integer> colorsUsed = new HashSet<>(coloring.values());       
+        return new ColoringImpl<>(coloring, colorsUsed.size());
     }
 
     /**
@@ -154,19 +163,19 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      *
      * @param r refining color (current color in the iteration)
      * @param color the color mapping
-     * @param C the mapping from all colors to their classes
-     * @param A the mapping from all colors to their classes with colorDegree(v) >= 1
+     * @param colorToColorClassMapping the mapping from all colors to their classes
+     * @param colorToColorClassDegreeGreater1Mapping the mapping from all colors to their classes with colorDegree(v) >= 1
      * @param adjacentColors the list of all colors that have at least one vertex with colorDegree >= 1
      * @param maxColorDegree the mapping from color to its maximum color degree
      * @param minColorDegree the mapping from color to its minimum color degree
      * @param colorDegree the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void calculateColorDegree(Integer r, Map<V, Integer> color, HashMap<Integer, List<V>> C, HashMap<Integer, List<V>> A, ArrayList<Integer> adjacentColors, int[] maxColorDegree, int[] minColorDegree, Map<V, Integer> colorDegree) {
-        for(V v : C.get(r)) {
+    private void calculateColorDegree(Integer r, Map<V, Integer> color, HashMap<Integer, List<V>> colorToColorClassMapping, HashMap<Integer, List<V>> colorToColorClassDegreeGreater1Mapping, ArrayList<Integer> adjacentColors, int[] maxColorDegree, int[] minColorDegree, Map<V, Integer> colorDegree) {
+        for(V v : colorToColorClassMapping.get(r)) {
             Set<E> incomingEdges = graph.incomingEdgesOf(v); // get all incident edges to get all adjacent vertices
-            
+
             Set<V> inNeighborhood = new HashSet<>();
-            
+
             for(E e: incomingEdges) {
                 inNeighborhood.add(Graphs.getOppositeVertex(graph, e, v));
             }
@@ -177,18 +186,18 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
             for(V w : inNeighborhood) { // go through all vertices in the in-neighborhood
                 colorDegree.put(w, colorDegree.get(w) + 1); // increase color degree of the current vertex
                 /*
-                 * add vertex to A if color degree of exactly 1 is reached
+                 * add vertex to colorToColorClassDegreeGreater1Mapping if color degree of exactly 1 is reached
                  * add vertex to adjacentColors only if it is not already contained in adjacentColors
                  * update maxColorDegree for color(w) if maximum color degree has increased
                  */
                 if(colorDegree.get(w) == 1) {
-                    A.get(color.get(w)).add(w);
+                    colorToColorClassDegreeGreater1Mapping.get(color.get(w)).add(w);
                 }
                 if(!adjacentColors.contains(color.get(w))) {
                     adjacentColors.add(color.get(w));
                 }
-                if(colorDegree.get(w) > maxColorDegree[color.get(w)]) {
-                    maxColorDegree[color.get(w)] = colorDegree.get(w);
+                if(colorDegree.get(w) > maxColorDegree[color.get(w) - 1]) {
+                    maxColorDegree[color.get(w) - 1] = colorDegree.get(w);
                 }
             }
         }
@@ -198,13 +207,13 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
          */
         for(Integer c : adjacentColors) {
             // if there is a vertex with colorDegree(v) = 0 < 1, set minimum color degree to 0
-            if(C.get(c).size() != A.get(c).size()) {
-                minColorDegree[c] = 0;
+            if(colorToColorClassMapping.get(c).size() != colorToColorClassDegreeGreater1Mapping.get(c).size()) {
+                minColorDegree[c - 1] = 0;
             } else {
-                minColorDegree[c] = maxColorDegree[c];
-                for(V v : A.get(c)) {
-                    if (colorDegree.get(v) < minColorDegree[c]) {
-                        minColorDegree[c] = colorDegree.get(v);
+                minColorDegree[c - 1] = maxColorDegree[c - 1];
+                for(V v : colorToColorClassDegreeGreater1Mapping.get(c)) {
+                    if (colorDegree.get(v) < minColorDegree[c - 1]) {
+                        minColorDegree[c - 1] = colorDegree.get(v);
                     }
                 }
             }
@@ -216,20 +225,20 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      * Partition the colors that do not have the same minimum and maximum color degree. That is, these colors are not completely refined.
      *
      * @param color the color mapping
-     * @param C the mapping from all colors to their classes
-     * @param A the mapping from all colors to their classes with colorDegree(v) >= 1
+     * @param colorToColorClassMapping the mapping from all colors to their classes
+     * @param colorToColorClassDegreeGreater1Mapping the mapping from all colors to their classes with colorDegree(v) >= 1
      * @param refineStack the stack containing all colors that have to be refined
      * @param adjacentColors the list of all colors that have at least one vertex with colorDegree >= 1
      * @param maxColorDegree the mapping from color to its maximum color degree
      * @param minColorDegree the mapping from color to its minimum color degree
      * @param colorDegree the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void calculateColorPartition(Map<V, Integer> color, HashMap<Integer, List<V>> C, HashMap<Integer, List<V>> A, Deque<Integer> refineStack, ArrayList<Integer> adjacentColors, int[] maxColorDegree, int[] minColorDegree, Map<V, Integer> colorDegree) {
+    private void calculateColorPartition(Map<V, Integer> color, HashMap<Integer, List<V>> colorToColorClassMapping, HashMap<Integer, List<V>> colorToColorClassDegreeGreater1Mapping, Deque<Integer> refineStack, ArrayList<Integer> adjacentColors, int[] maxColorDegree, int[] minColorDegree, Map<V, Integer> colorDegree) {
         // subset of adjacentColors that will be split up into different color classes
         ArrayList<Integer> Colors_split = new ArrayList<>();
 
         for(Integer c : adjacentColors) {
-            if(minColorDegree[c] < maxColorDegree[c]) {
+            if(minColorDegree[c - 1] < maxColorDegree[c - 1]) {
                 Colors_split.add(c);
             }
         }
@@ -237,7 +246,8 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         // sort list because the colors have to be considered in canonical order
         Colors_split.sort(Comparator.comparingInt(o -> o));
         for(Integer s : Colors_split) {
-            splitUpColor(s, color, C, A, refineStack, maxColorDegree, minColorDegree, colorDegree);
+
+            splitUpColor(s, color, colorToColorClassMapping, colorToColorClassDegreeGreater1Mapping, refineStack, maxColorDegree, minColorDegree, colorDegree);
         }
     }
 
@@ -246,14 +256,14 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
      *
      * @param s the color to split the color class for
      * @param color the color mapping
-     * @param C the mapping from all colors to their classes
-     * @param A the mapping from all colors to their classes with colorDegree(v) >= 1
+     * @param colorToColorClassMapping the mapping from all colors to their classes
+     * @param colorToColorClassDegreeGreater1Mapping the mapping from all colors to their classes with colorDegree(v) >= 1
      * @param refineStack the stack containing all colors that have to be refined
      * @param maxColorDegree the mapping from color to its maximum color degree
      * @param minColorDegree the mapping from color to its minimum color degree
      * @param colorDegree the mapping from vertex to the color degree (number of neighbors with different colors) of the vertex
      */
-    private void splitUpColor(Integer s, Map<V, Integer> color, HashMap<Integer, List<V>> C, HashMap<Integer, List<V>> A, Deque<Integer> refineStack, int[] maxColorDegree, int[] minColorDegree, Map<V, Integer> colorDegree) {
+    private void splitUpColor(Integer s, Map<V, Integer> color, HashMap<Integer, List<V>> colorToColorClassMapping, HashMap<Integer, List<V>> colorToColorClassDegreeGreater1Mapping, Deque<Integer> refineStack, int[] maxColorDegree, int[] minColorDegree, Map<V, Integer> colorDegree) {
         // mapping from the color degree to the number of vertices with that color degree
         Map<Integer, Integer> numColorDegree = new HashMap<>();
         // mapping from color degrees that occur in S to newly introduced colors or to color s
@@ -261,8 +271,8 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         // helper variable that stores if a color is already in the stack refineStack
         boolean instack;
 
-        // maxColorDegree_ is the maximum color degree of color s (the color to split the color class for)
-        int currentMaxColorDegree = maxColorDegree[s];
+        // currentMaxColorDegree is the maximum color degree of color s (the color to split the color class for)
+        int currentMaxColorDegree = maxColorDegree[s - 1];
 
         /*
          * initialize and calculate numColorDegree
@@ -270,8 +280,8 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         for(int i = 1; i <= currentMaxColorDegree; ++i) {
             numColorDegree.put(i, 0);
         }
-        numColorDegree.put(0, C.get(s).size() - A.get(s).size());
-        for(V v : A.get(s)) {
+        numColorDegree.put(0, colorToColorClassMapping.get(s).size() - colorToColorClassDegreeGreater1Mapping.get(s).size());
+        for(V v : colorToColorClassDegreeGreater1Mapping.get(s)) {
             numColorDegree.put(colorDegree.get(v), numColorDegree.get(colorDegree.get(v)) + 1);
         }
 
@@ -292,10 +302,10 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
          */
         addColorsToRefineStackAndComputeF(s, currentMaxColorDegree, minColorDegree, refineStack, numColorDegree, f, instack, b);
 
-        for(V v : A.get(s)) { // update C and color for all vertices in the color class of s corresponding to the calculated f
+        for(V v : colorToColorClassDegreeGreater1Mapping.get(s)) { // update colorToColorClassMapping and color for all vertices in the color class of s corresponding to the calculated f
             if(!f.get(colorDegree.get(v)).equals(s)) { // f assigns v a new color
-                C.get(s).remove(v); // remove v from s
-                C.get(f.get(colorDegree.get(v))).add(v); // add v to the new color class
+                colorToColorClassMapping.get(s).remove(v); // remove v from s
+                colorToColorClassMapping.get(f.get(colorDegree.get(v))).add(v); // add v to the new color class
                 color.replace(v, f.get(colorDegree.get(v))); // give v the new color
             }
         }
@@ -319,7 +329,7 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
         for(int i = 0; i <= currentMaxColorDegree; ++i) {
 
             if(numColorDegree.get(i) >= 1) {
-                if(i == minColorDegree[s]) {
+                if(i == minColorDegree[s - 1]) {
                     // colors with minimum color degree keep color s
                     f.put(i, s);
                     /*
@@ -330,8 +340,8 @@ public class ColorRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V
                     }
                 } else {
                     // add a new color so we have to increase the number of colors
-                    k++;
-                    f.put(i, k);
+                    numberOfColorsInCurrentColoring++;
+                    f.put(i, numberOfColorsInCurrentColoring);
                     /*
                      * push s on the stack if it is in the stack and i is not the index with the maximum number of vertices with the corresponding color degree
                      */

@@ -36,23 +36,8 @@ import java.util.*;
  *
  * @author Christoph Grüne
  */
-public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismInspector<V, E> {
+public class ColorRefinementIsomorphismInspector<V, E> extends RefinementAbstractIsomorphismInspector<V, E> {
 
-    /**
-     * The input graphs
-     */
-    private Graph<V, E> graph1, graph2;
-
-    /**
-     * The isomorphism that is calculated by this color refinement isomorphism inspector
-     */
-    private GraphMapping<V, E> isomorphicGraphMapping;
-
-    /**
-     * contains whether the graphs are isomorphic or not.
-     * If we cannot decide whether they are isomorphic the value will be not present.
-     */
-    private Boolean isIsomorphic;
     /**
      * contains whether the two graphs produce a discrete coloring.
      * Then, we can decide whether the graphs are isomorphic.
@@ -64,11 +49,6 @@ public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismIns
     private boolean isForest;
 
     /**
-     * contains whether the isomorphism test is executed to ensure that every operation is defined all the time
-     */
-    private boolean isomorphismTestExecuted;
-
-    /**
      * Constructor for a isomorphism inspector based on color refinement. It checks whether <code>graph1</code> and
      * <code>graph2</code> are isomorphic.
      *
@@ -76,26 +56,9 @@ public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismIns
      * @param graph2 the second graph
      */
     public ColorRefinementIsomorphismInspector(Graph<V, E> graph1, Graph<V, E> graph2) {
+        super(graph1, graph2);
 
-        GraphType type1 = graph1.getType();
-        GraphType type2 = graph2.getType();
-        if (type1.isAllowingMultipleEdges() || type2.isAllowingMultipleEdges()) {
-            throw new IllegalArgumentException("graphs with multiple (parallel) edges are not supported");
-        }
-
-        if (type1.isMixed() || type2.isMixed()) {
-            throw new IllegalArgumentException("mixed graphs not supported");
-        }
-
-        if (type1.isUndirected() && type2.isDirected() || type1.isDirected() && type2.isUndirected()) {
-            throw new IllegalArgumentException("can not match directed with " + "undirected graphs");
-        }
-
-        this.graph1 = graph1;
-        this.graph2 = graph2;
-        this.isomorphicGraphMapping = null;
         this.isColoringDiscrete = false;
-        this.isomorphismTestExecuted = false;
         this.isForest = false;
     }
 
@@ -181,7 +144,13 @@ public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismIns
     }
 
     /**
+<<<<<<< HEAD
      * Checks whether two coarse colorings are equal. Furthermore, it sets <code>isColoringDiscrete</code> to true iff the colorings are discrete.
+=======
+     * Checks whether two coarse colorings are equal.
+     * Furthermore, it sets <code>isColoringDiscrete</code> to true iff the colorings are discrete and equal.
+     * Furthermore, it sets <code>isColoringDiscrete</code> to true iff the graphs are forests and isomorphic.
+>>>>>>> project
      *
      * @param coloring1 the first coarse coloring
      * @param coloring2 the second coarse coloring
@@ -246,61 +215,5 @@ public class ColorRefinementIsomorphismInspector<V, E> implements IsomorphismIns
         } else {
             return false;
         }
-    }
-
-    /**
-     * Sorts a list of color classes by the size and the color (integer representation of the color) and
-     *
-     * @param colorClasses the list of the color classes
-     * @param coloring the coloring
-     */
-    private void sortColorClasses(List<Set<V>> colorClasses, Coloring<V> coloring) {
-        colorClasses.sort((o1, o2) -> {
-            if(o1.size() == o2.size()) {
-                Iterator it1 = o1.iterator();
-                Iterator it2 = o2.iterator();
-                if(!it1.hasNext() || !it2.hasNext()) {
-                    return Integer.compare(o1.size(), o2.size());
-                }
-                return coloring.getColors().get(it1.next()).compareTo(coloring.getColors().get(it2.next()));
-            }
-            return Integer.compare(o1.size(), o2.size());
-        });
-    }
-
-    /**
-     * calculates the graph isomorphism as GraphMapping and assigns it to attribute <code>isomorphicGraphMapping</code>
-     *
-     * @param coloring1 the discrete vertex coloring of graph1
-     * @param coloring2 the discrete vertex coloring of graph2
-     */
-    private void calculateGraphMapping(Coloring<V> coloring1, Coloring<V> coloring2) {
-        GraphOrdering<V, E> graphOrdering1 = new GraphOrdering<>(graph1);
-        GraphOrdering<V, E> graphOrdering2 = new GraphOrdering<>(graph2);
-
-        int[] core1 = new int[graph1.vertexSet().size()];
-        int[] core2 = new int[graph2.vertexSet().size()];
-
-        Iterator<Set<V>> setIterator1 = coloring1.getColorClasses().iterator();
-        Iterator<Set<V>> setIterator2 = coloring2.getColorClasses().iterator();
-
-        // we only have to check one iterator as the color classes have the same size
-        while(setIterator1.hasNext()) {
-            Iterator<V> vertexIterator1 = setIterator1.next().iterator();
-            Iterator<V> vertexIterator2 = setIterator2.next().iterator();
-
-            while(vertexIterator1.hasNext()) {
-                V v1 = vertexIterator1.next();
-                V v2 = vertexIterator2.next();
-
-                int numberOfV1 = graphOrdering1.getVertexNumber(v1);
-                int numberOfV2 = graphOrdering2.getVertexNumber(v2);
-
-                core1[numberOfV1] = numberOfV2;
-                core2[numberOfV2] = numberOfV1;
-            }
-        }
-
-        isomorphicGraphMapping = new IsomorphicGraphMapping<>(graphOrdering1, graphOrdering2, core1, core2);
     }
 }
