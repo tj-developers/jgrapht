@@ -26,12 +26,12 @@ public class ATFinder<V,E>
 
     /**
      *
-     * @param subgraph
-     * @param intervalsSortedByStartingPoint
-     * @param intervalsSortedByEndingPoint
-     * @param intervalToVertexMap
-     * @param vertexToIntervalMap
-     * @param conflictVertex
+     * @param subgraph null
+     * @param intervalsSortedByStartingPoint null
+     * @param intervalsSortedByEndingPoint null
+     * @param intervalToVertexMap null
+     * @param vertexToIntervalMap null
+     * @param conflictVertex null
      */
     public ATFinder(Graph<V,E> subgraph, 
             List<Interval<Integer>> intervalsSortedByStartingPoint, 
@@ -116,8 +116,8 @@ public class ATFinder<V,E>
     
     /**
      * Computes the interval the vertex would have got, if it would be added to the current interval model.
-     * @param vertex
-     * @return
+     * @param vertex null
+     * @return null
      */
     private Interval<Integer> intervalOfNeighbor(V vertex){
         List<V> neighbors = Graphs.neighborListOf(subgraph, vertex);
@@ -139,9 +139,9 @@ public class ATFinder<V,E>
     
     /**
      * Computed the component spanning vertexInterval without the neighbor of vertex
-     * @param vertex
-     * @param vertexInterval
-     * @return
+     * @param vertex null
+     * @param vertexInterval null
+     * @return null
      */
     private List<Interval<Integer>> computeComponentWoNeighbors(V vertex, Interval<Integer> vertexInterval) {
         List<Interval<Integer>> componentWoNeighbors = new ArrayList<>(subgraph.vertexSet().size());
