@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -27,7 +27,7 @@ import java.util.Objects;
  * @param <I> the type of the interval
  * @param <T> The underlying type for the intervals
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 public class IntervalTreeNodeValue<I extends Interval<T>, T extends Comparable<T>> implements Serializable {

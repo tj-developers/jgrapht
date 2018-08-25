@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Oliver Feith, Dennis Fischer and Contributors.
+ * (C) Copyright 2018-2018, by Oliver Feith, Dennis Fischer and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -19,6 +19,7 @@ package org.jgrapht.alg.interval;
 
 import org.jgrapht.*;
 import org.jgrapht.traverse.*;
+import org.jgrapht.util.Ordering;
 
 import java.util.*;
 
@@ -26,30 +27,28 @@ import java.util.*;
  * @author Oliver Feith
  * @author Dennis Fischer
  */
-final class LexBreadthFirstSearch
+public final class LexBreadthFirstSearch
 {
-    
+
     /**
      * Performs a lexicographical BFS starting at {@code startingVertex}.
      *
      * @param <V> The vertex type
      * @param <E> The edge type
      * @param graph the graph we want to perform LBFS on
-     * @param startingVertex the starting vertex of the LBFS
      * @return an array of vertices representing the order in which the vertices were found
      */
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph, V startingVertex)
+    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph)
     {
-       HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
-       LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph, startingVertex);
-       
-       for(int i = 0; i < graph.vertexSet().size(); i++) {
-           result.put(lbfIterator.next(), i);
-       }
-       
-       return result;
+        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
+        LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
+        for(int i = 0; i < graph.vertexSet().size(); i++) {
+            result.put(lbfIterator.next(), i);
+        }
+
+        return result;
     }
-    
+
     /**
      * Performs LBFS+ starting at {@code startingVertex} using the previous ordering {@code prevOrdering}.
      *
@@ -59,19 +58,19 @@ final class LexBreadthFirstSearch
      * @param <E> The edge type
      * @return an array of vertices representing the order in which the vertices were found
      */
-    
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
+
+    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
     {
-       HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
-       LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, priority);
-       
-       for(int i = 0; i < graph.vertexSet().size(); i++) {
+        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
+        LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, new Ordering<>(priority));
+
+        for(int i = 0; i < graph.vertexSet().size(); i++) {
            result.put(lbfIterator.next(), i);
-       }
-       
-       return result;
+        }
+
+        return result;
     }
-    
+
     /**
      * Performs LBFS* starting at {@code startingVertex} using two previous orderings {@code prevOrdering1} and {@code prevOrdering2}.
      *
@@ -82,8 +81,7 @@ final class LexBreadthFirstSearch
      * @param <E> The edge type
      * @return an array of vertices representing the order in which the vertices were found
      */
-    
-    static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
+    public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
     {
        HashMap<V, Integer> neighborIndexA = new HashMap<>(); 
        HashMap<V, Integer> neighborIndexB = new HashMap<>();
@@ -127,7 +125,8 @@ final class LexBreadthFirstSearch
        }
        
        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size()); 
-       LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, priorityA, priorityB, neighborIndexA, neighborIndexB, ASets, BSets);
+       LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, new Ordering<>(priorityA),
+               new Ordering<>(priorityB), new Ordering<>(neighborIndexA), new Ordering<>(neighborIndexB), ASets, BSets);
        
        for(int i = 0; i < graph.vertexSet().size(); i++) {
            result.put(lbfIterator.next(), i);

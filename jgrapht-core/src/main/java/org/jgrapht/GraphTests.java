@@ -17,39 +17,40 @@
  */
 package org.jgrapht;
 
-import org.jgrapht.alg.cycle.*;
 import org.jgrapht.alg.connectivity.BiconnectivityInspector;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector;
+import org.jgrapht.alg.cycle.BergeGraphInspector;
 import org.jgrapht.alg.cycle.ChordalityInspector;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
-import org.jgrapht.alg.interval.*;
+import org.jgrapht.alg.cycle.WeakChordalityInspector;
 
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 /**
  * A collection of utilities to test for various graph properties.
- * 
+ *
  * @author Barak Naveh
  * @author Dimitrios Michail
  * @author Joris Kinable
- * @author Ira Justus Fesefeldt
+ * @author Alexandru Valeanu
  */
 public abstract class GraphTests
 {
     private static final String GRAPH_CANNOT_BE_NULL = "Graph cannot be null";
     private static final String GRAPH_MUST_BE_DIRECTED_OR_UNDIRECTED =
-        "Graph must be directed or undirected";
+            "Graph must be directed or undirected";
     private static final String GRAPH_MUST_BE_UNDIRECTED = "Graph must be undirected";
     private static final String GRAPH_MUST_BE_DIRECTED = "Graph must be directed";
     private static final String FIRST_PARTITION_CANNOT_BE_NULL = "First partition cannot be null";
     private static final String SECOND_PARTITION_CANNOT_BE_NULL = "Second partition cannot be null";
+    private static final String GRAPH_MUST_BE_WEIGHTED = "Graph must be weighted";
 
     /**
      * Test whether a graph is empty. An empty graph on n nodes consists of n isolated vertices with
      * no edges.
-     * 
+     *
      * @param graph the input graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -64,7 +65,7 @@ public abstract class GraphTests
     /**
      * Check if a graph is simple. A graph is simple if it has no self-loops and multiple (parallel)
      * edges.
-     * 
+     *
      * @param graph a graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -96,7 +97,7 @@ public abstract class GraphTests
     /**
      * Check if a graph has self-loops. A self-loop is an edge with the same source and target
      * vertices.
-     * 
+     *
      * @param graph a graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -122,7 +123,7 @@ public abstract class GraphTests
     /**
      * Check if a graph has multiple edges (parallel edges), that is, whether the graph contains two
      * or more edges connecting the same pair of vertices.
-     * 
+     *
      * @param graph a graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -154,7 +155,7 @@ public abstract class GraphTests
      * every pair of distinct vertices is connected by a unique edge. A complete directed graph is a
      * directed graph in which every pair of distinct vertices is connected by a pair of unique
      * edges (one in each direction).
-     * 
+     *
      * @param graph the input graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -185,7 +186,7 @@ public abstract class GraphTests
      * there are no unreachable vertices. When the inspected graph is a <i>directed</i> graph, this
      * method returns true if and only if the inspected graph is <i>weakly</i> connected. An empty
      * graph is <i>not</i> considered connected.
-     * 
+     *
      * <p>
      * This method does not performing any caching, instead recomputes everything from scratch. In
      * case more control is required use {@link ConnectivityInspector} directly.
@@ -225,7 +226,7 @@ public abstract class GraphTests
 
     /**
      * Test whether a directed graph is weakly connected.
-     * 
+     *
      * <p>
      * This method does not performing any caching, instead recomputes everything from scratch. In
      * case more control is required use {@link ConnectivityInspector} directly.
@@ -243,7 +244,7 @@ public abstract class GraphTests
 
     /**
      * Test whether a directed graph is strongly connected.
-     * 
+     *
      * <p>
      * This method does not performing any caching, instead recomputes everything from scratch. In
      * case more control is required use {@link KosarajuStrongConnectivityInspector} directly.
@@ -339,7 +340,7 @@ public abstract class GraphTests
 
         List<Integer> degrees = new ArrayList<>(graph.vertexSet().size());
         degrees
-            .addAll(graph.vertexSet().stream().map(graph::degreeOf).collect(Collectors.toList()));
+                .addAll(graph.vertexSet().stream().map(graph::degreeOf).collect(Collectors.toList()));
         Collections.sort(degrees, Collections.reverseOrder()); // sort degrees descending order
         // Find m = \max_i \{d_i\geq i-1\}
         int m = 1;
@@ -358,7 +359,7 @@ public abstract class GraphTests
 
     /**
      * Test whether a graph is bipartite.
-     * 
+     *
      * @param graph the input graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -372,7 +373,7 @@ public abstract class GraphTests
         try {
             // at most n^2/4 edges
             if (Math.multiplyExact(4, graph.edgeSet().size()) > Math
-                .multiplyExact(graph.vertexSet().size(), graph.vertexSet().size()))
+                    .multiplyExact(graph.vertexSet().size(), graph.vertexSet().size()))
             {
                 return false;
             }
@@ -399,7 +400,7 @@ public abstract class GraphTests
                     if (!odd.contains(v)) {
                         odd.add(n);
                     }
-                } else if (!(odd.contains(v) ^ odd.contains(n))) {
+                } else if (odd.contains(v) == odd.contains(n)) {
                     return false;
                 }
             }
@@ -409,7 +410,7 @@ public abstract class GraphTests
 
     /**
      * Test whether a partition of the vertices into two sets is a bipartite partition.
-     * 
+     *
      * @param graph the input graph
      * @param firstPartition the first vertices partition
      * @param secondPartition the second vertices partition
@@ -418,7 +419,7 @@ public abstract class GraphTests
      * @param <E> the graph edge type
      */
     public static <V, E> boolean isBipartitePartition(
-        Graph<V, E> graph, Set<? extends V> firstPartition, Set<? extends V> secondPartition)
+            Graph<V, E> graph, Set<? extends V> firstPartition, Set<? extends V> secondPartition)
     {
         Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
         Objects.requireNonNull(firstPartition, FIRST_PARTITION_CANNOT_BE_NULL);
@@ -453,7 +454,7 @@ public abstract class GraphTests
     /**
      * Tests whether a graph is <a href="http://mathworld.wolfram.com/CubicGraph.html">cubic</a>. A
      * graph is cubic if all vertices have degree 3.
-     * 
+     *
      * @param graph the input graph
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
@@ -502,24 +503,6 @@ public abstract class GraphTests
     {
         Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
         return new ChordalityInspector<>(graph).isChordal();
-    }
-    
-    /**
-     * Tests whether a graph is an interval graph. <a href="https://en.wikipedia.org/wiki/Interval_graph">
-     * Interval graphs</a> are a familiy of graphs, which can be represented as intersections of intervals.
-     * The vertices are intervals on the number line and two vertices are connected if and only if the intervals of
-     * these vertices intersect each other.
-     * 
-     * @param graph the input graph
-     * @param <V> the graph vertex type
-     * @param <E> the graph edge type
-     * @return true if the graph is an interval graph, false otherwise
-     * @see IntervalGraphRecognizer#isIntervalGraph()
-     * 
-     */
-    public static <V, E> boolean isIntervalGraph(Graph<V, E> graph) {
-        Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
-        return new IntervalGraphRecognizer<>(graph).isIntervalGraph();
     }
 
     /**
@@ -580,12 +563,43 @@ public abstract class GraphTests
                 V w = vertexList.get(j);
 
                 if (!v.equals(w) && !graph.containsEdge(v, w)
-                    && graph.degreeOf(v) + graph.degreeOf(w) < n)
+                        && graph.degreeOf(v) + graph.degreeOf(w) < n)
                     return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * Tests whether an undirected graph is triangle-free (i.e. no three distinct vertices form a triangle of edges).
+     *
+     * The implementation of this method uses {@link GraphMetrics#getNumberOfTriangles(Graph)}.
+     *
+     * @param graph the input graph
+     * @param <V> the graph vertex type
+     * @param <E> the graph edge type
+     * @return true if the graph is triangle-free, false otherwise
+     */
+    public static <V, E> boolean isTriangleFree(Graph<V, E> graph)
+    {
+        return GraphMetrics.getNumberOfTriangles(graph) == 0;
+    }
+
+    /**
+     * Checks that the specified graph is perfect. Due to the Strong Perfect Graph Theorem Berge
+     * Graphs are the same as perfect Graphs. The implementation of this method is delegated to
+     * {@link org.jgrapht.alg.cycle.BergeGraphInspector}
+     *
+     * @param graph the graph reference to check for being perfect or not
+     * @param <V> the graph vertex type
+     * @param <E> the graph edge type
+     * @return true if the graph is perfect, false otherwise
+     */
+    public static <V, E> boolean isPerfect(Graph<V, E> graph)
+    {
+        Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
+        return new BergeGraphInspector<V, E>().isBerge(graph);
     }
 
     /**
@@ -709,21 +723,26 @@ public abstract class GraphTests
     }
 
     /**
-     * Checks that the specified graph is perfect. Due to the Strong Perfect Graph Theorem Berge
-     * Graphs are the same as perfect Graphs. The implementation of this method is delegated to
-     * {@link org.jgrapht.alg.cycle.BergeGraphInspector}
-     * 
-     * @param graph the graph reference to check for being perfect or not
+     * Checks that the specified graph is weighted and throws a customized
+     * {@link IllegalArgumentException} if it is not. Also checks that the graph reference is not
+     * {@code null} and throws a {@link NullPointerException} if it is.
+     *
+     * @param graph the graph reference to check for being weighted and not null
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
-     * @return {@code boolean} if {@code graph} is perfect
+     * @return {@code graph} if directed and not {@code null}
+     * @throws NullPointerException if {@code graph} is {@code null}
+     * @throws IllegalArgumentException if {@code graph} is not weighted
      */
-    public static <V, E> boolean isPerfect(Graph<V, E> graph)
+    public static <V, E> Graph<V, E> requireWeighted(Graph<V, E> graph)
     {
-        Objects.requireNonNull(graph, GRAPH_CANNOT_BE_NULL);
-        return new BergeGraphInspector<V, E>().isBerge(graph);
+        if (graph == null)
+            throw new NullPointerException(GRAPH_CANNOT_BE_NULL);
+        if (!graph.getType().isWeighted()) {
+            throw new IllegalArgumentException(GRAPH_MUST_BE_WEIGHTED);
+        }
+        return graph;
     }
-
 }
 
 // End GraphTests.java

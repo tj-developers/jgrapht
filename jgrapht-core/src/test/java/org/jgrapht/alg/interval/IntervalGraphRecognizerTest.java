@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Ira Justus Fesefeldt, Dennis Fischer, and Contributors.
+ * (C) Copyright 2018-2018, by Ira Justus Fesefeldt, Dennis Fischer, and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *

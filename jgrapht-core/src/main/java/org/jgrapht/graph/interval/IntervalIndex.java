@@ -15,9 +15,7 @@
  * (b) the terms of the Eclipse Public License v1.0 as published by
  * the Eclipse Foundation.
  */
-package org.jgrapht.alg.interfaces;
-
-import org.jgrapht.graph.interval.Interval;
+package org.jgrapht.graph.interval;
 
 import java.util.List;
 
@@ -27,10 +25,10 @@ import java.util.List;
  *
  * @param <T> the type of the interval
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
-public interface IntervalStructureInterface<T extends Comparable<T>> {
+interface IntervalIndex<T extends Comparable<T>> {
 
     /**
      * Returns all intervals that overlap with the given <code>interval</code>
@@ -38,7 +36,7 @@ public interface IntervalStructureInterface<T extends Comparable<T>> {
      * @param interval the interval
      * @return all intervals that overlap with the given <code>interval</code>
      */
-    List<Interval<T>> overlapsWith(Interval<T> interval);
+    List<Interval<T>> findOverlappingIntervals(Interval<T> interval);
 
 
     /**
@@ -46,10 +44,10 @@ public interface IntervalStructureInterface<T extends Comparable<T>> {
      * @param point the point
      * @return all intervals that overlap with the given <code>point</code>
      */
-    List<Interval<T>> overlapsWithPoint(T point);
+    List<Interval<T>> findOverlappingIntervals(T point);
 
     /**
-     * adds an interval to the interval tree. It returns true iff the key has been added successfully.
+     * Adds an interval to the interval index. It returns true iff the key has been added successfully.
      *
      * @param interval the interval
      *
@@ -58,7 +56,7 @@ public interface IntervalStructureInterface<T extends Comparable<T>> {
     boolean add(Interval<T> interval);
 
     /**
-     * removes an interval from the tree. It returns true iff the key has been removed successfully.
+     * Removes an interval from the index. It returns true iff the key has been removed successfully.
      *
      * @param interval the interval
      *

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -17,9 +17,6 @@
  */
 package org.jgrapht.graph.interval;
 
-import org.jgrapht.alg.interfaces.IntervalStructureInterface;
-import org.jgrapht.alg.interfaces.IntervalTreeInterface;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,14 +28,14 @@ import java.util.List;
  *
  * @param <T> the type of the interval
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
-public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalStructureInterface<T>, Serializable {
+public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalIndex<T>, Serializable {
 
     private static final long serialVersionUID = 2834567756342332325L;
 
-    private IntervalTreeInterface<Interval<T>, IntervalTreeNodeValue<Interval<T>, T>, T> tree;
+    private IntervalTree<Interval<T>, IntervalTreeNodeValue<Interval<T>, T>, T> tree;
 
     /**
      * Initializes a new instance of the class
@@ -71,7 +68,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      * @param interval the interval
      * @return all intervals that overlap with the given <code>interval</code>
      */
-    public List<Interval<T>> overlapsWith(Interval<T> interval) {
+    public List<Interval<T>> findOverlappingIntervals(Interval<T> interval) {
         return tree.overlapsWith(interval);
     }
 
@@ -80,12 +77,12 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
      * @param point the point
      * @return all intervals that overlap with the given <code>point</code>
      */
-    public List<Interval<T>> overlapsWithPoint(T point) {
+    public List<Interval<T>> findOverlappingIntervals(T point) {
         return tree.overlapsWith(point);
     }
 
     /**
-     * adds an interval to the interval tree. It returns true iff the key has been added successfully.
+     * Adds an interval to the interval tree. It returns true iff the key has been added successfully.
      *
      * @param interval the interval
      *
@@ -103,7 +100,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
     }
 
     /**
-     * removes an interval from the tree. It returns true iff the key has been removed successfully.
+     * Removes an interval from the tree. It returns true iff the key has been removed successfully.
      *
      * @param interval the interval
      *
@@ -117,8 +114,7 @@ public class IntervalTreeStructure<T extends Comparable<T>> implements IntervalS
     }
 
     /**
-     * returns the comparator used to compare the keys in the interval tree
-     *
+     * Returns the comparator used to compare the keys in the interval tree
      */
     private Comparator<Interval<T>> getComparator() {
         return (o1, o2) -> {

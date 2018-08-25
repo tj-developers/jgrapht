@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -27,7 +27,7 @@ import java.util.Objects;
  * @param <V> the vertex
  * @param <T> the interval element
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 public class IntervalVertexPair<V, T extends Comparable<T>> implements Serializable {

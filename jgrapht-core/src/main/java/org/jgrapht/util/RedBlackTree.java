@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne, Daniel Mock and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne, Daniel Mock and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -18,10 +18,7 @@
 package org.jgrapht.util;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Implementation of a Red-Black-Tree
@@ -42,7 +39,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     protected Comparator<K> keyComparator;
 
     /**
-     * Get the root of the red-black tree
+     * Get the root of the red-black tree.
      *
      * @return the root of the red-black tree
      */
@@ -60,9 +57,9 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Construct a tree with the given keys and values.
+     * Constructs a tree with the given keys and values.
      * keys.get(i) is assigned to values.get(i)
-     * Runs in linear time if list is sorted, otherwise naive insertion is performed
+     * Runs in linear time if list is sorted, otherwise naive insertion is performed.
      *
      * @param keys the keys for the future nodes
      * @param values the values of the future nodes corresponding to the given keys (i-th key belongs to i-th value)
@@ -104,13 +101,14 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * inserts a sorted list into the tree
+     * Inserts a sorted list into the tree.
      *
      * @param keys the keys to insert
      * @param values the values to insert at the corresponding position to the keys
      * @param start the start index of the list to insert
      * @param end the end index of the list ot insert
-     * @return
+     *
+     * @return root node of sorted BST
      */
     private RedBlackTreeNode<K, V> sortedListToBST(ArrayList<K> keys, ArrayList<V> values, int start, int end) {
         if (start > end) {
@@ -138,11 +136,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
 
 
     /**
-     * Returns the value associated with the given key
-     *
-     * @param key the key
-     * @return the value associated with the given key. If the key is not in the tree, null is returned.
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public V get(K key) {
@@ -155,11 +149,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Returns whether a key is contained in the tree
-     *
-     * @param key the key
-     * @return true if tree contains key, false otherwise
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public boolean contains(K key) {
@@ -167,17 +157,15 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Inserts the given (key, value) pair into the tree. If the tree contains already a symbol with the given key
-     * it overwrites the old value with the new.
-     *
-     * @param key the key
-     * @param val the value
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public void insert(K key, V val) {
         if (key == null) {
             throw new IllegalArgumentException("Key cannot be null.");
+        }
+        if (val == null) {
+            throw new IllegalArgumentException("Value cannot be null.");
         }
 
         root = insert(root, key, val);
@@ -185,7 +173,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * inserts the node with value <code>val</code> and key <code>key</code> in the subtree with root current.
+     * Inserts the node with value <code>val</code> and key <code>key</code> in the subtree with root current.
      * If <code>key</code> is present, then <code>val</code> overwrites the old value.
      *
      * @param current the root of the current subtree
@@ -223,14 +211,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Removes the specified key and its associated value from this tree. It returns true iff the key has been deleted
-     * successfully.
-     *
-     * @param key the key
-     *
-     * @return true, if the key was contained in the tree; false, otherwise
-     *
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public boolean delete(K key) {
@@ -261,7 +242,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * deletes the node with key <code>key</code> in the subtree with root <code>current</code>,
+     * Deletes the node with key <code>key</code> in the subtree with root <code>current</code>,
      * balances the subtree of the deleted node and returns the new subtree.
      *
      * @param current the node to delete
@@ -298,7 +279,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * balances the subtree with root <code>node</code>
+     * Balances the subtree with root <code>node</code>.
      *
      * @param node the root node of the subtree to balance
      * @return <code>root</code> as root of the subtree
@@ -319,9 +300,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Removes the smallest key and associated value from the tree.
-     *
-     * @throws NoSuchElementException if the tree is empty
+     * {@inheritDoc}
      */
     @Override
     public void deleteMin() {
@@ -353,9 +332,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Removes the largest key and associated value from the tree.
-     *
-     * @throws NoSuchElementException if the tree is empty
+     * {@inheritDoc}
      */
     @Override
     public void deleteMax() {
@@ -389,9 +366,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Returns the height of the BST.
-     *
-     * @return the height of the BST (a tree with 1 node has height 0)
+     * {@inheritDoc}
      */
     @Override
     public int height() {
@@ -403,10 +378,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Returns the smallest key in the tree.
-     *
-     * @return the smallest key in the tree
-     * @throws NoSuchElementException if the tree is empty
+     * {@inheritDoc}
      */
     @Override
     public K min() {
@@ -424,10 +396,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Returns the largest key in the tree.
-     *
-     * @return the largest key in the tree
-     * @throws NoSuchElementException if the tree is empty
+     * {@inheritDoc}
      */
     @Override
     public K max() {
@@ -445,106 +414,259 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Returns the largest key in the tree less than or equal to <code>key</code>.
-     *
-     * @param key the key
-     * @return the largest key in the tree less than or equal to <code>key</code>
-     * @throws NoSuchElementException   if there is no such key
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public K floor(K key) {
-        return null;
+        return floorNode(key).getKey();
     }
 
     /**
-     * Returns the smallest key in the tree greater than or equal to <code>key</code>.
+     * The Search tree node associated to the given key.
      *
-     * @param key the key
-     * @return the smallest key in the tree greater than or equal to <code>key</code>
-     * @throws NoSuchElementException   if there is no such key
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * @param key the key of the tree node
+     * @return the path (as stack) to the node containing the key, if the key is not contained, the path leads to the node that would be the parent of the searched key
+     */
+    Deque<RedBlackTreeNode<K, V>> searchNodeWithStack(K key) {
+        Deque<RedBlackTreeNode<K, V>> stack = new ArrayDeque<>();
+        RedBlackTreeNode<K, V> current = root;
+
+        while (current != null) {
+            stack.push(current);
+            if (current.getKey().equals(key)) {
+                break;
+            } else if (compareKey(current.getKey(), key) < 0) {
+                current = current.getRightChild();
+            } else {
+                current = current.getLeftChild();
+            }
+        }
+
+        return stack;
+    }
+
+    private RedBlackTreeNode<K, V> floorNode(K key) {
+        Deque<RedBlackTreeNode<K, V>> stack = searchNodeWithStack(key);
+
+        // check whether the node with the key is found
+        if (stack.peek().getKey().equals(key)) {
+            return stack.peek();
+        }
+
+        // key is not in the tree, search for next smaller key
+
+        // get last not null node
+        RedBlackTreeNode<K, V> node = stack.pop();
+
+        if (keyComparator.compare(node.getKey(), key) < 0) {
+            return node;
+        } else if (keyComparator.compare(node.getKey(), key) > 0) {
+            RedBlackTreeNode<K, V> parent;
+            while (node != root) {
+                parent = stack.pop();
+                if (node == parent.getLeftChild()) {
+                    continue;
+                }
+                return parent;
+            }
+        }
+
+        // root does not have a parent, key is not contained in tree
+        throw new NoSuchElementException();
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public K ceiling(K key) {
-        return null;
+        return ceilingNode(key).getKey();
+    }
+
+    private RedBlackTreeNode<K, V> ceilingNode(K key) {
+        Deque<RedBlackTreeNode<K, V>> stack = searchNodeWithStack(key);
+
+        // check whether the node with the key is found
+        if (stack.peek().getKey().equals(key)) {
+            return stack.peek();
+        }
+
+        // key is not in the tree, search for next smaller key
+
+        // get last not null node
+        RedBlackTreeNode<K, V> node = stack.pop();
+
+        if (keyComparator.compare(node.getKey(), key) < 0) {
+            RedBlackTreeNode<K, V> parent;
+            while (node != root) {
+                parent = stack.pop();
+                if (node == parent.getLeftChild()) {
+                    continue;
+                }
+                return parent;
+            }
+        } else if (keyComparator.compare(node.getKey(), key) > 0) {
+            return node;
+        }
+
+        // root does not have a parent, key is not contained in tree
+        throw new NoSuchElementException();
     }
 
     /**
-     * Return the key in the tree whose rank is <code>k</code>.
-     * This is the (k+1)st smallest key in the tree.
-     *
-     * @param k the position
-     * @return the key in the tree of rank <code>k</code>
-     * @throws IllegalArgumentException if <code>k</code> not in {0, ..., n-1}
+     * {@inheritDoc}
      */
     @Override
-    public K select(int k) {
-        return null;
+    public K select(int position) {
+        RedBlackTreeNode<K, V> node = root;
+        while (node != null) {
+            int size = getSize(node.getLeftChild());
+            if (size == position) {
+                return node.getKey();
+            } else if (size > position) {
+                node = node.getLeftChild();
+            } else {
+                position -= size + 1;
+                node = node.getRightChild();
+            }
+        }
+
+        throw new IllegalArgumentException();
     }
 
     /**
-     * Return the number of keys in the tree strictly less than <code>key</code>.
-     *
-     * @param key the key
-     * @return the number of keys in the tree strictly less than <code>key</code>
-     * @throws IllegalArgumentException if <code>key</code> is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
-    public int rank(K key) {
-        return 0;
+    public int orderingPosition(K key) {
+        int position = 0;
+        Deque<RedBlackTreeNode<K, V>> stack = searchNodeWithStack(key);
+
+        if (stack.peek().getKey() != key) {
+            throw new IllegalArgumentException();
+        }
+
+        while (!stack.isEmpty()) {
+            RedBlackTreeNode<K, V> current = stack.pollLast();
+            RedBlackTreeNode<K, V> next = stack.peekLast();
+            if (current.getKey().equals(key)) {
+                position += getSize(current.getLeftChild());
+                break;
+            }
+            if (next == current.getRightChild()) {
+                position += getSize(current.getLeftChild()) + 1;
+            }
+        }
+
+        return position;
     }
 
     /**
-     * Returns all keys in the symbol table as an <code>Iterable</code>.
-     * To iterate over all of the keys in the symbol table named <code>st</code>,
-     * use the foreach notation: <code>for (Key key : st.keys())</code>.
-     *
-     * @return all keys in the symbol table as an <code>Iterable</code>
+     * {@inheritDoc}
      */
     @Override
     public Iterable<K> keys() {
-        return null;
+        return () -> keys(root);
+    }
+
+    private Iterator<K> keys(RedBlackTreeNode<K, V> start) {
+        return new Iterator<K>() {
+            Deque<RedBlackTreeNode<K, V>> stack;
+
+            @Override
+            public boolean hasNext() {
+                if (stack == null) {
+                    stack = new ArrayDeque<>(2 * (int) Math.ceil(Math.log(root.getSize() + 1)));
+                    goToSuccessor(start);
+                }
+                return !stack.isEmpty();
+            }
+
+            @Override
+            public K next() {
+                RedBlackTreeNode<K, V> node = stack.pop();
+                goToSuccessor(node.getRightChild());
+                return node.getKey();
+            }
+
+            private void goToSuccessor(RedBlackTreeNode<K, V> node) {
+                while (node != null) {
+                    stack.push(node);
+                    node = node.getLeftChild();
+                }
+            }
+        };
     }
 
     /**
-     * Returns all keys in the symbol table in the given range,
-     * as an <code>Iterable</code>.
-     *
-     * @param min minimum endpoint
-     * @param max maximum endpoint
-     * @return all keys in the symbol table between <code>min</code>
-     * (inclusive) and <code>max</code> (inclusive) as an <code>Iterable</code>
-     * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
-     *                                  is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public Iterable<K> keys(K min, K max) {
-        return null;
+        return () -> new Iterator<K>() {
+            Deque<RedBlackTreeNode<K, V>> stackLeft;
+            Deque<RedBlackTreeNode<K, V>> stackRight;
+
+            @Override
+            public boolean hasNext() {
+                if (stackLeft == null) {
+                    RedBlackTreeNode<K, V> topNode = root;
+                    stackLeft = searchNodeWithStack(min);
+                    stackRight = searchNodeWithStack(max);
+
+                    while (stackRight.peekLast() == stackLeft.peekLast()) {
+                        topNode = stackLeft.peekLast();
+                        stackLeft.pollLast();
+                        stackRight.pollLast();
+                        if (stackLeft.isEmpty() || stackRight.isEmpty()) {
+                            break;
+                        }
+                    }
+
+                    stackRight.addLast(topNode);
+                    stackLeft.removeIf(node -> compareKey(node.getKey(), min) < 0);
+                    stackRight.removeIf(node -> compareKey(node.getKey(), max) > 0);
+                }
+                return !stackLeft.isEmpty() || !stackRight.isEmpty();
+            }
+
+            @Override
+            public K next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                RedBlackTreeNode<K, V> node;
+                if (!stackLeft.isEmpty()) {
+                    node = stackLeft.pop();
+                    goToSuccessor(node.getRightChild());
+                } else {
+                    node = stackRight.pollLast();
+                    if (!stackRight.isEmpty()) {
+                        goToSuccessor(stackRight.peekLast().getLeftChild());
+                    }
+                }
+
+                return node.getKey();
+            }
+
+            private void goToSuccessor(RedBlackTreeNode<K, V> node) {
+                while (node != null) {
+                    stackLeft.push(node);
+                    node = node.getLeftChild();
+                }
+            }
+        };
     }
 
     /**
-     * Returns the number of keys in the symbol table in the given range.
-     *
-     * @param min minimum endpoint
-     * @param max maximum endpoint
-     * @return the number of keys in the symbol table between <code>min</code>
-     * (inclusive) and <code>max</code> (inclusive)
-     * @throws IllegalArgumentException if either <code>min</code> or <code>max</code>
-     *                                  is <code>null</code>
+     * {@inheritDoc}
      */
     @Override
     public int size(K min, K max) {
-        return 0;
+        return orderingPosition(ceiling(max)) - orderingPosition(floor(min)) + 1;
     }
 
-    /**
-     * returns the size of the subtree rooted at <code>node</code>.
-     *
-     * @param node the root of the subtree to calculate the size for
-     * @return the size of the tree rooted at <code>node</code>.
-     */
-    public int size(RedBlackTreeNode<K,V> node) {
+    private int size(RedBlackTreeNode<K,V> node) {
         if (node == null) {
             return 0;
         }
@@ -553,7 +675,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * rotate the subtree with root <code>node</code> left
+     * Rotate the subtree with root <code>node</code> left.
      *
      * @param node the root of the subtree to rotate left
      * @return the new root of the subtree, i.e the right child of <code>node</code>
@@ -574,7 +696,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * rotate the subtree with root <code>node</code> right
+     * Rotate the subtree with root <code>node</code> right.
      *
      * @param node the root of the subtree to rotate right
      * @return the new root of the subtree, i.e the left child of <code>node</code>
@@ -597,7 +719,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * Search tree node associated to the given key
+     * Search tree node associated to the given key.
      *
      * @param key the key of the tree node
      * @return the tree node associated to the given key, null if the tree node doesn't exist
@@ -661,7 +783,7 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     }
 
     /**
-     * returns the values as an inorder list representation
+     * Returns the values as an inorder list representation.
      *
      * @return the values of the tree in an inorder list representation
      */

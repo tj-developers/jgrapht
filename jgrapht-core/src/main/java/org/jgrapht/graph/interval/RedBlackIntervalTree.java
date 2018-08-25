@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2003-2018, by Christoph Grüne, Daniel Mock and Contributors.
+ * (C) Copyright 2018-2018, by Christoph Grüne, Daniel Mock and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -17,7 +17,6 @@
  */
 package org.jgrapht.graph.interval;
 
-import org.jgrapht.alg.interfaces.IntervalTreeInterface;
 import org.jgrapht.util.RedBlackTree;
 import org.jgrapht.util.RedBlackTreeNode;
 
@@ -36,14 +35,14 @@ import java.util.List;
  * @param <K> the type of the key
  * @param <NodeValue> the type of the node value
  *
- * @author Daniel Mock (danielmock)
- * @author Christoph Grüne (christophgruene)
+ * @author Daniel Mock
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 class RedBlackIntervalTree
         <K, NodeValue extends IntervalTreeNodeValue<Interval<T>, T>, T extends Comparable<T>>
         extends RedBlackTree<K, NodeValue>
-        implements IntervalTreeInterface<K, NodeValue, T>, Serializable {
+        implements IntervalTree<K, NodeValue, T>, Serializable {
 
     private static final long serialVersionUID = 4353687394654923429L;
 

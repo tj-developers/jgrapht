@@ -14,6 +14,11 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.interval.Interval;
 import org.jgrapht.graph.interval.IntervalVertexPair;
 
+/**
+ *
+ * @param <V> vertex
+ * @param <E> edge
+ */
 public class ATFinder<V,E>
 {
 
@@ -23,7 +28,16 @@ public class ATFinder<V,E>
     private Graph<V,E> subgraph;
     private V asteroidalTriple1, asteroidalTriple2, asteroidalTriple3;
     private V conflictVertex;
-    
+
+    /**
+     *
+     * @param subgraph null
+     * @param intervalsSortedByStartingPoint null
+     * @param intervalsSortedByEndingPoint null
+     * @param intervalToVertexMap null
+     * @param vertexToIntervalMap null
+     * @param conflictVertex null
+     */
     public ATFinder(Graph<V,E> subgraph, 
             List<Interval<Integer>> intervalsSortedByStartingPoint, 
             List<Interval<Integer>> intervalsSortedByEndingPoint,
@@ -37,7 +51,11 @@ public class ATFinder<V,E>
         this.vertexToIntervalMap = vertexToIntervalMap;
         this.conflictVertex = conflictVertex;
     }
-    
+
+    /**
+     *
+     * @return null
+     */
     public List<V> getAsteroidalTriple(){
         computeAT();
         List<V> triple = new ArrayList<>(3);
@@ -46,14 +64,11 @@ public class ATFinder<V,E>
         triple.add(asteroidalTriple3);
         return Collections.unmodifiableList(triple);
     }
-    
+
     /**
-     * Computes the asteroidal triple from the conflicting, simplicial vertex of the graph up to conflict vertex 
+     * Computes the asteroidal triple from the conflicting, simplicial vertex of the graph up to conflict vertex
      * according to the perfect elimination order and the interval model up the this vertex given by
      * intervalsSortedByStartingPoint, intervalsSortedByEndingPoint, vertexToIntervalMap, intervalToVertexMap
-     * 
-     * 
-     * @param conflictVertex
      */
     private void computeAT() {
         Interval<Integer> vertexInterval = intervalOfNeighbor(conflictVertex);
@@ -106,8 +121,8 @@ public class ATFinder<V,E>
     
     /**
      * Computes the interval the vertex would have got, if it would be added to the current interval model.
-     * @param vertex
-     * @return
+     * @param vertex null
+     * @return null
      */
     private Interval<Integer> intervalOfNeighbor(V vertex){
         List<V> neighbors = Graphs.neighborListOf(subgraph, vertex);
@@ -129,9 +144,9 @@ public class ATFinder<V,E>
     
     /**
      * Computed the component spanning vertexInterval without the neighbor of vertex
-     * @param vertex
-     * @param vertexInterval
-     * @return
+     * @param vertex null
+     * @param vertexInterval null
+     * @return null
      */
     private List<Interval<Integer>> computeComponentWoNeighbors(V vertex, Interval<Integer> vertexInterval) {
         List<Interval<Integer>> componentWoNeighbors = new ArrayList<>(subgraph.vertexSet().size());
