@@ -29,7 +29,7 @@ import java.util.*;
  */
 public final class LexBreadthFirstSearch
 {
-    
+
     /**
      * Performs a lexicographical BFS starting at {@code startingVertex}.
      *
@@ -42,14 +42,13 @@ public final class LexBreadthFirstSearch
     {
         HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
         LexBreadthFirstIterator<V,E> lbfIterator = new LexBreadthFirstIterator<>(graph);
-
         for(int i = 0; i < graph.vertexSet().size(); i++) {
             result.put(lbfIterator.next(), i);
         }
 
         return result;
     }
-    
+
     /**
      * Performs LBFS+ starting at {@code startingVertex} using the previous ordering {@code prevOrdering}.
      *
@@ -59,7 +58,7 @@ public final class LexBreadthFirstSearch
      * @param <E> The edge type
      * @return an array of vertices representing the order in which the vertices were found
      */
-    
+
     public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchPlus(Graph<V, E> graph, HashMap<V, Integer> priority)
     {
         HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size());
@@ -71,7 +70,7 @@ public final class LexBreadthFirstSearch
 
         return result;
     }
-    
+
     /**
      * Performs LBFS* starting at {@code startingVertex} using two previous orderings {@code prevOrdering1} and {@code prevOrdering2}.
      *
@@ -82,7 +81,6 @@ public final class LexBreadthFirstSearch
      * @param <E> The edge type
      * @return an array of vertices representing the order in which the vertices were found
      */
-    
     public static <V, E> HashMap<V, Integer> lexBreadthFirstSearchStar(Graph<V, E> graph, HashMap<V, Integer> priorityA, HashMap<V, Integer> priorityB)
     {
        HashMap<V, Integer> neighborIndexA = new HashMap<>(); 

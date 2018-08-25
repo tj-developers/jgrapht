@@ -48,7 +48,7 @@ import org.jgrapht.graph.interval.Interval;
  * @author Dennis Fischer
  * @since April 2018
  */
-public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecognizerInterface<V>
+public final class IntervalGraphRecognizer<V, E>
 {
 
     /**
@@ -68,7 +68,7 @@ public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecogni
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
-     * 
+     *
      * @param graph the graph to be tested.
      */
     public IntervalGraphRecognizer(Graph<V, E> graph)
@@ -99,7 +99,7 @@ public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecogni
         // Output - the result of current sweep alpha, further last vertex a visited by current
         // sweep
         HashMap<V, Integer> sweepAlpha =
-            lexBreadthFirstSearch(graph);
+                lexBreadthFirstSearch(graph);
 
         // Step 2 - LBFS+ from the last vertex of the previous sweep
         // Input - the result of previous sweep alpha, vertex a
@@ -149,7 +149,7 @@ public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecogni
             }
 
             Interval<Integer>[] intervals =
-                (Interval<Integer>[]) Array.newInstance(Interval.class, graph.vertexSet().size());
+                    (Interval<Integer>[]) Array.newInstance(Interval.class, graph.vertexSet().size());
             this.intervalsSortedByStartingPoint = new ArrayList<>(graph.vertexSet().size());
 
             // Initialize the vertex map. Because we know the number of vertices we can make sure
@@ -158,14 +158,14 @@ public final class IntervalGraphRecognizer<V, E> implements IntervalGraphRecogni
             // default load factor
             // of 0.75.
             this.intervalToVertexMap =
-                new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
+                    new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
             this.vertexToIntervalMap =
-                new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
+                    new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
 
             // Compute intervals and store them associated by their starting point ...
             for (V vertex : graph.vertexSet()) {
                 Interval<Integer> vertexInterval =
-                    new Interval<>(sweepZeta.get(vertex), neighborIndex.get(vertex));
+                        new Interval<>(sweepZeta.get(vertex), neighborIndex.get(vertex));
 
                 intervals[sweepZeta.get(vertex)] = vertexInterval;
 

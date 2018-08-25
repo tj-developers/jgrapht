@@ -27,7 +27,7 @@ import java.util.Objects;
  * @param <V> the vertex
  * @param <T> the interval element
  *
- * @author Christoph Grüne (christophgruene)
+ * @author Christoph Grüne
  * @since Apr 26, 2018
  */
 public class IntervalVertexPair<V, T extends Comparable<T>> implements Serializable {
