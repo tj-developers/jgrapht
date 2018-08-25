@@ -665,11 +665,8 @@ public class RedBlackTree<K, V> implements BinarySearchTree<K, V>, Serializable 
     public int size(K min, K max) {
         return orderingPosition(ceiling(max)) - orderingPosition(floor(min)) + 1;
     }
-
-    /**
-     * @inheritDoc
-     */
-    public int size(RedBlackTreeNode<K,V> node) {
+    
+    private int size(RedBlackTreeNode<K,V> node) {
         if (node == null) {
             return 0;
         }

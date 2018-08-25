@@ -49,7 +49,7 @@ public class ATFinder<V,E>
 
     /**
      *
-     * @return
+     * @return null
      */
     public List<V> getAsteroidalTriple(){
         computeAT();
