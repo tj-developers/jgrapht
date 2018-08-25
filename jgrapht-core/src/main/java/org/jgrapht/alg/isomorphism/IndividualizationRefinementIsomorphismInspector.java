@@ -22,6 +22,11 @@ import java.util.Set;
  */
 public class IndividualizationRefinementIsomorphismInspector<V, E> extends RefinementAbstractIsomorphismInspector<V, E> {
 
+    /**
+     *
+     * @param graph1 null
+     * @param graph2 null
+     */
     public IndividualizationRefinementIsomorphismInspector(Graph<V, E> graph1, Graph<V, E> graph2) {
         super(graph1, graph2);
     }

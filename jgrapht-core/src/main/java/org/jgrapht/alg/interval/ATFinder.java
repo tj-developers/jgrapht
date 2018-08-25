@@ -14,6 +14,11 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.interval.Interval;
 import org.jgrapht.graph.interval.IntervalVertexPair;
 
+/**
+ *
+ * @param <V> vertex
+ * @param <E> edge
+ */
 public class ATFinder<V,E>
 {
 

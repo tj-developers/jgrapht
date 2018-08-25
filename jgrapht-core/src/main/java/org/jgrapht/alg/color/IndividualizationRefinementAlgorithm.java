@@ -7,6 +7,11 @@ import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ *
+ * @param <V> vertex
+ * @param <E> edge
+ */
 public class IndividualizationRefinementAlgorithm<V, E> implements VertexColoringAlgorithm<V>, Serializable {
 
     private static final long serialVersionUID = -4443873488410934998L;
