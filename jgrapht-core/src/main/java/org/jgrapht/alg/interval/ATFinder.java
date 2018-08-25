@@ -23,7 +23,16 @@ public class ATFinder<V,E>
     private Graph<V,E> subgraph;
     private V asteroidalTriple1, asteroidalTriple2, asteroidalTriple3;
     private V conflictVertex;
-    
+
+    /**
+     *
+     * @param subgraph
+     * @param intervalsSortedByStartingPoint
+     * @param intervalsSortedByEndingPoint
+     * @param intervalToVertexMap
+     * @param vertexToIntervalMap
+     * @param conflictVertex
+     */
     public ATFinder(Graph<V,E> subgraph, 
             List<Interval<Integer>> intervalsSortedByStartingPoint, 
             List<Interval<Integer>> intervalsSortedByEndingPoint,
@@ -37,7 +46,11 @@ public class ATFinder<V,E>
         this.vertexToIntervalMap = vertexToIntervalMap;
         this.conflictVertex = conflictVertex;
     }
-    
+
+    /**
+     *
+     * @return
+     */
     public List<V> getAsteroidalTriple(){
         computeAT();
         List<V> triple = new ArrayList<>(3);
@@ -46,14 +59,11 @@ public class ATFinder<V,E>
         triple.add(asteroidalTriple3);
         return Collections.unmodifiableList(triple);
     }
-    
+
     /**
-     * Computes the asteroidal triple from the conflicting, simplicial vertex of the graph up to conflict vertex 
+     * Computes the asteroidal triple from the conflicting, simplicial vertex of the graph up to conflict vertex
      * according to the perfect elimination order and the interval model up the this vertex given by
      * intervalsSortedByStartingPoint, intervalsSortedByEndingPoint, vertexToIntervalMap, intervalToVertexMap
-     * 
-     * 
-     * @param conflictVertex
      */
     private void computeAT() {
         Interval<Integer> vertexInterval = intervalOfNeighbor(conflictVertex);
