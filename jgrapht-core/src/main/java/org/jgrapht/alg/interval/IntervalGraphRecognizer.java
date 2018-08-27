@@ -63,6 +63,7 @@ public final class IntervalGraphRecognizer<V, E>
      * exists) of the graph.
      */
     private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint;
+    private ArrayList<Interval<Integer>> intervalsSortedByEndingPoint;
     private Map<Interval<Integer>, V> intervalToVertexMap;
     private Map<V, IntervalVertexPair<V, Integer>> vertexToIntervalMap;
 
@@ -87,6 +88,7 @@ public final class IntervalGraphRecognizer<V, E>
         if (graph.vertexSet().isEmpty()) {
             // Create (empty) interval representation
             this.intervalsSortedByStartingPoint = new ArrayList<>();
+            this.intervalsSortedByEndingPoint = new ArrayList<>();
             this.intervalToVertexMap = new HashMap<>(0);
             this.vertexToIntervalMap = new HashMap<>(0);
             this.isIntervalGraph = true;
@@ -151,6 +153,7 @@ public final class IntervalGraphRecognizer<V, E>
             Interval<Integer>[] intervals =
                     (Interval<Integer>[]) Array.newInstance(Interval.class, graph.vertexSet().size());
             this.intervalsSortedByStartingPoint = new ArrayList<>(graph.vertexSet().size());
+            this.intervalsSortedByEndingPoint = new ArrayList<>(graph.vertexSet().size());
 
             // Initialize the vertex map. Because we know the number of vertices we can make sure
             // the hashmap does not
@@ -161,6 +164,8 @@ public final class IntervalGraphRecognizer<V, E>
                     new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
             this.vertexToIntervalMap =
                     new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
+            Map<Integer,Set<Interval<Integer>>> endpointToInterval = 
+                    new HashMap<>((int) Math.ceil(graph.vertexSet().size() / 0.75));
 
             // Compute intervals and store them associated by their starting point ...
             for (V vertex : graph.vertexSet()) {
@@ -169,6 +174,18 @@ public final class IntervalGraphRecognizer<V, E>
 
                 intervals[sweepZeta.get(vertex)] = vertexInterval;
 
+                //save the endpoints in a map to generate a list of intervals sorted by their ending point
+                if(endpointToInterval.containsKey(vertexInterval.getEnd()))
+                {
+                    endpointToInterval.get(vertexInterval.getEnd()).add(vertexInterval);
+                }
+                else
+                {
+                    Set<Interval<Integer>> intervalSet = new HashSet<>();
+                    intervalSet.add(vertexInterval);
+                    endpointToInterval.put(vertexInterval.getEnd(),intervalSet);
+                }
+                
                 this.intervalToVertexMap.put(vertexInterval, vertex);
                 this.vertexToIntervalMap.put(vertex, IntervalVertexPair.of(vertex, vertexInterval));
             }
@@ -176,6 +193,20 @@ public final class IntervalGraphRecognizer<V, E>
             // ... and produce a list sorted by the starting points for an efficient construction of
             // the graph
             this.intervalsSortedByStartingPoint.addAll(Arrays.asList(intervals));
+            
+            //and a list sorted by the ending points. We iterate over all possible points, which are |V| in total
+            for(int i = 0; i <= Collections.max(endpointToInterval.keySet()); i++)
+            {
+                //if this point is an endpoint
+                if(endpointToInterval.containsKey(i))
+                {
+                    //add all intervals  with same ending point arbitrary to the list
+                    for(Interval<Integer> interval : endpointToInterval.get(i))
+                    {
+                        this.intervalsSortedByEndingPoint.add(interval);
+                    }
+                }
+            }
 
             this.isIntervalGraph = true;
         } else {
@@ -268,6 +299,19 @@ public final class IntervalGraphRecognizer<V, E>
     {
         ensureComputationComplete();
         return this.intervalsSortedByStartingPoint;
+    }
+    
+    /**
+     * Returns the list of all intervals sorted by ending point, or null, if the graph was not an
+     * interval graph.
+     *
+     * @return The list of all intervals sorted by ending point, or null, if the graph was not an
+     *         interval graph.
+     */
+    public ArrayList<Interval<Integer>> getIntervalsSortedByEndingPoint()
+    {
+        ensureComputationComplete();
+        return this.intervalsSortedByEndingPoint;
     }
 
     /**
