@@ -84,7 +84,9 @@ public class IntervalNicePathDecomposition<T extends Comparable<T>, V> extends N
      * 
      * @param sortedByStartPoint a list of all intervals sorted by the starting point
      * @param sortedByEndPoint a list of all intervals sorted by the ending point
+     * @param supplier a supplier which yields the new generated vertices of the interval graph
      * @param <T> the value of the intervals
+     * @param <V> the values of the vertices of the interval graph
      * @return the algorithm for the computation of the nice tree decomposition
      */
     public static <T extends Comparable<T>, V> IntervalNicePathDecomposition<T, V> create(
@@ -111,18 +113,20 @@ public class IntervalNicePathDecomposition<T extends Comparable<T>, V> extends N
      * ArrayList (O(|List| log(|List|))
      * 
      * @param intervals the (unsorted) list of all intervals
+     * @param supplier a supplier which yields the new generated vertices of the interval graph
      * @param <T> the values of the intervals
+     * @param <V> the values of the vertices of the interval graph
      * @return the algorithm for the computation of the nice tree decomposition
      * @see ArrayList#sort(Comparator)
      */
-    public static <T extends Comparable<T>> IntervalNicePathDecomposition<T, Integer> create(
-        List<Interval<T>> intervals)
+    public static <T extends Comparable<T>, V> IntervalNicePathDecomposition<T, V> create(
+        List<Interval<T>> intervals, Supplier<V> supplier)
     {
         ArrayList<Interval<T>> startSort = new ArrayList<>(intervals);
         ArrayList<Interval<T>> endSort = new ArrayList<>(intervals);
         startSort.sort(Interval.<T> getStartingComparator());
         endSort.sort(Interval.<T> getEndingComparator());
-        return create(startSort, endSort, SupplierUtil.createIntegerSupplier());
+        return create(startSort, endSort, supplier);
     }
 
     /**

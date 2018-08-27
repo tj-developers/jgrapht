@@ -8,6 +8,7 @@ import org.jgrapht.*;
 import org.jgrapht.alg.decomposition.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.graph.interval.Interval;
+import org.jgrapht.util.SupplierUtil;
 import org.junit.*;
 
 public class IntervalNicePathDecompositionTest
@@ -84,7 +85,7 @@ public class IntervalNicePathDecompositionTest
             list.add(new Interval<Integer>(10,10+i));
         }
         IntervalNicePathDecomposition<Integer,Integer> decompalg = 
-            IntervalNicePathDecomposition.<Integer>create(list);
+            IntervalNicePathDecomposition.<Integer,Integer>create(list,SupplierUtil.createIntegerSupplier());
         Graph<Integer,DefaultEdge> decomp = decompalg.getDecomposition();
         Map<Integer,Set<Integer>> map = decompalg.getMap();
         Integer root = decompalg.getRoot();
