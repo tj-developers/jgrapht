@@ -17,6 +17,7 @@
  */
 package org.jgrapht.graph.interval;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -153,4 +154,41 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     public int hashCode() {
         return Objects.hash(start, end);
     }
+    /**
+     * getter for a Comparator, which only compares the starting points
+     * 
+     * @param <T> the value of the interval
+     * @return a starting point comparator
+     */
+    public static <T extends Comparable<T>> Comparator<Interval<T>> getStartingComparator()
+    {
+        return new Comparator<Interval<T>>() 
+        {
+            @Override
+            public int compare(Interval<T> o1, Interval<T> o2)
+            {
+                return o1.getStart().compareTo(o2.getStart());
+            }
+        };
+    }
+
+    /**
+     * getter for a Comparator, which only compares the ending points
+     * 
+     * @param <T> the value of the interval
+     * @return a ending point comparator
+     */
+    public static <T extends Comparable<T>> Comparator<Interval<T>> getEndingComparator()
+    {
+        return new Comparator<Interval<T>>()
+        {
+
+            @Override
+            public int compare(Interval<T> o1, Interval<T> o2)
+            {
+                return o1.getEnd().compareTo(o2.getEnd());
+            }
+
+        };
+}
 }
