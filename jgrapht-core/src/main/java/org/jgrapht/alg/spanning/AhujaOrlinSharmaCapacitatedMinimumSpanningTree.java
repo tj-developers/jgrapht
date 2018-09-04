@@ -1240,32 +1240,38 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTree<V, E> extends Abstra
             return new Map<Pair<Integer, ImprovementGraphVertexType>, Integer>() {
                 @Override
                 public int size() {
-                    return improvementGraphVertexMapping.size() + pseudoVertexMapping.size();
+                    return improvementGraphVertexMapping.size() + pathExchangeVertexMapping.size() + (origin == null ? 0 : 1);
                 }
 
                 @Override
                 public boolean isEmpty() {
-                    return improvementGraphVertexMapping.isEmpty() || pseudoVertexMapping.isEmpty();
+                    return improvementGraphVertexMapping.isEmpty() && pathExchangeVertexMapping.isEmpty() && origin == null;
                 }
 
                 @Override
                 public boolean containsKey(Object key) {
                     if (key instanceof Pair) {
                         return improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())
-                                || pseudoVertexMapping.containsKey(((Pair) key).getFirst());
+                                || pathExchangeVertexMapping.containsKey(key)
+                                || key.equals(origin);
                     }
                     return false;
                 }
 
                 @Override
                 public boolean containsValue(Object value) {
-                    return improvementGraphVertexMapping.containsValue(value) || pseudoVertexMapping.containsValue(value);
+                    return improvementGraphVertexMapping.containsValue(value) || pathExchangeVertexMapping.containsValue(value) || value.equals(originVertexLabel);
                 }
 
                 @Override
                 public Integer get(Object key) {
-                    if (key instanceof Pair && improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())) {
-                        return solutionRepresentation.getLabel(improvementGraphVertexMapping.get(((Pair) key).getFirst()));
+                    if(key instanceof Pair) {
+                        if (improvementGraphVertexMapping.containsKey(((Pair) key).getFirst())) {
+                            return solutionRepresentation.getLabel(improvementGraphVertexMapping.get(((Pair) key).getFirst()));
+                        }
+                        if(key.equals(origin)) {
+                            return originVertexLabel;
+                        }
                     }
                     return pathExchangeVertexMapping.get(key);
                 }

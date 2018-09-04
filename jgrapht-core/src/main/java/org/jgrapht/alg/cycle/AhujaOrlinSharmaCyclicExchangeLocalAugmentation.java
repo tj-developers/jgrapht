@@ -31,15 +31,19 @@ import java.util.*;
  * Operations Research Letters, Volume 31, Issue 3, 2003, Pages 185-194, ISSN 0167-6377,
  * https://doi.org/10.1016/S0167-6377(02)00236-5. (http://www.sciencedirect.com/science/article/pii/S0167637702002365)
  *
- * A subset-disjoint cycle is a cycle such that no two vertices in the cycle are in the same subset of a given partition of the whole vertex set.
+ * A subset-disjoint cycle is a cycle such that no two vertices in the cycle are in the same subset of a given partition
+ * of the whole vertex set.
  *
- * This algorithm returns the first found negative subset-disjoint cycle, that is, the cycle has minimum number of vertices. It may enumerate all paths up
- * to the length given by the parameter <code>lengthBound</code>, i.e the algorithm runs in exponential time.
+ * This algorithm returns the first or the best found negative subset-disjoint cycle. In the case of the first
+ * found cycle, the cycle has minimum number of vertices. It may enumerate all paths up to the length given by the
+ * parameter <code>lengthBound</code>, i.e the algorithm runs in exponential time.
  *
- * This algorithm is used to detect valid cyclic exchanges in a cyclic exchange neighborhood for the Capacitated Minomum Spanning Tree problem {@link org.jgrapht.alg.spanning.AhujaOrlinSharmaCapacitatedMinimumSpanningTree} @see org.jgrapht.alg.spanning.AhujaOrlinSharmaCapacitatedMinimumSpanningTree
+ * This algorithm is used to detect valid cyclic exchanges in a cyclic exchange neighborhood for the Capacitated Minomum
+ * Spanning Tree problem {@link org.jgrapht.alg.spanning.AhujaOrlinSharmaCapacitatedMinimumSpanningTree}
+ * @see org.jgrapht.alg.spanning.AhujaOrlinSharmaCapacitatedMinimumSpanningTree
  *
- * @param <V> the vertex type
- * @param <E> the edge type
+ * @param <V> the vertex type the graph
+ * @param <E> the edge type of the graph
  *
  * @author Christoph Grüne
  * @since June 7, 2018
@@ -66,18 +70,23 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
     /**
      * Constructs an algorithm with given inputs
      *
-     * @param graph the (improvement) graph on which to calculate the local augmentation
+     * @param graph the directed graph on which to find the negative subset disjoint cycle. The vertices of the graph are labeled according to labelMap.
      * @param lengthBound the (inclusive) upper bound for the length of cycles to detect
      * @param labelMap the labelMap of the vertices encoding the subsets of vertices
      * @param bestImprovement contains whether the best or the first improvement is returned: best if true, first if false
      */
     public AhujaOrlinSharmaCyclicExchangeLocalAugmentation(Graph<V, E> graph, int lengthBound, Map<V, Integer> labelMap, boolean bestImprovement) {
         this.graph = Objects.requireNonNull(graph, "Graph cannot be null");
-        if (!graph.getType().isWeighted()) {
-            throw new IllegalArgumentException("Graph is not weighted");
+        if(!graph.getType().isDirected()) {
+            throw new IllegalArgumentException("The graph has to be directed.");
         }
         this.lengthBound = lengthBound;
         this.labelMap = Objects.requireNonNull(labelMap, "Labels cannot be null");
+        for(V vertex : graph.vertexSet()) {
+            if(!labelMap.containsKey(vertex)) {
+                throw new IllegalArgumentException("Every vertex has to be labeled, that is, every vertex needs an entry in labelMap.");
+            }
+        }
         this.bestImprovement = bestImprovement;
     }
 
