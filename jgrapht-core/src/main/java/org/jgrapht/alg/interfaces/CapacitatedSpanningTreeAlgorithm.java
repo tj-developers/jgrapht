@@ -30,9 +30,12 @@ import java.util.Set;
 
 /**
  * An algorithm which computes a capacitated (minimum) spanning tree of a given connected graph with a designated root
- * vertex. A <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum
- * Spanning Tree</a> (CMST) is a rooted minimal cost spanning tree that satisfies the capacity constrained on all trees
- * that are connected to the designated root. These trees build up a partition on the vertex set of the graph.
+ * vertex. The input is a connected undirected graph G = (V, E) with a designated root r \in V, a capacity
+ * constraint K \in \mathbb{N}, a demand function d: V \rightarrow \mathbb{N} and a capacity function c: E \rightarrow
+ * \mathbb{N}. A <a href="https://en.wikipedia.org/wiki/Capacitated_minimum_spanning_tree">Capacitated Minimum
+ * Spanning Tree</a> (CMST) is a rooted minimal cost spanning tree that satisfies the capacity constraint on all trees
+ * that are connected to the designated root. That is, the sum of the demands of all vertices is smaller or equal than K.
+ * These trees build up a partition on the vertex set of the graph.
  * The problem is NP-hard.
  *
  * @param <V> the graph vertex type
@@ -64,33 +67,12 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
          *
          * @return whether <code>cmst</code> is a CMST
          */
-        boolean isCapacacitatedSpanningTree(
+        boolean isCapacitatedSpanningTree(
                 Graph<V, E> graph,
                 V root,
                 double capacity,
                 Map<V, Double> demands
         );
-
-        /**
-         * Returns the root vertex of the capacitated spanning tree.
-         *
-         * @return the root vertex of capacitated spanning tree.
-         */
-        V getRoot();
-
-        /**
-         * Returns the edge capacity of the capacitated spanning tree.
-         *
-         * @return the edge capacity of the capacitated spanning tree.
-         */
-        double getCapacity();
-
-        /**
-         * Returns the vertex demand map of the capacitated spanning tree.
-         *
-         * @return the vertex demand map of the capacitated spanning tree.
-         */
-        Map<V, Double> getDemands();
 
         /**
          * Return the set of labels of the underlying partition of the capacitated spanning tree.
@@ -118,9 +100,6 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
 
         private static final long serialVersionUID = 7088989899889893333L;
 
-        private final V root;
-        private final double capacity;
-        private final Map<V, Double> demands;
         private final Map<V, Integer> labels;
         private final Map<Integer, Pair<Set<V>, Double>> partition;
         private final double weight;
@@ -129,25 +108,17 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
         /**
          * Construct a new capacitated spanning tree.
          *
-         * @param root the root vertex of the capacitated spanning tree
-         * @param capacity the capacity constraint of the capacitated spanning tree
-         * @param demands the demand function
          * @param labels the labelling of the vertices marking their subset membership in the partition
          * @param partition the implicitly defined partition of the vertices in the capacitated spanning tree
          * @param edges the edge set of the capacitated spanning tree
          * @param weight the weight of the capacitated spanning tree, i.e. the sum of all edge weights
          */
         public CapacitatedSpanningTreeImpl(
-                V root,
-                double capacity,
-                Map<V, Double> demands, Map<V, Integer> labels,
+                Map<V, Integer> labels,
                 Map<Integer, Pair<Set<V>, Double>> partition,
                 Set<E> edges,
                 double weight
         ) {
-            this.root = root;
-            this.capacity = capacity;
-            this.demands = demands;
             this.labels = labels;
             this.partition = partition;
             this.edges = edges;
@@ -155,18 +126,12 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
         }
 
         @Override
-        public boolean isCapacacitatedSpanningTree(
+        public boolean isCapacitatedSpanningTree(
                 Graph<V, E> graph,
                 V root,
                 double capacity,
                 Map<V, Double> demands
         ) {
-            if (!this.getRoot().equals(root)) {
-                return false;
-            }
-            if (this.getCapacity() != capacity) {
-                return false;
-            }
             if(this.getEdges().size() != graph.vertexSet().size() - 1) {
                 return false;
             }
@@ -188,7 +153,7 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
                     currentCapacity += demands.get(v);
                     numberOfNodesExplored++;
                 }
-                if (currentCapacity > this.getCapacity() || currentCapacity > capacity) {
+                if (currentCapacity > capacity) {
                     return false;
                 }
             }
@@ -230,21 +195,6 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
         }
 
         @Override
-        public V getRoot() {
-            return root;
-        }
-
-        @Override
-        public double getCapacity() {
-            return capacity;
-        }
-
-        @Override
-        public Map<V, Double> getDemands() {
-            return demands;
-        }
-
-        @Override
         public Map<V, Integer> getLabels() {
             return labels;
         }
@@ -266,7 +216,7 @@ public interface CapacitatedSpanningTreeAlgorithm<V, E> {
 
         @Override
         public String toString() {
-            return "Spanning-Tree [weight=" + weight + ", edges=" + edges + "]";
+            return "Capacitated Spanning-Tree [weight=" + weight + ", edges=" + edges + ", labels=" + labels + ", partition=" + partition + "]";
         }
     }
 }

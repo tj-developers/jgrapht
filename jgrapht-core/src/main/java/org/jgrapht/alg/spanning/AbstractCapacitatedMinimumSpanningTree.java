@@ -30,7 +30,7 @@ import java.util.*;
 
 /**
  * This is an abstract class for capacitated minimum spanning tree algorithms.
- * This class manages the basic instance information and a solution representation {see SolutionRepresentation} for a capacitated spanning tree.
+ * This class manages the basic instance information and a solution representation {see CapacitatedSpanningTreeSolutionRepresentation} for a capacitated spanning tree.
  *
  * @param <V> the vertex type
  * @param <E> the edge type
@@ -63,7 +63,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
     /**
      * representation of the solution
      */
-    protected SolutionRepresentation bestSolution;
+    protected CapacitatedSpanningTreeSolutionRepresentation bestSolution;
 
     /**
      * Construct a new abstract capacitated minimum spanning tree algorithm.
@@ -96,7 +96,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
             }
         }
 
-        this.bestSolution = new SolutionRepresentation();
+        this.bestSolution = new CapacitatedSpanningTreeSolutionRepresentation();
     }
 
     @Override
@@ -106,7 +106,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
      * This class represents a solution instance by managing the labels and the partition mapping.
      * With the help of this class, a capacitated spanning tree based on the label and partition mapping can be calculated.
      */
-    protected class SolutionRepresentation implements Cloneable {
+    protected class CapacitatedSpanningTreeSolutionRepresentation implements Cloneable {
 
         /**
          * labeling of the improvement graph vertices. There are two vertices in the improvement graph for every vertex
@@ -127,7 +127,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
         /**
          * Constructs a new solution representation for the CMST problem.
          */
-        public SolutionRepresentation() {
+        public CapacitatedSpanningTreeSolutionRepresentation() {
             this(new HashMap<>(), new HashMap<>());
         }
 
@@ -138,7 +138,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
          * @param labels the labels of the subsets in the partition
          * @param partition the partition map
          */
-        public SolutionRepresentation(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
+        public CapacitatedSpanningTreeSolutionRepresentation(Map<V, Integer> labels, Map<Integer, Pair<Set<V>, Double>> partition) {
             for(Integer i : labels.values()) {
                 if(i < 0) {
                     throw new IllegalArgumentException("Labels are not non-negative");
@@ -175,7 +175,7 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
                 weight += subtree.getWeight();
             }
 
-            return new CapacitatedSpanningTreeImpl<>(root, capacity, demands, labels, partition, spanningTreeEdges, weight);
+            return new CapacitatedSpanningTreeImpl<>(labels, partition, spanningTreeEdges, weight);
         }
 
         /**
@@ -370,17 +370,17 @@ public abstract class AbstractCapacitatedMinimumSpanningTree<V, E> implements Ca
          *
          * @see java.lang.Object#clone()
          */
-        public SolutionRepresentation clone() {
+        public CapacitatedSpanningTreeSolutionRepresentation clone() {
             try {
-                SolutionRepresentation solutionRepresentation = TypeUtil.uncheckedCast(super.clone());
-                solutionRepresentation.labels = new HashMap<>(labels);
-                solutionRepresentation.partition = new HashMap<>();
+                CapacitatedSpanningTreeSolutionRepresentation capacitatedSpanningTreeSolutionRepresentation = TypeUtil.uncheckedCast(super.clone());
+                capacitatedSpanningTreeSolutionRepresentation.labels = new HashMap<>(labels);
+                capacitatedSpanningTreeSolutionRepresentation.partition = new HashMap<>();
                 for(Map.Entry<Integer, Pair<Set<V>, Double>> entry : this.partition.entrySet()) {
-                    solutionRepresentation.partition.put(entry.getKey(), Pair.of(new HashSet<>(entry.getValue().getFirst()), entry.getValue().getSecond()));
+                    capacitatedSpanningTreeSolutionRepresentation.partition.put(entry.getKey(), Pair.of(new HashSet<>(entry.getValue().getFirst()), entry.getValue().getSecond()));
                 }
-                solutionRepresentation.nextFreeLabel = this.nextFreeLabel;
+                capacitatedSpanningTreeSolutionRepresentation.nextFreeLabel = this.nextFreeLabel;
 
-                return solutionRepresentation;
+                return capacitatedSpanningTreeSolutionRepresentation;
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
                 throw new RuntimeException();

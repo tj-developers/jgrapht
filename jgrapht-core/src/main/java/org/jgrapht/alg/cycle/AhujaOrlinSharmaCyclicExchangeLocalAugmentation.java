@@ -29,7 +29,8 @@ import java.util.*;
  * Ravindra K. Ahuja, James B. Orlin, Dushyant Sharma,
  * A composite very large-scale neighborhood structure for the capacitated minimum spanning tree problem,
  * Operations Research Letters, Volume 31, Issue 3, 2003, Pages 185-194, ISSN 0167-6377,
- * https://doi.org/10.1016/S0167-6377(02)00236-5. (http://www.sciencedirect.com/science/article/pii/S0167637702002365)
+ * <a href="https://doi.org/10.1016/S0167-6377(02)00236-5">https://doi.org/10.1016/S0167-6377(02)00236-5</a>.
+ * <a href="http://www.sciencedirect.com/science/article/pii/S0167637702002365">(http://www.sciencedirect.com/science/article/pii/S0167637702002365)</a>
  *
  * A subset-disjoint cycle is a cycle such that no two vertices in the cycle are in the same subset of a given partition
  * of the whole vertex set.
@@ -122,14 +123,15 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                     vertices.add(targetVertex);
 
                     double currentEdgeWeight = graph.getEdgeWeight(e);
+                    double oppositeEdgeWeight = graph.getEdgeWeight(graph.getEdge(targetVertex, sourceVertex));
                     if(bestImprovement) {
-                        if(bestCycle.getCost() > 2 * currentEdgeWeight) {
+                        if(bestCycle.cost > currentEdgeWeight + oppositeEdgeWeight) {
                             HashSet<Integer> labelSet = new HashSet<>();
                             labelSet.add(labelMap.get(sourceVertex));
-                            bestCycle = new LabeledPath<>(vertices, 2 * currentEdgeWeight, labelSet);
+                            bestCycle = new LabeledPath<>(vertices, currentEdgeWeight + oppositeEdgeWeight, labelSet);
                         }
                     } else {
-                        return new GraphWalk<>(graph, vertices, 2 * currentEdgeWeight);
+                        return new GraphWalk<>(graph, vertices, currentEdgeWeight + oppositeEdgeWeight);
                     }
                 }
                 if (!labelMap.get(sourceVertex).equals(labelMap.get(targetVertex))) {
@@ -157,9 +159,9 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
 
                 E currentEdge = graph.getEdge(tail, head);
                 if(currentEdge != null) {
-                    double currentCost = path.getCost() + graph.getEdgeWeight(currentEdge);
+                    double currentCost = path.cost + graph.getEdgeWeight(currentEdge);
 
-                    if (currentCost < bestCycle.getCost()) {
+                    if (currentCost < bestCycle.cost) {
                         LabeledPath<V> cycleResult = path.clone();
                         cycleResult.addVertex(head, graph.getEdgeWeight(currentEdge), labelMap.get(head));
 
@@ -167,7 +169,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                      * The path builds a valid negative cycle. Return the cycle if the first improvement should be returned.
                      */
                         if (!bestImprovement && currentCost < 0) {
-                            return new GraphWalk<>(graph, cycleResult.getVertices(), cycleResult.getCost());
+                            return new GraphWalk<>(graph, cycleResult.vertices, cycleResult.cost);
                         }
 
                         bestCycle = cycleResult;
@@ -179,7 +181,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
                     // extend the path if the extension is still negative and correctly labeled
                     double edgeWeight = graph.getEdgeWeight(e);
                     int currentLabel = labelMap.get(currentVertex);
-                    if (!path.getLabels().contains(currentLabel) && path.getCost() + edgeWeight < 0) {
+                    if (!path.labels.contains(currentLabel) && path.cost + edgeWeight < 0) {
                         LabeledPath<V> newPath = path.clone();
                         newPath.addVertex(currentVertex, edgeWeight, currentLabel);
 
@@ -202,7 +204,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
             pathsLengthKplus1 = new LinkedHashMap<>();
         }
 
-        return new GraphWalk<>(graph, bestCycle.getVertices(), bestCycle.getCost());
+        return new GraphWalk<>(graph, bestCycle.vertices, bestCycle.cost);
     }
 
     /**
@@ -218,9 +220,9 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      */
     private boolean checkDominatedPathsOfLengthKplus1(LabeledPath<V> path, Map<PathSetKey<V>, LabeledPath<V>> pathsLengthKplus1) {
         // simulates domination test by using the index structure
-        LabeledPath<V> pathToCheck = pathsLengthKplus1.get(PathSetKey.of(path.getHead(), path.getTail(), path.getLabels()));
+        LabeledPath<V> pathToCheck = pathsLengthKplus1.get(new PathSetKey<>(path.getHead(), path.getTail(), path.labels));
         if (pathToCheck != null) {
-            return pathToCheck.getCost() < path.getCost();
+            return pathToCheck.cost < path.cost;
         }
         return false;
     }
@@ -236,13 +238,13 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @return whether <code>path</code> is dominated by some path in <code>pathsLengthK</code>
      */
     private boolean checkDominatedPathsOfLengthK(LabeledPath<V> path, Map<PathSetKey<V>, LabeledPath<V>> pathsLengthK) {
-        Set<Integer> modifiableLabelSet = new HashSet<>(path.getLabels());
-        for(Integer label : path.getLabels()) {
+        Set<Integer> modifiableLabelSet = new HashSet<>(path.labels);
+        for(Integer label : path.labels) {
             modifiableLabelSet.remove(label);
             // simulates domination test by using the index structure
-            LabeledPath<V> pathToCheck = pathsLengthK.get(PathSetKey.of(path.getHead(), path.getTail(), modifiableLabelSet));
+            LabeledPath<V> pathToCheck = pathsLengthK.get(new PathSetKey<>(path.getHead(), path.getTail(), modifiableLabelSet));
             if (pathToCheck != null) {
-                if(pathToCheck.getCost() < path.getCost()) {
+                if(pathToCheck.cost < path.cost) {
                     return true;
                 }
             }
@@ -259,7 +261,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @param path the path to add
      */
     private void updatePathIndex(Map<PathSetKey<V>, LabeledPath<V>> paths, LabeledPath<V> path) {
-        PathSetKey<V> currentKey = PathSetKey.of(path.getHead(), path.getTail(), path.getLabels());
+        PathSetKey<V> currentKey = new PathSetKey<>(path.getHead(), path.getTail(), path.labels);
         paths.put(currentKey, path);
     }
 
@@ -272,20 +274,20 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @author Christoph Grüne
      * @since June 7, 2018
      */
-    private static class LabeledPath<V> implements Cloneable {
+    private class LabeledPath<V> implements Cloneable {
 
         /**
          * the vertices in the path
          */
-        private ArrayList<V> vertices;
+        public ArrayList<V> vertices;
         /**
          * the labels the path contains
          */
-        private HashSet<Integer> labels;
+        public HashSet<Integer> labels;
         /**
          * the cost of the path
          */
-        private double cost;
+        public double cost;
 
         /**
          * Constructs a LabeledPath with the given inputs
@@ -341,33 +343,6 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
         }
 
         /**
-         * Returns an ordered list of the vertices of the path
-         *
-         * @return an ordered list of the vertices of the path
-         */
-        public List<V> getVertices() {
-            return vertices;
-        }
-
-        /**
-         * Returns the labels of all vertices of the path
-         *
-         * @return the labels of all vertices of the path
-         */
-        public Set<Integer> getLabels() {
-            return labels;
-        }
-
-        /**
-         * Returns the cost of the path
-         *
-         * @return the cost of the path
-         */
-        public double getCost() {
-            return cost;
-        }
-
-        /**
          * Returns a shallow copy of this labeled path instance. Vertices are not cloned.
          *
          * @return a shallow copy of this path.
@@ -400,7 +375,7 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
      * @author Christoph Grüne
      * @since June 7, 2018
      */
-    private static class PathSetKey<V> {
+    private class PathSetKey<V> {
         /**
          * the head of the paths indexed by this key
          */
@@ -425,19 +400,6 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E> {
             this.head = head;
             this.tail = tail;
             this.labels = labels;
-        }
-
-        /**
-         * Constructs a new PathSetKey object
-         *
-         * @param head the head of the path indexed by this key
-         * @param tail the tail of the path indexed by this key
-         * @param labels the label set of the path indexed by this key
-         * @param <V> the vertex type
-         * @return a new PathSetKey object
-         */
-        public static <V> PathSetKey<V> of(V head, V tail, Set<Integer> labels) {
-            return new PathSetKey<>(head, tail, labels);
         }
 
         @Override

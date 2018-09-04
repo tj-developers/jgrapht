@@ -79,7 +79,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         edges.add(graph.getEdge(3, 6));
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> initialSolution =
-                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(0, 2.0, weights, labels, partition, edges, 8);
+                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(labels, partition, edges, 8);
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -98,11 +98,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         ).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 2.0, weights));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph, 0, 2.0, weights));
         assertEquals(6.0, cmst.getWeight(), 0.0000001);
-        assertEquals(0, cmst.getRoot(), 0);
-        assertEquals(2.0, cmst.getCapacity(), 0.00000001);
-        assertEquals(weights, cmst.getDemands());
 
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(1, 5)), 2.0), cmst.getPartition().get(cmst.getLabels().get(1)));
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(2, 4)), 2.0), cmst.getPartition().get(cmst.getLabels().get(2)));
@@ -182,11 +179,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         ).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 4.0, weights));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph, 0, 4.0, weights));
         assertEquals(14.0, cmst.getWeight(), 0.0000001);
-        assertEquals(0, cmst.getRoot(), 0);
-        assertEquals(4.0, cmst.getCapacity(), 0.00000001);
-        assertEquals(weights, cmst.getDemands());
 
         assertEquals(cmst.getPartition().get(cmst.getLabels().get(1)), Pair.of(new HashSet<>(Arrays.asList(1, 5)), 4.0));
         assertEquals(cmst.getPartition().get(cmst.getLabels().get(2)), Pair.of(new HashSet<>(Arrays.asList(2, 3)), 3.0));
@@ -256,7 +250,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         edges.add(graph.getEdge(2, 5));
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> initialSolution =
-                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(0, 2.0, weights, labels, partition, edges, 7);
+                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(labels, partition, edges, 7);
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -275,11 +269,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         ).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 2.0, weights));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph, 0, 2.0, weights));
         assertEquals(5.0, cmst.getWeight(), 0.0000001);
-        assertEquals(0, cmst.getRoot(), 0);
-        assertEquals(2.0, cmst.getCapacity(), 0.00000001);
-        assertEquals(weights, cmst.getDemands());
 
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(1, 5)), 2.0), cmst.getPartition().get(cmst.getLabels().get(1)));
         assertEquals(Pair.of(new HashSet<>(Collections.singletonList(2)), 1.0), cmst.getPartition().get(cmst.getLabels().get(2)));
@@ -354,7 +345,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         edges.add(graph.getEdge(5, 7));
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> initialSolution =
-                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(0, 3.0, weights, labels, partition, edges, 7);
+                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(labels, partition, edges, 7);
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -373,11 +364,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         ).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 3.0, weights));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph, 0, 3.0, weights));
         assertEquals(7.0, cmst.getWeight(), 0.0000001);
-        assertEquals(0, cmst.getRoot(), 0);
-        assertEquals(3.0, cmst.getCapacity(), 0.00000001);
-        assertEquals(weights, cmst.getDemands());
 
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(1, 4, 7)), 3.0), cmst.getPartition().get(cmst.getLabels().get(1)));
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(2, 5)), 2.0), cmst.getPartition().get(cmst.getLabels().get(2)));
@@ -464,7 +452,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         edges.add(graph.getEdge(7, 8));
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> initialSolution =
-                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(0, 4.0, weights, labels, partition, edges, 8);
+                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(labels, partition, edges, 8);
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -483,11 +471,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         ).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 4.0, weights));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph, 0, 4.0, weights));
         assertEquals(8.0, cmst.getWeight(), 0.0000001);
-        assertEquals(0, cmst.getRoot(), 0);
-        assertEquals(4.0, cmst.getCapacity(), 0.00000001);
-        assertEquals(weights, cmst.getDemands());
 
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(1, 4, 7, 8)), 4.0), cmst.getPartition().get(cmst.getLabels().get(1)));
         assertEquals(Pair.of(new HashSet<>(Arrays.asList(2, 5)), 2.0), cmst.getPartition().get(cmst.getLabels().get(2)));
@@ -586,7 +571,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         edges.add(graph.getEdge(0, 5));
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> initialSolution =
-                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(0, 4.0, weights, labels, partition, edges, 8);
+                new CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTreeImpl<>(labels, partition, edges, 8);
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
                 = new AhujaOrlinSharmaCapacitatedMinimumSpanningTree<>(
@@ -605,11 +590,8 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         ).getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph, 0, 4.0, weights));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph, 0, 4.0, weights));
         assertEquals(14.0, cmst.getWeight(), 0.0000001);
-        assertEquals(0, cmst.getRoot(), 0);
-        assertEquals(4.0, cmst.getCapacity(), 0.00000001);
-        assertEquals(weights, cmst.getDemands());
 
         assertEquals(cmst.getPartition().get(cmst.getLabels().get(1)), Pair.of(new HashSet<>(Arrays.asList(1, 5)), 4.0));
         assertEquals(cmst.getPartition().get(cmst.getLabels().get(2)), Pair.of(new HashSet<>(Arrays.asList(2, 3)), 3.0));
@@ -660,7 +642,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -691,7 +673,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -722,7 +704,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -753,7 +735,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -784,7 +766,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -809,14 +791,14 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
                 true,
                 true,
                 10,
-                15
+                50
         );
 
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst
                 = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -847,7 +829,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
@@ -878,7 +860,7 @@ public class AhujaOrlinSharmaCapacitatedMinimumSpanningTreeTest {
         CapacitatedSpanningTreeAlgorithm.CapacitatedSpanningTree<Integer, DefaultWeightedEdge> cmst = capacitatedSpanningTreeAlgorithm.getCapacitatedSpanningTree();
 
         assertNotNull(cmst);
-        assertTrue(cmst.isCapacacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
+        assertTrue(cmst.isCapacitatedSpanningTree(graph.getFirst(), 0, capacity, graph.getSecond()));
     }
 
     /**
