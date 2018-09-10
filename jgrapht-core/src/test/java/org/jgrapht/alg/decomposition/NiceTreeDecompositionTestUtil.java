@@ -25,7 +25,7 @@ import org.jgrapht.*;
 import org.jgrapht.graph.*;
 
 /**
- * Tests for the {@link NiceDecompositionBuilder}
+ * Tests for the {@link NiceTreeDecompositionBase}
  *
  * @author Ira Justus Fesefeldt (PhoenixIra)
  */
@@ -64,7 +64,7 @@ public final class NiceTreeDecompositionTestUtil
             {
                 V next = successor.get(0);
                 queue.add(next);
-                Set<W> union = new HashSet<W>(map.get(current));
+                Set<W> union = new HashSet<>(map.get(current));
                 union.addAll(map.get(next));
                 if(union.size() == map.get(next).size() || union.size() == map.get(current).size())
                 {
@@ -78,7 +78,7 @@ public final class NiceTreeDecompositionTestUtil
                 V second = successor.get(1);
                 queue.add(first);
                 queue.add(second);
-                Set<W> union = new HashSet<W>(map.get(current));
+                Set<W> union = new HashSet<>(map.get(current));
                 union.addAll(map.get(first));
                 union.addAll(map.get(second));
                 if(union.size() == map.get(current).size() 
@@ -101,7 +101,7 @@ public final class NiceTreeDecompositionTestUtil
      * @param decomposition the tree decomposition
      * @param map the map from vertices to the tree decomposition to the sets of the tree decomposition
      */
-    public static <V,E,W,F> boolean isDecomposition(Graph<W,F> oldGraph, Graph<V,E> decomposition, Map<V,Set<W>> map){
+    public static <V,E,W,F> boolean isTreeDecomposition(Graph<W,F> oldGraph, Graph<V,E> decomposition, Map<V,Set<W>> map){
         Set<F> edgeSet = oldGraph.edgeSet();
         Set<V> nodeSet = decomposition.vertexSet();
         //Every edge is represented
@@ -122,17 +122,18 @@ public final class NiceTreeDecompositionTestUtil
         Set<W> oldVertexSet = oldGraph.vertexSet();
         for(W w : oldVertexSet)
         {
-            Set<V> keySet = new HashSet<V>();
+            Set<V> keySet = new HashSet<>();
             for(Entry<V,Set<W>> entry : map.entrySet())
             {
-                if(entry.getValue().contains(w))
+                if(entry.getValue().contains(w)) {
                     keySet.add(entry.getKey());
+                }
             }
             //not empty
             if(keySet.isEmpty())
                 return false;
             //connected
-            Graph<V,E> subgraph = new AsSubgraph<V,E>(decomposition,keySet);
+            Graph<V,E> subgraph = new AsSubgraph<>(decomposition,keySet);
             if(!GraphTests.isConnected(subgraph))
                 return false;
         }

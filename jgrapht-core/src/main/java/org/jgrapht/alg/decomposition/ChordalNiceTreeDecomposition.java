@@ -23,25 +23,39 @@ import org.jgrapht.*;
 import org.jgrapht.alg.cycle.*;
 
 /**
- * A builder for a nice decomposition for chordal graphs. See {@link NiceTreeDecompositionBase} for
- * an explanation of nice decomposition.
+ * Builds a nice tree decomposition of chordal graphs. See {@link NiceTreeDecompositionBase} for an
+ * explanation of the nice tree decomposition.
  * <p>
- * This builder uses the perfect elimination order from {@link ChordalityInspector} to iterate over
- * the graph. For every node it generates a node for the predecessors of the current node according
- * to the perfect elimination order and builds a path to such a node from the node where the
- * greatest predecessor was introduced.
+ * For a given perfect elimination order of the graph $G = (V, E)$ every vertex in $V(G)$ has an
+ * associated index in this order. The predecessors of a vertex $x \in V(G)$ are those vertices
+ * incident to $x$ that have smaller index than $x$ (a vertex can have no predecessors). This class
+ * uses a perfect elimination order produced by {@link ChordalityInspector} to iteratively add
+ * vertices of $G$ to some nodes in the tree $T$. Initially, it adds a bag to the decomposition with
+ * the first vertex from the perfect elimination order as a root of the tree. Then for all remaining
+ * vertices $v \in V(G)$ this class generates a node (bag) $s \in I(T)$ in the tree $T$ which
+ * contains vertex $v$ and all its predecessors. Then it builds a path from $s \in I(T)$ to $t \in
+ * I(T)$, where $s$ is the node where the predecessor of $v$ with the highest index was added to the
+ * decomposition for the first time. If the vertex $v$ has no predecessors, a path is built to an
+ * arbitrary node from the tree $T$. The bags on the resulting path between $s$ and $t$ contain only
+ * cliques.
  * <p>
- * The complexity of this algorithm is in $\mathcal{O}(|V|(|V|+|E|))$.<br>
- * Consider the every node in the nice tree decomposition: There are exactly $|V|-1$ many forget
- * nodes. There are at most $2(|V|-1)$ additionally nodes because of a join nodes. Every join node
- * creates one additional path from root to a leaf, every such path can contain for every vertex at
- * most one introduce node, which yields $|V|^2$ introduce nodes. Now considering the bags of the
- * introduce nodes. On a path from root to a leaf we have at most one introduce node for every
- * introduced vertex. Since this introduced vertex is part of the clique of the least ancestor
- * forget node, the corresponding bag of the introduce node is smaller than the set of neighbors of
- * this vertex. Thus the time complexity is in $\mathcal{O}(|V|(|V|+|E|))$.
+ * The time complexity of this algorithm is $\mathcal{O}(|V|(|V|+|E|))$. In the decomposition
+ * produced by this class there are at most $|V|-1$ additionally added join nodes which are
+ * generated during the connection of forget nodes to the tree. The algorithm adds exactly $|V|-1$
+ * many forget nodes since they are generated for every vertex in the $V(G)$ except for the vertex
+ * added as a root. They may be doubled by join nodes, which adds up to at most $2(|V|-1)$ forget
+ * nodes. Every join node creates one additional root-to-leaf path. Therefore, there are
+ * $\mathcal{O}(|V|)$ root-to-leaf paths in the resulting decomposition. Every root-to-left path can
+ * contain $\mathcal{O}(|V|)$ introduce nodes, which yields $\mathcal{O}(|V|^2)$ upper bound on
+ * introduce nodes. Now considering the bags of the introduce nodes. Bags of every root-to-leaf path
+ * can contain at most $|V|$ distinct vertices of the initial graph. Every vertex $v$ can be
+ * introduced and forgotten on a path at most once. The sizes of these introduce and forget nodes
+ * are $\mathcal{O}(deg(v) + 1)$. Consequently, every root-to-leaf path is constructed in
+ * $\mathcal{O}(|V| + |E|)$ time. Since there are $\mathcal{O}(|V|)$ root-to-leaf paths, the total
+ * running time is $\mathcal{O}(|V|(|V| + |E|))$.
  * <p>
- * This is a non-recursive adaption for nice tree decomposition of algorithm 2 from here: <br>
+ * The algorithm used to construct a nice tree decomposition is a non-recursive adaption of
+ * algorithm 2 from here: <br>
  * Hans L. Bodlaender, Arie M.C.A. Koster, Treewidth computations I. Upper bounds, Information and
  * Computation, Volume 208, Issue 3, 2010, Pages 259-275,
  * 
@@ -67,11 +81,11 @@ public class ChordalNiceTreeDecomposition<V, E>
     private Map<V, Integer> vertexInOrder;
 
     /**
-     * Constructor for the nice decomposition builder of chordal graphs. The constructor
-     * already computes the decomposition.
+     * Constructor for the nice tree decomposition of chordal graphs.
+     * The tree decomposition is calculated lazy when its needed for the first time.
      * 
      * @throws IllegalArgumentException if the graph is not chordal.
-     * @param graph the chordal graph for which a decomposition should be created
+     * @param graph the chordal graph for which a nice tree decomposition should be created
      */
     public ChordalNiceTreeDecomposition(Graph<V, E> graph)
     {
@@ -85,12 +99,12 @@ public class ChordalNiceTreeDecomposition<V, E>
     }
 
     /**
-     * Constructor for the nice decomposition builder of chordal graphs. 
-     * This method needs the perfect elimination order. The constructor
-     * already computes the decomposition.<p>
+     * Constructor for the nice tree decomposition of chordal graphs. 
+     * This method needs the perfect elimination order. 
+     * The tree decomposition is calculated lazy when its needed for the first time.<p>
      * Note: This method does NOT check whether the order is correct.
      * 
-     * @param graph the chordal graph for which a decomposition should be created
+     * @param graph the chordal graph for which a nice tree decomposition should be created
      * @param perfectEliminationOrder the perfect elimination order of the graph
      */
     public ChordalNiceTreeDecomposition(Graph<V, E> graph, List<V> perfectEliminationOrder)
@@ -102,7 +116,7 @@ public class ChordalNiceTreeDecomposition<V, E>
     }
 
     /**
-     * Computes the nice decomposition of the graph. We iterate over the perfect elimination order
+     * Computes the nice tree decomposition of the graph. We iterate over the perfect elimination order
      * of the chordal graph and try to add a node containing the predecessors regarding the
      * perfect elimination as a bag to the tree
      */
@@ -132,7 +146,7 @@ public class ChordalNiceTreeDecomposition<V, E>
             // get the predecessors regarding the perfect elimination order
             List<V> predecessors = getOrderPredecessors(vertexInOrder, vertex);
 
-            /**
+            /*
              * Calculate the nearest predecessor according to the perfect elimination order.
              * The nearest predecessor means here the predecessor of the vertex, for which the forget node
              * was created last and thus is the highest predecessor (and nearest to the vertex).
