@@ -17,6 +17,7 @@
  */
 package org.jgrapht.graph.interval;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -25,10 +26,12 @@ import java.util.Objects;
  * @param <T> the type of the interval
  * @author Daniel Mock
  */
-public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
+public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>>, Serializable {
 
     protected T start;
     protected T end;
+
+    private static final long serialVersionUID = 173765544491290L;
 
     /**
      * Constructs an interval
@@ -84,9 +87,7 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * @return true if current interval contains the given point, false otherwise
      */
     public boolean contains(T point) {
-        if (point == null) {
-            throw new IllegalArgumentException("Point to be tested cannot be null.");
-        }
+        Objects.requireNonNull(point);
 
         boolean result = point.compareTo(start) >= 0 && point.compareTo(end) <= 0;
         assert result == (compareToPoint(point) == 0);
@@ -100,9 +101,7 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * @return 0 if current interval contains the given point, comparison result with the interval start otherwise
      */
     private int compareToPoint(T point) {
-        if (point == null) {
-            throw new IllegalArgumentException("Point to be tested cannot be null.");
-        }
+        Objects.requireNonNull(point);
 
         int relativeStart = start.compareTo(point);
         int relativeEnd = end.compareTo(point);
@@ -115,6 +114,15 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     }
 
     /**
+     * Returns whether the interval is empty, i.e., the start and end points coincide.
+     * @return whether the interval is empty
+     */
+    public boolean isEmpty() {
+        return start == end;
+    }
+
+
+    /**
      * Compares this interval to the other interval
      *
      * @param o The other interval
@@ -124,15 +132,16 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     @Override
     public int compareTo(Interval<T> o) {
         int left = end.compareTo(o.getStart()); // < 0 if this ends before other starts
-        int right = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
-
-        if (left >= 0 && right <= 0) {
-            return 0;
-        } else if (left < 0) {
+        if (left < 0) {
             return left;
-        } else {
+        }
+
+        int right = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
+        if (right > 0) {
             return right;
         }
+
+        return 0;
     }
 
     @Override

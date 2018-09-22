@@ -191,8 +191,8 @@ public class IntervalGraphRecognizerTest {
     }
     
     public void isCompleteAnIntervalGraph(int n) {
-        CompleteGraphGenerator<Integer,DefaultEdge> cgg = 
-            new CompleteGraphGenerator<Integer,DefaultEdge>(n);
+        CompleteGraphGenerator<Integer,DefaultEdge> cgg =
+                new CompleteGraphGenerator<>(n);
         Graph<Integer,DefaultEdge> cg =
             new SimpleGraph<>(SupplierUtil.createIntegerSupplier(), SupplierUtil.createDefaultEdgeSupplier(), false);
         cgg.generateGraph(cg);
@@ -222,7 +222,7 @@ public class IntervalGraphRecognizerTest {
             builder.addVertex(i);
         }
         
-        //Every complete Graph is an interval graph
+        //Every unconnected Graph is an interval graph
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
         assertTrue(recognizer.isIntervalGraph());
     }

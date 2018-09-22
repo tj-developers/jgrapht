@@ -23,7 +23,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 import org.jgrapht.*;
-import org.jgrapht.graph.interval.IntervalVertexPair;
+import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.interval.Interval;
 
 /**
@@ -37,7 +37,7 @@ import org.jgrapht.graph.interval.Interval;
  * "https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a>
  * (<i>The LBFS Structure and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
- * multiple lexicographical breadth-first search (LBFS) sweeps. The algorithm runs in O(|V| + |E|).
+ * multiple lexicographical breadth-first search (LBFS) sweeps. The algorithm runs in $O(|V| + |E|)$.
  *
  * For this recognizer to work correctly the graph must not be modified during iteration.
  *
@@ -56,7 +56,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private Boolean isIntervalGraph;
 
-    private Graph<V, E> graph;
+    private final Graph<V, E> graph;
 
     /**
      * Stores the computed interval graph representation (or <tt>null</tt> if no such representation
@@ -64,7 +64,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     private ArrayList<Interval<Integer>> intervalsSortedByStartingPoint;
     private Map<Interval<Integer>, V> intervalToVertexMap;
-    private Map<V, IntervalVertexPair<V, Integer>> vertexToIntervalMap;
+    private Map<V, Pair<V, Interval<Integer>>> vertexToIntervalMap;
 
     /**
      * Creates (and runs) a new interval graph recognizer for the given graph.
@@ -87,8 +87,8 @@ public final class IntervalGraphRecognizer<V, E>
         if (graph.vertexSet().isEmpty()) {
             // Create (empty) interval representation
             this.intervalsSortedByStartingPoint = new ArrayList<>();
-            this.intervalToVertexMap = new HashMap<>(0);
-            this.vertexToIntervalMap = new HashMap<>(0);
+            this.intervalToVertexMap = new HashMap<>();
+            this.vertexToIntervalMap = new HashMap<>();
             this.isIntervalGraph = true;
 
             return;
@@ -170,7 +170,7 @@ public final class IntervalGraphRecognizer<V, E>
                 intervals[sweepZeta.get(vertex)] = vertexInterval;
 
                 this.intervalToVertexMap.put(vertexInterval, vertex);
-                this.vertexToIntervalMap.put(vertex, IntervalVertexPair.of(vertex, vertexInterval));
+                this.vertexToIntervalMap.put(vertex, Pair.of(vertex, vertexInterval));
             }
 
             // ... and produce a list sorted by the starting points for an efficient construction of
@@ -290,7 +290,7 @@ public final class IntervalGraphRecognizer<V, E>
      * @return A mapping of the vertices of the original graph to the constructed intervals, or
      *         null, if the graph was not an interval graph.
      */
-    public Map<V, IntervalVertexPair<V, Integer>> getVertexToIntervalMap()
+    public Map<V, Pair<V, Interval<Integer>>> getVertexToIntervalMap()
     {
         ensureComputationComplete();
         return this.vertexToIntervalMap;
