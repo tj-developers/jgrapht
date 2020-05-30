@@ -1,19 +1,19 @@
 /*
- * (C) Copyright 2011-2018, by Assaf Mizrachi and Contributors.
+ * (C) Copyright 2011-2020, by Assaf Mizrachi and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
- * This program and the accompanying materials are dual-licensed under
- * either
+ * See the CONTRIBUTORS.md file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * (a) the terms of the GNU Lesser General Public License version 2.1
- * as published by the Free Software Foundation, or (at your option) any
- * later version.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the
+ * GNU Lesser General Public License v2.1 or later
+ * which is available at
+ * http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html.
  *
- * or (per the licensee's choosing)
- *
- * (b) the terms of the Eclipse Public License v1.0 as published by
- * the Eclipse Foundation.
+ * SPDX-License-Identifier: EPL-2.0 OR LGPL-2.1-or-later
  */
 package org.jgrapht.generate;
 
@@ -32,7 +32,6 @@ import java.util.*;
  * @param <E> the graph edge type
  *
  * @author Assaf Mizrachi
- * @since Dec 29, 2010
  */
 public class GridGraphGenerator<V, E>
     implements
@@ -43,9 +42,8 @@ public class GridGraphGenerator<V, E>
      */
     public static final String CORNER_VERTEX = "Corner Vertex";
 
-    private int rows;
-
-    private int cols;
+    private final int rows;
+    private final int cols;
 
     /**
      * Creates a new GridGraphGenerator object with rows x cols dimension.
@@ -77,7 +75,7 @@ public class GridGraphGenerator<V, E>
 
         // Adding all vertices to the set
         int cornerCtr = 0;
-        for (int i = 0; i < (rows * cols); i++) {
+        for (int i = 0; i < rows * cols; i++) {
             V vertex = target.addVertex();
             map.put(i + 1, vertex);
 
@@ -103,5 +101,3 @@ public class GridGraphGenerator<V, E>
         }
     }
 }
-
-// End GridGraphGenerator.java
