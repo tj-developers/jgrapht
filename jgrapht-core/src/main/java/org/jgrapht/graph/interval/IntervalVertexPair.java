@@ -24,6 +24,11 @@ import java.util.Objects;
  * Implementation for IntervalVertexPair
  * This class implements the container class for vertices in an interval graph.
  *
+ * An interval graph is constructed from a set of intervals, which represent the vertices of the graph. This class
+ * provides the implementation of a container that assigns an interval, whose representation is based on some generic
+ * <code><T> extends Comparable<T></code>, to the actual vertex representation, which is represented by generic
+ * <code><V></code>. That is, this container represents the vertex type of an interval graph.
+ *
  * @param <V> the vertex
  * @param <T> the interval element
  *
