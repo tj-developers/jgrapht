@@ -41,23 +41,23 @@ class SuperSplitQueue
     final private int[] previous;
 
     /**
-     * next[i] = j if and only if if and only if i and j are in the same queue and j is the direct
+     * next[i] = j if and only if i and j are in the same queue and j is the direct
      * successor of i or -1 if i is not contained in the queue or i is the last element in a queue
      */
     final private int[] next;
 
     /**
-     * Returns the first element of the queue with the given index.
+     * The first element of the queue with the given index.
      */
     final private ArrayList<Integer> firstOfQ;
 
     /**
-     * Returns the last element of the queue with the given index.
+     * The last element of the queue with the given index.
      */
     final private ArrayList<Integer> lastOfQ;
 
     /**
-     * Returns the size of the queue with the given index.
+     * The size of the queue with the given index.
      */
     final private ArrayList<Integer> sizeOfQ;
 

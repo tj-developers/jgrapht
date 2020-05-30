@@ -17,6 +17,7 @@
  */
 package org.jgrapht.graph.interval;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -25,7 +26,9 @@ import java.util.Objects;
  * @param <T> the type of the interval
  * @author Daniel Mock
  */
-public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>> {
+public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>>, Serializable {
+
+    private static final long serialVersionUID = -8947644561084940981L;
 
     protected T start;
     protected T end;
@@ -84,9 +87,7 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
      * @return true if current interval contains the given point, false otherwise
      */
     public boolean contains(T point) {
-        if (point == null) {
-            throw new IllegalArgumentException("Point to be tested cannot be null.");
-        }
+        Objects.requireNonNull(point);
 
         boolean result = point.compareTo(start) >= 0 && point.compareTo(end) <= 0;
         assert result == (compareToPoint(point) == 0);
@@ -124,15 +125,15 @@ public class Interval<T extends Comparable<T>> implements Comparable<Interval<T>
     @Override
     public int compareTo(Interval<T> o) {
         int left = end.compareTo(o.getStart()); // < 0 if this ends before other starts
-        int right = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
-
-        if (left >= 0 && right <= 0) {
-            return 0;
-        } else if (left < 0) {
+        if(left < 0) {
             return left;
-        } else {
+        }
+
+        int right = start.compareTo(o.getEnd()); // > 0 if this starts before other ends
+        if(right < 0) {
             return right;
         }
+        return 0;
     }
 
     @Override

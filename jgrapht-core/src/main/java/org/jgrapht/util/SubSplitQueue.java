@@ -69,8 +69,6 @@ public class SubSplitQueue
     {
         this.ownIndex = ownIndex;
         this.parent = parent;
-        // this.toInternal = toInternal;
-        // this.toExternal = toExternal;
     }
 
     /**

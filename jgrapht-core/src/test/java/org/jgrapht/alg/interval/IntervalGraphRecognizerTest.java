@@ -222,7 +222,7 @@ public class IntervalGraphRecognizerTest {
             builder.addVertex(i);
         }
         
-        //Every complete Graph is an interval graph
+        // Every unconnected Graph is an interval graph
         IntervalGraphRecognizer<Integer, DefaultEdge> recognizer = new IntervalGraphRecognizer<>(builder.build());
         assertTrue(recognizer.isIntervalGraph());
     }

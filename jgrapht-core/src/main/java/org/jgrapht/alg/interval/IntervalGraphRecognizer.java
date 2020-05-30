@@ -37,7 +37,7 @@ import org.jgrapht.graph.interval.Interval;
  * "https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf">https://webdocs.cs.ualberta.ca/~stewart/Pubs/IntervalSIAM.pdf</a>
  * (<i>The LBFS Structure and Recognition of Interval Graphs. SIAM J. Discrete Math.. 23. 1905-1953.
  * 10.1137/S0895480100373455.</i>) by Derek Corneil, Stephan Olariu and Lorna Stewart based on
- * multiple lexicographical breadth-first search (LBFS) sweeps. The algorithm runs in O(|V| + |E|).
+ * multiple lexicographical breadth-first search (LBFS) sweeps. The algorithm runs in $O(|V| + |E|)$.
  *
  * For this recognizer to work correctly the graph must not be modified during iteration.
  *
@@ -54,9 +54,14 @@ public final class IntervalGraphRecognizer<V, E>
     /**
      * Stores whether or not the graph is an interval graph.
      */
-    private Boolean isIntervalGraph;
+    private boolean isIntervalGraph;
 
-    private Graph<V, E> graph;
+    /**
+     * Stores whether or not the algorithm was executed.
+     */
+    private boolean isComputationComplete;
+
+    private final Graph<V, E> graph;
 
     /**
      * Stores the computed interval graph representation (or <tt>null</tt> if no such representation
@@ -74,6 +79,7 @@ public final class IntervalGraphRecognizer<V, E>
     public IntervalGraphRecognizer(Graph<V, E> graph)
     {
         this.graph = graph;
+        this.isComputationComplete = false;
     }
 
     /**
@@ -87,8 +93,8 @@ public final class IntervalGraphRecognizer<V, E>
         if (graph.vertexSet().isEmpty()) {
             // Create (empty) interval representation
             this.intervalsSortedByStartingPoint = new ArrayList<>();
-            this.intervalToVertexMap = new HashMap<>(0);
-            this.vertexToIntervalMap = new HashMap<>(0);
+            this.intervalToVertexMap = new HashMap<>();
+            this.vertexToIntervalMap = new HashMap<>();
             this.isIntervalGraph = true;
 
             return;
@@ -240,8 +246,8 @@ public final class IntervalGraphRecognizer<V, E>
     /**
      * Makes sure the algorithm has been run and all fields are populated with their proper value.
      */
-    private void ensureComputationComplete() {
-        if (this.isIntervalGraph == null){
+    private void isComputationComplete() {
+        if (!this.isComputationComplete){
             computeIsIntervalGraph();
         }
     }
@@ -253,7 +259,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public boolean isIntervalGraph()
     {
-        ensureComputationComplete();
+        isComputationComplete();
         return isIntervalGraph;
     }
 
@@ -266,7 +272,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public ArrayList<Interval<Integer>> getIntervalsSortedByStartingPoint()
     {
-        ensureComputationComplete();
+        isComputationComplete();
         return this.intervalsSortedByStartingPoint;
     }
 
@@ -279,7 +285,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public Map<Interval<Integer>, V> getIntervalToVertexMap()
     {
-        ensureComputationComplete();
+        isComputationComplete();
         return this.intervalToVertexMap;
     }
 
@@ -292,7 +298,7 @@ public final class IntervalGraphRecognizer<V, E>
      */
     public Map<V, IntervalVertexPair<V, Integer>> getVertexToIntervalMap()
     {
-        ensureComputationComplete();
+        isComputationComplete();
         return this.vertexToIntervalMap;
     }
 }
