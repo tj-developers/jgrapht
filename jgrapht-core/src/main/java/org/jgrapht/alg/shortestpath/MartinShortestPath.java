@@ -1,25 +1,26 @@
 /*
- * (C) Copyright 2017-2018, by Dimitrios Michail and Contributors.
+ * (C) Copyright 2017-2020, by Dimitrios Michail and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
- * This program and the accompanying materials are dual-licensed under
- * either
+ * See the CONTRIBUTORS.md file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * (a) the terms of the GNU Lesser General Public License version 2.1
- * as published by the Free Software Foundation, or (at your option) any
- * later version.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the
+ * GNU Lesser General Public License v2.1 or later
+ * which is available at
+ * http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html.
  *
- * or (per the licensee's choosing)
- *
- * (b) the terms of the Eclipse Public License v1.0 as published by
- * the Eclipse Foundation.
+ * SPDX-License-Identifier: EPL-2.0 OR LGPL-2.1-or-later
  */
 package org.jgrapht.alg.shortestpath;
 
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
-import org.jgrapht.util.*;
+import org.jheaps.*;
+import org.jheaps.array.*;
 
 import java.util.*;
 import java.util.function.*;
@@ -52,7 +53,7 @@ public class MartinShortestPath<V, E>
     // final labels for each node
     private final Map<V, LinkedList<Label>> nodeLabels;
     // temporary labels ordered lexicographically
-    private final GenericFibonacciHeap<Label, Void> heap;
+    private final Heap<Label> heap;
 
     /**
      * Create a new shortest path algorithm
@@ -67,7 +68,7 @@ public class MartinShortestPath<V, E>
             Objects.requireNonNull(edgeWeightFunction, "Function cannot be null");
         this.objectives = validateEdgeWeightFunction(edgeWeightFunction);
         this.nodeLabels = new HashMap<>();
-        this.heap = new GenericFibonacciHeap<>(new LabelComparator());
+        this.heap = new DaryArrayHeap<>(3, new LabelComparator());
     }
 
     @Override
@@ -107,10 +108,10 @@ public class MartinShortestPath<V, E>
             nodeLabels.put(v, new LinkedList<>());
         }
         nodeLabels.get(source).add(sourceLabel);
-        heap.insert(sourceLabel, null);
+        heap.insert(sourceLabel);
 
         while (!heap.isEmpty()) {
-            Label curLabel = heap.removeMin().getKey();
+            Label curLabel = heap.deleteMin();
             V v = curLabel.node;
             for (E e : graph.outgoingEdgesOf(v)) {
                 V u = Graphs.getOppositeVertex(graph, e, v);
@@ -132,7 +133,7 @@ public class MartinShortestPath<V, E>
                 }
                 if (!isDominated) {
                     uLabels.add(newLabel);
-                    heap.insert(newLabel, null);
+                    heap.insert(newLabel);
                 }
             }
         }
