@@ -23,11 +23,12 @@ import org.jgrapht.util.Ordering;
 
 import java.util.*;
 
-/** A class that is used to perform the BFS algorithms used to detect interval graphs.
+/**
+ * A class that is used to perform the BFS algorithms used to detect interval graphs.
  * @author Oliver Feith
  * @author Dennis Fischer
  */
-public final class LexBreadthFirstSearch
+final class LexBreadthFirstSearch
 {
     
     /**
@@ -36,7 +37,7 @@ public final class LexBreadthFirstSearch
      * @param <V> The vertex type
      * @param <E> The edge type
      * @param graph the graph we want to perform LBFS on
-     * @return an array of vertices representing the order in which the vertices were found
+     * @return map representing the order in which the vertices were found
      */
     public static <V, E> HashMap<V, Integer> lexBreadthFirstSearch(Graph<V, E> graph)
     {
@@ -88,8 +89,8 @@ public final class LexBreadthFirstSearch
        HashMap<V, Integer> neighborIndexA = new HashMap<>(); 
        HashMap<V, Integer> neighborIndexB = new HashMap<>();
        
-       HashMap<V, Set<V>> ASets = new HashMap<>();
-       HashMap<V, Set<V>> BSets = new HashMap<>();
+       HashMap<V, Set<V>> aSets = new HashMap<>();
+       HashMap<V, Set<V>> bSets = new HashMap<>();
        
        for(V vertex : graph.vertexSet()) {
            // Compute indexA, indexB
@@ -109,26 +110,26 @@ public final class LexBreadthFirstSearch
        }
        
        for(V vertex : graph.vertexSet()) {
-           HashSet<V> Av = new HashSet<>();
-           HashSet<V> Bv = new HashSet<>();
+           HashSet<V> aVertices = new HashSet<>();
+           HashSet<V> bVertices = new HashSet<>();
            
            for(V neighbor : Graphs.neighborListOf(graph, vertex)) {
                if(priorityA.get(neighbor) < priorityA.get(vertex) && neighborIndexA.get(neighbor) > priorityA.get(vertex)) {
-                   Av.add(neighbor);
+                   aVertices.add(neighbor);
                }
                
                if(priorityB.get(neighbor) < priorityB.get(vertex) && neighborIndexB.get(neighbor) > priorityB.get(vertex)) {
-                   Bv.add(neighbor);
+                   bVertices.add(neighbor);
                }
            }
            
-           ASets.put(vertex, Av);
-           BSets.put(vertex, Bv);
+           aSets.put(vertex, aVertices);
+           bSets.put(vertex, bVertices);
        }
        
        HashMap<V, Integer> result = new HashMap<>(graph.vertexSet().size()); 
        LexBreadthFirstIterator<V, E> lbfIterator = new LexBreadthFirstIterator<>(graph, new Ordering<>(priorityA),
-               new Ordering<>(priorityB), new Ordering<>(neighborIndexA), new Ordering<>(neighborIndexB), ASets, BSets);
+               new Ordering<>(priorityB), new Ordering<>(neighborIndexA), new Ordering<>(neighborIndexB), aSets, bSets);
        
        for(int i = 0; i < graph.vertexSet().size(); i++) {
            result.put(lbfIterator.next(), i);
