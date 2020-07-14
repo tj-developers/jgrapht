@@ -125,37 +125,6 @@ public class LexBreadthFirstIterator<V, E>
             HashMap<V, Set<V>> aSets, HashMap<V, Set<V>> bSets)
     {
         this(graph, priorityA, priorityB, neighborIndexA, neighborIndexB, aSets, bSets, Mode.LBFS_STAR);
-//        super(graph);
-//        GraphTests.requireUndirected(graph);
-//
-//        this.mode = Mode.LBFS_STAR;
-//
-//        // check that orderings and vertex set are compatible
-//        boolean k = priorityA.size() == priorityB.size();
-//        k &= priorityA.size() == graph.vertexSet().size();
-//        for (V vertex: graph.vertexSet()) {
-//            k &= priorityA.contains(vertex);
-//            k &= priorityB.contains(vertex);
-//            if (!k) {
-//                throw new IllegalArgumentException();
-//            }
-//        }
-//        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
-//        LinkedHashSet<V> verticesB = new LinkedHashSet<>(graph.vertexSet().size());
-//        priorityA.forEach(verticesA::add);
-//        priorityB.forEach(verticesB::add);
-//        bucketList = new BucketList(verticesA, verticesB);
-//
-//        this.priorityA = priorityA;
-//        this.priorityB = priorityB;
-//        this.neighborIndexA = neighborIndexA;
-//        this.neighborIndexB = neighborIndexB;
-//        this.aSets = aSets;
-//        this.bSets = bSets;
-//
-//        // Precompute sorted neighborhoods
-//        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
-//        this.sortedNeighborsB = computeSortedNeighborhoods(priorityB);
     }
 
     private LexBreadthFirstIterator(
@@ -228,9 +197,6 @@ public class LexBreadthFirstIterator<V, E>
      */
     public LexBreadthFirstIterator(Graph<V, E> graph) {
         this(graph, null, null, null, null, null, null, Mode.LBFS);
-//        this(graph, new Ordering<>(graph.vertexSet()));
-//
-//        this.mode = Mode.LBFS;
     }
 
     /**
@@ -241,27 +207,6 @@ public class LexBreadthFirstIterator<V, E>
      */
     public LexBreadthFirstIterator(Graph<V, E> graph, Ordering<V> priority) {
         this(graph, priority, null, null, null, null, null, Mode.LBFS_PLUS);
-//        super(graph);
-//        GraphTests.requireUndirected(graph);
-//
-//        this.mode = Mode.LBFS_PLUS;
-//
-//        // check that orderings and vertex set are compatible
-//        // not really necessary
-//        boolean k = priority.size() == graph.vertexSet().size();
-//        for (V vertex: graph.vertexSet()) {
-//            k &= priority.contains(vertex);
-//            if (!k) {
-//                throw new IllegalArgumentException();
-//            }
-//        }
-//        priorityA = priority;
-//
-//        LinkedHashSet<V> verticesA = new LinkedHashSet<>(graph.vertexSet().size());
-//        priorityA.forEach(verticesA::add);
-//        bucketList = new BucketList(verticesA, null);
-//
-//        this.sortedNeighbors = computeSortedNeighborhoods(priorityA);
     }
 
 

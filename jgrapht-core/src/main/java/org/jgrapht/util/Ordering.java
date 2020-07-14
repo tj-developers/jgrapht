@@ -26,7 +26,10 @@ import java.util.*;
  * a bijection between the elements and {0,..., size - 1}.
  * The ordering is immutable.
  * Null values are not allowed.
- * @param <E>
+ *
+ * @param <E> the element type
+ *
+ * @author Daniel Mock
  */
 public class Ordering<E> implements Comparator<E>, Iterable<E> {
     private List<E> list;

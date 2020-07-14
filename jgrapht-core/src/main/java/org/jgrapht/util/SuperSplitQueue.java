@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with
- * poll). This class is not meant to be exposed.
+ * A collection of SplitQueues. Each are disjoint. Elements cannot be added or removed (except with poll).
+ * This class is not meant to be exposed.
  * 
  * @author Daniel Mock
  */
@@ -89,7 +89,7 @@ class SuperSplitQueue
     /**
      * Returns a new empty SuperSplitQueue of size universeSize with one SubSplitQueue
      * 
-     * @param universeSize
+     * @param universeSize size of the universe
      */
     private SuperSplitQueue(int universeSize)
     {
